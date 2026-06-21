@@ -46,7 +46,7 @@ export function TrustIntelligencePanel({
   return (
     <div className="bg-white rounded-lg border border-border-subtle shadow-sm p-card-padding">
       <h2 className="text-section-header font-section-header mb-4">
-        Dependency Trust Intelligence
+        Trust Intelligence
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Score */}

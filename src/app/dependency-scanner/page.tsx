@@ -12,6 +12,13 @@ export default function DependencyScannerLandingPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const session = localStorage.getItem("bugbusters_github_session");
+    if (!session) {
+      setJobs([]);
+      setIsLoading(false);
+      return;
+    }
+
     fetchScanJobs()
       .then((data) => {
         setJobs(data || []);

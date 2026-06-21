@@ -45,17 +45,18 @@ export default function DashboardPage() {
 
     if (currentSession) {
       setGithubSession(currentSession);
-      loadGithubData(currentSession).catch(() => {
-        // Session invalid or expired
-        localStorage.removeItem("bugbusters_github_session");
-        setGithubSession(null);
-      });
+      loadGithubData(currentSession)
+        .then(() => fetchScanJobs())
+        .then((data) => setJobs(data || []))
+        .catch(() => {
+          // Session invalid or expired
+          localStorage.removeItem("bugbusters_github_session");
+          setGithubSession(null);
+          setJobs([]);
+        });
+    } else {
+      setJobs([]);
     }
-
-    // Load recent jobs
-    fetchScanJobs()
-      .then((data) => setJobs(data || []))
-      .catch((err) => console.error("Failed to fetch jobs", err));
   }, []);
 
   const loadGithubData = async (session: string) => {

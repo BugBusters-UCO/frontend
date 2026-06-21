@@ -21,23 +21,23 @@ export function FindingsTable({ findings }: FindingsTableProps) {
           Filter
         </button>
       </div>
-      <div className="overflow-x-auto">
+      <div className="max-h-[400px] overflow-auto">
         <table className="w-full text-left border-collapse min-w-[800px]">
-          <thead>
-            <tr className="border-b border-border-divider bg-surface-container-lowest">
-              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider">
+          <thead className="sticky top-0 z-10 bg-surface-container-lowest shadow-[0_1px_0_var(--color-border-divider)]">
+            <tr>
+              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider bg-surface-container-lowest">
                 Package
               </th>
-              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider">
+              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider bg-surface-container-lowest">
                 Severity
               </th>
-              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider">
+              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider bg-surface-container-lowest">
                 Issue
               </th>
-              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider">
+              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider bg-surface-container-lowest">
                 Introduced By
               </th>
-              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider text-right">
+              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider text-right bg-surface-container-lowest">
                 Recommended Fix
               </th>
             </tr>
