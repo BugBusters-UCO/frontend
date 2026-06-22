@@ -6,6 +6,7 @@ import { LogEntry, ScanJob } from "@/shared/api/types";
 import { fetchConfigJobStatus, getConfigScanLogsUrl } from "@/shared/api/client";
 import { LiveExecutionLog } from "@/widgets/LiveExecutionLog";
 import { SkeletonJobRow, SkeletonMetricsRow, SkeletonPanel } from "@/widgets/Skeleton";
+import { ArrowLeftCircle } from "lucide-react";
 
 export default function ConfigScannerJobPage() {
   const { jobId } = useParams() as { jobId: string };
@@ -112,10 +113,10 @@ export default function ConfigScannerJobPage() {
     <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap">
       <div className="flex items-center gap-4">
         <button
-          onClick={() => router.push("/config-scanner")}
+          onClick={() => router.back()}
           className="text-text-secondary hover:bg-surface-container p-2 rounded-full transition-colors flex items-center justify-center"
         >
-          <span className="material-symbols-outlined">arrow_back</span>
+          <span className="material-symbols-outlined hover:cursor-pointer"><ArrowLeftCircle size={36}/></span>
         </button>
         <div>
           <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">

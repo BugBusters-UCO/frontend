@@ -10,8 +10,9 @@ import { BlastRadiusMap } from "@/widgets/BlastRadiusMap";
 import { LiveExecutionLog } from "@/widgets/LiveExecutionLog";
 import { FindingsTable } from "@/widgets/FindingsTable";
 import { SkeletonJobRow, SkeletonMetricsRow, SkeletonPanel } from "@/widgets/Skeleton";
+import { ArrowLeftCircle } from "lucide-react";
 
-const API_BASE_URL = "http://127.0.0.1:5000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:5000";
 
 export default function ScannerJobPage() {
   const { jobId } = useParams() as { jobId: string };
@@ -117,10 +118,10 @@ export default function ScannerJobPage() {
     <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap">
       <div className="flex items-center gap-4">
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.back()}
           className="text-text-secondary hover:bg-surface-container p-2 rounded-full transition-colors flex items-center justify-center"
         >
-          <span className="material-symbols-outlined">arrow_back</span>
+          <span className="material-symbols-outlined hover:cursor-pointer"><ArrowLeftCircle size={36}/></span>
         </button>
         <div>
           <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">

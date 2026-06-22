@@ -91,6 +91,21 @@ export default function DashboardPage() {
     window.location.href = getGithubConnectUrl();
   };
 
+  const handleDisconnectGithub = () => {
+    deleteCookie("bugbusters_github_session");
+    setGithubSession(null);
+    setGithubUser(null);
+    setRepos([]);
+    setSelectedRepo("");
+    
+    // Also remove from URL if present
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("githubSession")) {
+      url.searchParams.delete("githubSession");
+      window.history.replaceState({}, document.title, url.pathname + url.search);
+    }
+  };
+
   const handleStartGithubScan = async () => {
     if (!selectedRepo) {
       setScanError("Please select a repository first.");
@@ -218,6 +233,7 @@ export default function DashboardPage() {
             selectedRepo={selectedRepo}
             setSelectedRepo={setSelectedRepo}
             onConnectGithub={handleConnectGithub}
+            onDisconnectGithub={handleDisconnectGithub}
             isConnectingGithub={isConnectingGithub}
             onStartScan={handleStartGithubScan}
             onUploadZip={handleUploadZip}
