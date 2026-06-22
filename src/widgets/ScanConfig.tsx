@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { GithubRepository, GithubUser } from "@/shared/api/types";
+import { CustomSelect } from "./CustomSelect";
 
 interface ScanConfigProps {
   githubUser: GithubUser | null;
@@ -12,6 +13,8 @@ interface ScanConfigProps {
   onStartScan: () => void;
   isScanning: boolean;
   error: string | null;
+  scanOptions: { includeDev: boolean; useOsv: boolean; failOn: string; includeLow: boolean };
+  setScanOptions: (options: any) => void;
 }
 
 export function ScanConfig({
@@ -25,6 +28,8 @@ export function ScanConfig({
   onStartScan,
   isScanning,
   error,
+  scanOptions,
+  setScanOptions,
 }: ScanConfigProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -65,18 +70,12 @@ export function ScanConfig({
                   </div>
                 </div>
               </div>
-              <select
-                className="w-full border border-border-subtle rounded-lg p-2 text-body-sm outline-none"
+              <CustomSelect
+                options={repos.map((r) => ({ label: r.fullName, value: r.fullName }))}
                 value={selectedRepo}
-                onChange={(e) => setSelectedRepo(e.target.value)}
-              >
-                <option value="">Select a repository...</option>
-                {repos.map((repo) => (
-                  <option key={repo.id} value={repo.fullName}>
-                    {repo.fullName}
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedRepo}
+                placeholder="Select a repository..."
+              />
             </div>
           ) : (
             <div className="border border-border-subtle rounded-lg p-3 bg-surface-container-lowest flex items-center justify-between mb-3">
@@ -137,7 +136,8 @@ export function ScanConfig({
             <label className="flex items-center gap-2 cursor-pointer group">
               <input
                 type="checkbox"
-                defaultChecked
+                checked={scanOptions.includeDev}
+                onChange={(e) => setScanOptions({ ...scanOptions, includeDev: e.target.checked })}
                 className="rounded border-border-subtle text-primary-container focus:ring-primary-container h-4 w-4"
               />
               <span className="text-body-sm group-hover:text-text-primary transition-colors">
@@ -147,11 +147,23 @@ export function ScanConfig({
             <label className="flex items-center gap-2 cursor-pointer group">
               <input
                 type="checkbox"
-                defaultChecked
+                checked={scanOptions.useOsv}
+                onChange={(e) => setScanOptions({ ...scanOptions, useOsv: e.target.checked })}
                 className="rounded border-border-subtle text-primary-container focus:ring-primary-container h-4 w-4"
               />
               <span className="text-body-sm group-hover:text-text-primary transition-colors">
                 Query OSV Database
+              </span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={scanOptions.includeLow}
+                onChange={(e) => setScanOptions({ ...scanOptions, includeLow: e.target.checked })}
+                className="rounded border-border-subtle text-primary-container focus:ring-primary-container h-4 w-4"
+              />
+              <span className="text-body-sm group-hover:text-text-primary transition-colors">
+                Include Low Severity Config Findings
               </span>
             </label>
           </div>
@@ -161,12 +173,16 @@ export function ScanConfig({
           <label className="block text-body-sm font-semibold mb-2">
             Failure Threshold
           </label>
-          <select className="w-full border border-border-subtle rounded-lg p-2 text-body-sm focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none bg-white">
-            <option>High or Critical</option>
-            <option>Critical Only</option>
-            <option>Any Severity</option>
-            <option>Never Fail</option>
-          </select>
+          <CustomSelect
+                options={[
+                  { label: "Any Severity (Low)", value: "low" },
+                  { label: "Medium or Higher", value: "medium" },
+                  { label: "High or Critical", value: "high" },
+                  { label: "Critical Only", value: "critical" },
+                ]}
+                value={scanOptions.failOn}
+                onChange={(value) => setScanOptions({ ...scanOptions, failOn: value })}
+              />
         </div>
 
         {error && (

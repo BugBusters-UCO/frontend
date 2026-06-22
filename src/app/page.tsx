@@ -10,9 +10,15 @@ import {
   startGithubScan,
   uploadZipScan,
   fetchScanJobs,
+  startConfigGithubScan,
+  uploadConfigZipScan,
+  fetchConfigScanJobs,
 } from "@/shared/api/client";
 import { ScanConfig } from "@/widgets/ScanConfig";
 import { RecentJobs } from "@/widgets/RecentJobs";
+import { SkeletonJobRow } from "@/widgets/Skeleton";
+import Link from "next/link";
+import { getCookie, setCookie, deleteCookie } from "cookies-next";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -24,7 +30,10 @@ export default function DashboardPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [jobs, setJobs] = useState<ScanJob[]>([]);
+  const [activeScans, setActiveScans] = useState<ScanJob[]>([]);
+  const [isLoadingJobs, setIsLoadingJobs] = useState(true);
   const [githubSession, setGithubSession] = useState<string | null>(null);
+  const [scanOptions, setScanOptions] = useState({ includeDev: true, useOsv: true, failOn: "high", includeLow: true });
 
   useEffect(() => {
     // Check if auth successful (from query params)
@@ -32,11 +41,11 @@ export default function DashboardPage() {
     const sessionFromUrl = urlParams.get("githubSession");
     const errorFromUrl = urlParams.get("githubError");
     
-    let currentSession = localStorage.getItem("bugbusters_github_session");
+    let currentSession = getCookie("bugbusters_github_session") as string | undefined;
 
     if (sessionFromUrl) {
       currentSession = sessionFromUrl;
-      localStorage.setItem("bugbusters_github_session", sessionFromUrl);
+      setCookie("bugbusters_github_session", sessionFromUrl, { maxAge: 60 * 60 * 24 * 7 }); // 7 days
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (errorFromUrl) {
       setScanError(errorFromUrl);
@@ -46,16 +55,21 @@ export default function DashboardPage() {
     if (currentSession) {
       setGithubSession(currentSession);
       loadGithubData(currentSession)
-        .then(() => fetchScanJobs())
-        .then((data) => setJobs(data || []))
+        .then(() => Promise.all([fetchScanJobs(), fetchConfigScanJobs()]))
+        .then(([depJobs, configJobs]) => {
+          setJobs([...(depJobs || []), ...(configJobs || [])].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+          setIsLoadingJobs(false);
+        })
         .catch(() => {
           // Session invalid or expired
-          localStorage.removeItem("bugbusters_github_session");
+          deleteCookie("bugbusters_github_session");
           setGithubSession(null);
           setJobs([]);
+          setIsLoadingJobs(false);
         });
     } else {
       setJobs([]);
+      setIsLoadingJobs(false);
     }
   }, []);
 
@@ -96,10 +110,14 @@ export default function DashboardPage() {
     setScanError(null);
     setIsScanning(true);
     try {
-      const data = await startGithubScan(selectedRepo, repo.cloneUrl, githubSession);
-      router.push(`/dependency-scanner/${data.id}`);
+      const [depJob, configJob] = await Promise.all([
+        startGithubScan(selectedRepo, repo.cloneUrl, githubSession, scanOptions),
+        startConfigGithubScan(selectedRepo, repo.cloneUrl, githubSession, scanOptions)
+      ]);
+      setActiveScans([depJob, configJob]);
+      setIsScanning(false);
     } catch (err: any) {
-      setScanError(err.message || "Failed to start scan");
+      setScanError(err.message || "Failed to start scans");
       setIsScanning(false);
     }
   };
@@ -108,8 +126,12 @@ export default function DashboardPage() {
     setScanError(null);
     setIsScanning(true);
     try {
-      const data = await uploadZipScan(file);
-      router.push(`/dependency-scanner/${data.id}`);
+      const [depJob, configJob] = await Promise.all([
+        uploadZipScan(file, scanOptions),
+        uploadConfigZipScan(file, scanOptions)
+      ]);
+      setActiveScans([depJob, configJob]);
+      setIsScanning(false);
     } catch (err: any) {
       setScanError(err.message || "Failed to upload and scan");
       setIsScanning(false);
@@ -157,6 +179,39 @@ export default function DashboardPage() {
       {/* Configuration & Jobs Area */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-element-gap">
         <div className="flex flex-col gap-element-gap">
+          {activeScans.length > 0 && (
+            <div className="bg-white rounded-lg border border-border-subtle shadow-sm p-card-padding">
+              <h2 className="text-section-header font-section-header mb-4">Active Scans</h2>
+              <div className="space-y-3">
+                {activeScans.map((scan) => {
+                  const scannerRoute = scan.scannerType === "config" ? "config-scanner" : "dependency-scanner";
+                  const scanTypeName = scan.scannerType === "config" ? "Config Scan" : "Dependency Scan";
+                  const icon = scan.scannerType === "config" ? "settings_input_component" : "account_tree";
+                  
+                  return (
+                    <div key={scan.id} className="flex items-center justify-between p-3 border border-border-divider rounded-lg bg-surface-container-lowest">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary-container/10 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-primary-container text-[18px]">{icon}</span>
+                        </div>
+                        <div>
+                          <div className="text-body-sm font-semibold">{scanTypeName}</div>
+                          <div className="text-body-xs text-text-muted mt-0.5">ID: {scan.id.split('-')[0]}...</div>
+                        </div>
+                      </div>
+                      <Link
+                        href={`/${scannerRoute}/${scan.id}`}
+                        className="px-4 py-1.5 bg-primary text-white rounded-md text-sm font-medium hover:bg-surface-tint transition-colors shadow-sm"
+                      >
+                        View Live Results
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          
           <ScanConfig
             githubUser={githubUser}
             repos={repos}
@@ -168,13 +223,12 @@ export default function DashboardPage() {
             onUploadZip={handleUploadZip}
             isScanning={isScanning}
             error={scanError}
+            scanOptions={scanOptions}
+            setScanOptions={setScanOptions}
           />
         </div>
         <div className="flex flex-col">
-          <RecentJobs
-            jobs={jobs}
-            onSelectJob={() => {}}
-          />
+          <RecentJobs jobs={jobs} isLoading={isLoadingJobs} />
         </div>
       </div>
     </div>

@@ -3,12 +3,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { LogEntry, ScanJob, ScanResult } from "@/shared/api/types";
-import { fetchJobStatus } from "@/shared/api/client";
+import { fetchJobStatus, getScanLogsUrl } from "@/shared/api/client";
 import { MetricsRow } from "@/widgets/MetricsRow";
 import { TrustIntelligencePanel } from "@/widgets/TrustIntelligencePanel";
 import { BlastRadiusMap } from "@/widgets/BlastRadiusMap";
 import { LiveExecutionLog } from "@/widgets/LiveExecutionLog";
 import { FindingsTable } from "@/widgets/FindingsTable";
+import { SkeletonJobRow, SkeletonMetricsRow, SkeletonPanel } from "@/widgets/Skeleton";
 
 const API_BASE_URL = "http://127.0.0.1:5000";
 
@@ -57,7 +58,8 @@ export default function ScannerJobPage() {
       eventSourceRef.current.close();
     }
 
-    const es = new EventSource(`${API_BASE_URL}/api/scans/${id}/logs`);
+    const url = getScanLogsUrl(id);
+    const es = new EventSource(url);
     eventSourceRef.current = es;
 
     es.onmessage = (event) => {
@@ -83,6 +85,9 @@ export default function ScannerJobPage() {
     es.onerror = () => {
       es.close();
       setIsScanning(false);
+      fetchJobStatus(id).then((jobData) => {
+        setJob(jobData);
+      }).catch(console.error);
     };
   };
 
@@ -92,6 +97,16 @@ export default function ScannerJobPage() {
         <div className="bg-error-container text-on-error-container p-4 rounded-lg">
           {error}
         </div>
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div className="max-w-[1280px] mx-auto flex flex-col gap-6 pt-6">
+        <SkeletonJobRow />
+        <SkeletonMetricsRow />
+        <SkeletonPanel />
       </div>
     );
   }

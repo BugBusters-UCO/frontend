@@ -2,6 +2,7 @@ export type JobStatus = "queued" | "running" | "completed" | "failed";
 
 export type ScanJob = {
   id: string;
+  scannerType?: "dependency" | "config";
   sourceType: "github" | "zip" | "local";
   sourceLabel: string;
   status: JobStatus;
@@ -19,7 +20,7 @@ export type LogEntry = {
   meta?: Record<string, unknown>;
 };
 
-export type ScanResult = {
+export type DependencyScanResult = {
   summary: {
     total_manifests: number;
     total_dependencies: number;
@@ -128,6 +129,60 @@ export type ScanResult = {
   }>;
 };
 
+export type ConfigScanResult = {
+  summary: {
+    total_files_seen?: number;
+    supported_files_scanned?: number;
+    total_findings?: number;
+    findings_by_severity?: Record<string, number>;
+    findings_by_category?: Record<string, number>;
+    risk_score?: number;
+    attack_paths?: number;
+    attack_path_score?: number;
+    environment_drifts?: number;
+    ci_status?: "passed" | "failed";
+    fail_on?: string;
+  };
+  findings?: Array<{
+    rule_id: string;
+    title: string;
+    severity: string;
+    category: string;
+    file_path: string;
+    line_number: number;
+    description: string;
+    remediation: {
+      title: string;
+      description: string;
+      example?: string | null;
+      auto_remediable: boolean;
+    };
+    confidence: number;
+    evidence: string;
+    cwe?: string;
+    references?: string[];
+  }>;
+  attack_paths?: Array<{
+    id: string;
+    title: string;
+    severity: string;
+    score: number;
+    confidence: number;
+    attack_story: string;
+    steps: Array<{
+      step: number;
+      stage: string;
+      title: string;
+      file_path: string;
+      line_number: number;
+      evidence: string;
+      details: string[];
+    }>;
+  }>;
+};
+
+export type ScanResult = DependencyScanResult & ConfigScanResult;
+
 export type ExposureScore = {
   score: number;
   action: "block" | "expedite" | "watch" | "track";
@@ -140,7 +195,7 @@ export type ExposureScore = {
   reasons: string[];
 };
 
-export type RiskChain = NonNullable<ScanResult["risk_chains"]>[number];
+export type RiskChain = NonNullable<DependencyScanResult["risk_chains"]>[number];
 
 export type GithubUser = {
   login: string;
