@@ -71,9 +71,9 @@ export function RecentJobs({ jobs, isLoading }: RecentJobsProps) {
                   );
                 }
 
-                const scannerRoute = job.scannerType === "config" ? "config-scanner" : "dependency-scanner";
-                const icon = job.scannerType === "config" ? "settings_input_component" : "account_tree";
-                const scanTypeName = job.scannerType === "config" ? "Config Scan" : "Dependency Scan";
+                const scannerRoute = job.scannerType === "config" ? "config-scanner" : job.scannerType === "secret" ? "secret-scanner" : job.scannerType === "cipher" ? "cipher-scanner" : "dependency-scanner";
+                const icon = job.scannerType === "config" ? "settings_input_component" : job.scannerType === "secret" ? "vpn_key" : job.scannerType === "cipher" ? "encrypted" : "account_tree";
+                const scanTypeName = job.scannerType === "config" ? "Config Scan" : job.scannerType === "secret" ? "Secret Scan" : job.scannerType === "cipher" ? "Cipher Scan" : "Dependency Scan";
 
                 return (
                   <Link

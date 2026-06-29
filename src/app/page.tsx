@@ -13,6 +13,12 @@ import {
   startConfigGithubScan,
   uploadConfigZipScan,
   fetchConfigScanJobs,
+  startSecretGithubScan,
+  uploadSecretZipScan,
+  fetchSecretScanJobs,
+  startCipherGithubScan,
+  uploadCipherZipScan,
+  fetchCipherScanJobs,
 } from "@/shared/api/client";
 import { ScanConfig } from "@/widgets/ScanConfig";
 import { RecentJobs } from "@/widgets/RecentJobs";
@@ -55,9 +61,9 @@ export default function DashboardPage() {
     if (currentSession) {
       setGithubSession(currentSession);
       loadGithubData(currentSession)
-        .then(() => Promise.all([fetchScanJobs(), fetchConfigScanJobs()]))
-        .then(([depJobs, configJobs]) => {
-          setJobs([...(depJobs || []), ...(configJobs || [])].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        .then(() => Promise.all([fetchScanJobs(), fetchConfigScanJobs(), fetchSecretScanJobs(), fetchCipherScanJobs()]))
+        .then(([depJobs, configJobs, secretJobs, cipherJobs]) => {
+          setJobs([...(depJobs || []), ...(configJobs || []), ...(secretJobs || []), ...(cipherJobs || [])].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
           setIsLoadingJobs(false);
         })
         .catch(() => {
@@ -111,9 +117,13 @@ export default function DashboardPage() {
       setScanError("Please select a repository first.");
       return;
     }
-    if (!githubSession) {
+    if (!githubUser) {
       setScanError("Please connect to GitHub first.");
       return;
+    }
+    const activeGithubSession = githubSession || (getCookie("bugbusters_github_session") as string | undefined) || null;
+    if (!githubSession) {
+      setGithubSession(activeGithubSession);
     }
 
     const repo = repos.find(r => r.fullName === selectedRepo);
@@ -125,11 +135,13 @@ export default function DashboardPage() {
     setScanError(null);
     setIsScanning(true);
     try {
-      const [depJob, configJob] = await Promise.all([
-        startGithubScan(selectedRepo, repo.cloneUrl, githubSession, scanOptions),
-        startConfigGithubScan(selectedRepo, repo.cloneUrl, githubSession, scanOptions)
+      const [depJob, configJob, secretJob, cipherJob] = await Promise.all([
+        startGithubScan(selectedRepo, repo.cloneUrl, activeGithubSession || "", scanOptions),
+        startConfigGithubScan(selectedRepo, repo.cloneUrl, activeGithubSession || "", scanOptions),
+        startSecretGithubScan(selectedRepo, repo.cloneUrl, activeGithubSession || "", scanOptions),
+        startCipherGithubScan(selectedRepo, repo.cloneUrl, activeGithubSession || "", scanOptions)
       ]);
-      setActiveScans([depJob, configJob]);
+      setActiveScans([depJob, configJob, secretJob, cipherJob]);
       setIsScanning(false);
     } catch (err: any) {
       setScanError(err.message || "Failed to start scans");
@@ -141,11 +153,13 @@ export default function DashboardPage() {
     setScanError(null);
     setIsScanning(true);
     try {
-      const [depJob, configJob] = await Promise.all([
+      const [depJob, configJob, secretJob, cipherJob] = await Promise.all([
         uploadZipScan(file, scanOptions),
-        uploadConfigZipScan(file, scanOptions)
+        uploadConfigZipScan(file, scanOptions),
+        uploadSecretZipScan(file, scanOptions),
+        uploadCipherZipScan(file, scanOptions)
       ]);
-      setActiveScans([depJob, configJob]);
+      setActiveScans([depJob, configJob, secretJob, cipherJob]);
       setIsScanning(false);
     } catch (err: any) {
       setScanError(err.message || "Failed to upload and scan");
@@ -199,9 +213,9 @@ export default function DashboardPage() {
               <h2 className="text-section-header font-section-header mb-4">Active Scans</h2>
               <div className="space-y-3">
                 {activeScans.map((scan) => {
-                  const scannerRoute = scan.scannerType === "config" ? "config-scanner" : "dependency-scanner";
-                  const scanTypeName = scan.scannerType === "config" ? "Config Scan" : "Dependency Scan";
-                  const icon = scan.scannerType === "config" ? "settings_input_component" : "account_tree";
+                  const scannerRoute = scan.scannerType === "config" ? "config-scanner" : scan.scannerType === "secret" ? "secret-scanner" : scan.scannerType === "cipher" ? "cipher-scanner" : "dependency-scanner";
+                  const scanTypeName = scan.scannerType === "config" ? "Config Scan" : scan.scannerType === "secret" ? "Secret Scan" : scan.scannerType === "cipher" ? "Cipher Scan" : "Dependency Scan";
+                  const icon = scan.scannerType === "config" ? "settings_input_component" : scan.scannerType === "secret" ? "vpn_key" : scan.scannerType === "cipher" ? "encrypted" : "account_tree";
                   
                   return (
                     <div key={scan.id} className="flex items-center justify-between p-3 border border-border-divider rounded-lg bg-surface-container-lowest">
