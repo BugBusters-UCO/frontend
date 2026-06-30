@@ -13,6 +13,8 @@ export function Sidebar() {
   const isDashboard = pathname === "/";
   const isDependency = pathname.startsWith("/dependency-scanner");
   const isConfig = pathname.startsWith("/config-scanner");
+  const isSecret = pathname.startsWith("/secret-scanner");
+  const isCipher = pathname.startsWith("/cipher-scanner");
   const isStatic = pathname.startsWith("/static-analyzer");
 
   const handleLogout = () => {
@@ -68,6 +70,32 @@ export function Sidebar() {
             settings_input_component
           </span>
           <span>Config Scanner</span>
+        </Link>
+        <Link
+          href="/secret-scanner"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-body-sm text-body-sm transition-all duration-200 group ${
+            isSecret
+              ? "bg-primary-container/10 text-primary-container font-medium"
+              : "text-text-secondary hover:text-text-primary hover:bg-surface-container hover:shadow-sm"
+          }`}
+        >
+          <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isSecret ? "text-primary-container" : ""}`}>
+            vpn_key
+          </span>
+          <span>Secret Scanner</span>
+        </Link>
+        <Link
+          href="/cipher-scanner"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-body-sm text-body-sm transition-all duration-200 group ${
+            isCipher
+              ? "bg-primary-container/10 text-primary-container font-medium"
+              : "text-text-secondary hover:text-text-primary hover:bg-surface-container hover:shadow-sm"
+          }`}
+        >
+          <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isCipher ? "text-primary-container" : ""}`}>
+            encrypted
+          </span>
+          <span>Cipher Scanner</span>
         </Link>
         <Link
           href="/static-analyzer"

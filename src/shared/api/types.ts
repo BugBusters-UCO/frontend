@@ -2,7 +2,7 @@ export type JobStatus = "queued" | "running" | "completed" | "failed";
 
 export type ScanJob = {
   id: string;
-  scannerType?: "dependency" | "config";
+  scannerType?: "dependency" | "config" | "secret" | "cipher";
   sourceType: "github" | "zip" | "local";
   sourceLabel: string;
   status: JobStatus;
@@ -10,6 +10,7 @@ export type ScanJob = {
   createdAt: string;
   updatedAt: string;
   result?: ScanResult | null;
+  logs?: LogEntry[];
 };
 
 export type LogEntry = {
@@ -181,7 +182,370 @@ export type ConfigScanResult = {
   }>;
 };
 
-export type ScanResult = DependencyScanResult & ConfigScanResult;
+export type SecretScanResult = {
+  summary: {
+    total_files_seen?: number;
+    files_scanned?: number;
+    skipped_files?: number;
+    total_findings?: number;
+    unique_secrets?: number;
+    findings_by_severity?: Record<string, number>;
+    findings_by_category?: Record<string, number>;
+    findings_by_secret_type?: Record<string, number>;
+    exposure_paths?: number;
+    rotation_playbooks?: number;
+    sensitive_data_findings?: number;
+    historical_exposures?: number;
+    compromised_matches?: number;
+    usage_paths?: number;
+    risk_score?: number;
+    ci_status?: "passed" | "failed";
+    fail_on?: string;
+  };
+  risk?: {
+    risk_score: number;
+    action: "block" | "rotate" | "review" | "track";
+    exposed_secret_types: string[];
+    high_confidence_findings: number;
+    rotation_required: boolean;
+    reasons: string[];
+  };
+  findings?: Array<{
+    id: string;
+    rule_id: string;
+    title: string;
+    severity: string;
+    category: string;
+    secret_type: string;
+    file_path: string;
+    line_number?: number | null;
+    column_start?: number | null;
+    confidence: number;
+    entropy?: number | null;
+    fingerprint: string;
+    evidence: string;
+    context?: string | null;
+    validation_status: string;
+    remediation: {
+      title: string;
+      description: string;
+      rotation_required: boolean;
+      auto_remediable: boolean;
+    };
+    cwe?: string | null;
+  }>;
+  files?: Array<{
+    path: string;
+    type: string;
+    scanned: boolean;
+    finding_count: number;
+    skipped_reason?: string | null;
+  }>;
+  exposure_paths?: Array<{
+    id: string;
+    title: string;
+    severity: string;
+    score: number;
+    confidence: number;
+    secret_fingerprint: string;
+    secret_type: string;
+    provider_family: string;
+    file_path: string;
+    line_number?: number | null;
+    entry_point: string;
+    exposed_asset: string;
+    probable_capabilities: string[];
+    abuse_sequence: string[];
+    blast_radius: string[];
+    containment_priority: string;
+    rotation_steps: string[];
+    validation_checks: string[];
+  }>;
+  rotation_playbooks?: Array<{
+    id: string;
+    secret_fingerprint: string;
+    secret_type: string;
+    priority: string;
+    owner_hint: string;
+    steps: string[];
+    verification: string[];
+  }>;
+  secret_graph?: {
+    nodes: Array<{ id: string; label: string; kind: string; severity?: string | null }>;
+    edges: Array<{ source: string; target: string; label: string }>;
+  };
+  policy_decision?: {
+    status: "passed" | "failed";
+    gate: string;
+    reasons: string[];
+    required_actions: string[];
+  } | null;
+  sensitive_data_findings?: Array<{
+    id: string;
+    data_type: string;
+    severity: string;
+    file_path: string;
+    line_number?: number | null;
+    confidence: number;
+    fingerprint: string;
+    evidence: string;
+    compliance: string[];
+    remediation: string;
+  }>;
+  historical_exposures?: Array<{
+    id: string;
+    commit: string;
+    date?: string | null;
+    author?: string | null;
+    file_path?: string | null;
+    rule_id: string;
+    secret_type: string;
+    severity: string;
+    fingerprint: string;
+    evidence: string;
+    remediation: string;
+  }>;
+  compromised_matches?: Array<{
+    id: string;
+    secret_fingerprint: string;
+    match_source: string;
+    severity: string;
+    action: string;
+  }>;
+  usage_paths?: Array<{
+    id: string;
+    secret_fingerprint: string;
+    variable_hint: string;
+    source_file: string;
+    usage_file: string;
+    line_number?: number | null;
+    sink_type: string;
+    evidence: string;
+    impact: string;
+  }>;
+};
+
+export type CipherScanResult = {
+  summary: {
+    total_files_seen?: number;
+    supported_files_scanned?: number;
+    total_findings?: number;
+    findings_by_severity?: Record<string, number>;
+    findings_by_category?: Record<string, number>;
+    tls_facts?: number;
+    endpoint_policies?: number;
+    discovered_domains?: number;
+    api_endpoints?: number;
+    live_tls_probes?: number;
+    deployed_domains?: number;
+    static_live_drifts?: number;
+    attack_paths?: number;
+    environment_drifts?: number;
+    agility_risks?: number;
+    compatibility_risks?: number;
+    mtls_readiness_gaps?: number;
+    remediation_actions?: number;
+    risk_score?: number;
+    ci_status?: "passed" | "failed";
+    fail_on?: string;
+    banking_profile?: string;
+  };
+  findings?: Array<{
+    id: string;
+    rule_id: string;
+    title: string;
+    severity: string;
+    category: string;
+    file_path: string;
+    line_number?: number | null;
+    evidence: string;
+    description: string;
+    remediation: {
+      title: string;
+      description: string;
+      secure_example?: string | null;
+      auto_remediable: boolean;
+    };
+    confidence: number;
+    affected_protocols?: string[];
+    affected_ciphers?: string[];
+    compliance?: string[];
+  }>;
+  files?: Array<{
+    path: string;
+    type: string;
+    finding_count: number;
+    scanned: boolean;
+  }>;
+  tls_facts?: Array<{
+    id: string;
+    file_path: string;
+    line_number: number;
+    key: string;
+    value: string;
+    fact_type: string;
+    environment: string;
+    endpoint_hint?: string | null;
+    parser: string;
+    confidence: number;
+  }>;
+  endpoint_policies?: Array<{
+    id: string;
+    endpoint: string;
+    file_path: string;
+    protocols: string[];
+    ciphers: string[];
+    tls13_enabled: boolean;
+    forward_secrecy: boolean;
+    weak_items: string[];
+    grade: "A" | "B" | "C" | "D" | "F";
+    reasons: string[];
+  }>;
+  domain_inventory?: Array<{
+    id: string;
+    base_domain: string;
+    host: string;
+    scheme?: string | null;
+    port?: number | null;
+    path?: string | null;
+    endpoint_type: string;
+    source_file: string;
+    line_number?: number | null;
+    environment: string;
+    evidence?: string | null;
+    tls_policy_refs?: string[];
+    risk_notes?: string[];
+    confidence: number;
+  }>;
+  live_tls_probes?: Array<{
+    id: string;
+    host: string;
+    port: number;
+    source_endpoint_id?: string | null;
+    deployment_status: "deployed" | "not-deployed" | "tls-error" | "skipped";
+    tls_reachable: boolean;
+    negotiated_protocol?: string | null;
+    negotiated_cipher?: string | null;
+    cipher_bits?: number | null;
+    accepted_legacy_protocols?: string[];
+    certificate_subject?: string | null;
+    certificate_issuer?: string | null;
+    certificate_not_before?: string | null;
+    certificate_not_after?: string | null;
+    certificate_days_remaining?: number | null;
+    renewal_window_status: "healthy" | "renew-soon" | "urgent" | "expired" | "unknown";
+    static_policy_match: "matches-static" | "drift" | "no-static-policy" | "unknown";
+    attacker_window?: string | null;
+    risk_notes?: string[];
+    error?: string | null;
+    checked_at?: string | null;
+  }>;
+  attack_paths?: Array<{
+    id: string;
+    title: string;
+    severity: string;
+    score: number;
+    confidence: number;
+    entry_point: string;
+    weakness_chain: string[];
+    banking_impact: string[];
+    remediation: {
+      title: string;
+      description: string;
+      secure_example?: string | null;
+      auto_remediable: boolean;
+    };
+  }>;
+  policy_graph?: {
+    nodes: Array<{
+      id: string;
+      label: string;
+      kind: "file" | "endpoint" | "protocol" | "cipher" | "control" | "environment" | "finding";
+      severity?: string | null;
+      metadata?: Record<string, string | number | boolean | null>;
+    }>;
+    edges: Array<{
+      source: string;
+      target: string;
+      relation: string;
+      risk_weight: number;
+    }>;
+    hotspots: string[];
+  } | null;
+  environment_drifts?: Array<{
+    id: string;
+    title: string;
+    severity: string;
+    environments: string[];
+    files: string[];
+    drift_type: string;
+    description: string;
+    remediation: string;
+  }>;
+  agility_risks?: Array<{
+    id: string;
+    title: string;
+    severity: string;
+    affected_file: string;
+    affected_items: string[];
+    deprecation_reason: string;
+    migration_target: string;
+    banking_deadline_hint: string;
+  }>;
+  compatibility_risks?: Array<{
+    id: string;
+    endpoint: string;
+    severity: string;
+    profile: string;
+    issue: string;
+    supported_clients: string[];
+    blocked_clients: string[];
+    recommendation: string;
+  }>;
+  mtls_readiness?: Array<{
+    id: string;
+    endpoint: string;
+    file_path: string;
+    status: "ready" | "partial" | "missing" | "disabled";
+    severity: string;
+    evidence: string[];
+    missing_controls: string[];
+    recommendation: string;
+  }>;
+  deployment_readiness?: {
+    status: "ready" | "needs-review" | "blocked";
+    score: number;
+    blockers: string[];
+    warnings: string[];
+    strengths: string[];
+  } | null;
+  remediation_plan?: Array<{
+    id: string;
+    title: string;
+    priority: number;
+    affected_findings: string[];
+    config_family: string;
+    patch_strategy: string;
+    secure_baseline: string;
+    rollback: string;
+    auto_remediable: boolean;
+  }>;
+  policy_decision?: {
+    status: "passed" | "failed";
+    profile: string;
+    fail_on: string;
+    reasons: string[];
+    required_actions: string[];
+  } | null;
+  compliance_mapping?: Array<{
+    standard: string;
+    control: string;
+    status: string;
+    finding_ids: string[];
+  }>;
+};
+
+export type ScanResult = DependencyScanResult & ConfigScanResult & SecretScanResult & CipherScanResult;
 
 export type ExposureScore = {
   score: number;

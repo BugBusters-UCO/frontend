@@ -1,4 +1,5 @@
 import { getCookie, deleteCookie } from "cookies-next";
+import type { ScanJob } from "@/shared/api/types";
 
 const API_BASE_URL = "http://127.0.0.1:5000";
 
@@ -114,14 +115,14 @@ export async function fetchGithubRepos(githubSession: string): Promise<any> {
 export async function startGithubScan(
   repoFullName: string,
   repoCloneUrl: string,
-  githubSession: string,
+  githubSession?: string,
   options?: { email?: string; includeDev?: boolean; useOsv?: boolean; failOn?: string }
 ): Promise<any> {
   const response = await apiFetch(`${API_BASE_URL}/api/scans/github`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-github-session": githubSession,
+      ...(githubSession ? { "x-github-session": githubSession } : {}),
       ...getAuthHeaders(),
     },
     body: JSON.stringify({ repoFullName, repoCloneUrl, githubSession, ...options }),
@@ -181,14 +182,14 @@ export function getScanLogsUrl(jobId: string): string {
 export async function startConfigGithubScan(
   repoFullName: string,
   repoCloneUrl: string,
-  githubSession: string,
+  githubSession?: string,
   options?: { email?: string; includeLow?: boolean; failOn?: string }
 ): Promise<any> {
   const response = await apiFetch(`${API_BASE_URL}/api/config-scans/github`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-github-session": githubSession,
+      ...(githubSession ? { "x-github-session": githubSession } : {}),
       ...getAuthHeaders(),
     },
     body: JSON.stringify({ repoFullName, repoCloneUrl, githubSession, ...options }),
@@ -238,4 +239,137 @@ export async function fetchConfigJobStatus(jobId: string): Promise<any> {
 export function getConfigScanLogsUrl(jobId: string): string {
   const token = getCookie("auth_token");
   return `${API_BASE_URL}/api/config-scans/${jobId}/logs?authToken=${token || ""}`;
+}
+
+// ------------------------------------------------------------------
+// Secret Scanner
+// ------------------------------------------------------------------
+
+export async function startSecretGithubScan(
+  repoFullName: string,
+  repoCloneUrl: string,
+  githubSession?: string,
+  options?: { email?: string; includeLow?: boolean; failOn?: string }
+): Promise<any> {
+  const response = await apiFetch(`${API_BASE_URL}/api/secret-scans/github`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(githubSession ? { "x-github-session": githubSession } : {}),
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ repoFullName, repoCloneUrl, githubSession, ...options }),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to start secret scan");
+  }
+  return response.json();
+}
+
+export async function uploadSecretZipScan(
+  file: File,
+  options?: { email?: string; includeLow?: boolean; failOn?: string }
+): Promise<any> {
+  const formData = new FormData();
+  formData.append("repoZip", file);
+  if (options?.email) formData.append("email", options.email);
+  if (options?.includeLow !== undefined) formData.append("includeLow", String(options.includeLow));
+  if (options?.failOn) formData.append("failOn", options.failOn);
+
+  const response = await apiFetch(`${API_BASE_URL}/api/secret-scans/zip`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: formData,
+  });
+  if (!response.ok) throw new Error("Failed to upload and scan secrets ZIP");
+  return response.json();
+}
+
+export async function fetchSecretScanJobs(): Promise<any> {
+  const response = await apiFetch(`${API_BASE_URL}/api/secret-scans`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch secret jobs");
+  return response.json();
+}
+
+export async function fetchSecretJobStatus(jobId: string): Promise<any> {
+  const response = await apiFetch(`${API_BASE_URL}/api/secret-scans/${jobId}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch secret job status");
+  return response.json();
+}
+
+export function getSecretScanLogsUrl(jobId: string): string {
+  const token = getCookie("auth_token");
+  return `${API_BASE_URL}/api/secret-scans/${jobId}/logs?authToken=${token || ""}`;
+}
+
+// ------------------------------------------------------------------
+// Pre-Deployment Cipher Scanner
+// ------------------------------------------------------------------
+
+export async function startCipherGithubScan(
+  repoFullName: string,
+  repoCloneUrl: string,
+  githubSession?: string,
+  options?: { email?: string; includeLow?: boolean; failOn?: string; bankingProfile?: string }
+): Promise<ScanJob> {
+  const response = await apiFetch(`${API_BASE_URL}/api/cipher-scans/github`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(githubSession ? { "x-github-session": githubSession } : {}),
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ repoFullName, repoCloneUrl, githubSession, ...options }),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to start cipher scan");
+  }
+  return response.json();
+}
+
+export async function uploadCipherZipScan(
+  file: File,
+  options?: { email?: string; includeLow?: boolean; failOn?: string; bankingProfile?: string }
+): Promise<ScanJob> {
+  const formData = new FormData();
+  formData.append("repoZip", file);
+  if (options?.email) formData.append("email", options.email);
+  if (options?.includeLow !== undefined) formData.append("includeLow", String(options.includeLow));
+  if (options?.failOn) formData.append("failOn", options.failOn);
+  if (options?.bankingProfile) formData.append("bankingProfile", options.bankingProfile);
+
+  const response = await apiFetch(`${API_BASE_URL}/api/cipher-scans/zip`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: formData,
+  });
+  if (!response.ok) throw new Error("Failed to upload and scan cipher ZIP");
+  return response.json();
+}
+
+export async function fetchCipherScanJobs(): Promise<ScanJob[]> {
+  const response = await apiFetch(`${API_BASE_URL}/api/cipher-scans`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch cipher jobs");
+  return response.json();
+}
+
+export async function fetchCipherJobStatus(jobId: string): Promise<ScanJob> {
+  const response = await apiFetch(`${API_BASE_URL}/api/cipher-scans/${jobId}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch cipher job status");
+  return response.json();
+}
+
+export function getCipherScanLogsUrl(jobId: string): string {
+  const token = getCookie("auth_token");
+  return `${API_BASE_URL}/api/cipher-scans/${jobId}/logs?authToken=${token || ""}`;
 }
