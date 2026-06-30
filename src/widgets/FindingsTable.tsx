@@ -14,12 +14,12 @@ export function FindingsTable({ findings }: FindingsTableProps) {
         <h2 className="text-section-header font-section-header">
           Vulnerabilities & Fixes
         </h2>
-        <button className="flex items-center gap-2 text-body-sm text-text-secondary hover:text-text-primary border border-border-subtle rounded-md px-3 py-1.5 bg-white">
+        {/* <button className="flex items-center gap-2 text-body-sm text-text-secondary hover:text-text-primary border border-border-subtle rounded-md px-3 py-1.5 bg-white">
           <span className="material-symbols-outlined text-[18px]">
             filter_list
           </span>{" "}
           Filter
-        </button>
+        </button> */}
       </div>
       <div className="max-h-[400px] overflow-auto">
         <table className="w-full text-left border-collapse min-w-[800px]">

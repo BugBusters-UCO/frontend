@@ -84,7 +84,7 @@ export function Sidebar() {
         </Link>
       </div>
       <Link href="/" className="w-full">
-        <button className="w-full bg-primary text-on-primary py-2.5 rounded-lg font-body-sm text-body-sm font-medium hover:bg-surface-tint transition-colors mb-4 flex items-center justify-center gap-2 shadow-sm">
+        <button className="w-full bg-primary text-on-primary py-2.5 rounded-lg font-body-sm text-body-sm font-medium hover:bg-surface-tint/80 transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-sm">
           <span className="material-symbols-outlined text-sm">play_arrow</span>{" "}
           Run New Scan
         </button>

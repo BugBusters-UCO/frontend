@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { RiskChain } from "@/shared/api/types";
 import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
 
@@ -10,6 +10,16 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
   const [selectedChainId, setSelectedChainId] = useState<string | null>(
     chains.length > 0 ? chains[0].id : null
   );
+  const chainRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  useEffect(() => {
+    if (selectedChainId && chainRefs.current[selectedChainId]) {
+      chainRefs.current[selectedChainId]?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [selectedChainId]);
 
   if (!chains || chains.length === 0) {
     return (
@@ -87,6 +97,7 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
               return (
                 <div
                   key={chain.id}
+                  ref={(el) => { chainRefs.current[chain.id] = el; }}
                   onClick={() => setSelectedChainId(chain.id)}
                   className={`relative p-3.5 rounded-xl border cursor-pointer transition-all duration-200 overflow-hidden group ${
                     isSelected
@@ -147,11 +158,22 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
 
 function InteractiveTraceGraph({ trace, fix }: { trace: NonNullable<RiskChain["trace"]>, fix?: RiskChain["fix"] }) {
   const [selectedStepIdx, setSelectedStepIdx] = useState(0);
+  const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // If trace changes, reset selected step to 0
-  React.useEffect(() => {
+  useEffect(() => {
     setSelectedStepIdx(0);
   }, [trace]);
+
+  useEffect(() => {
+    if (nodeRefs.current[selectedStepIdx]) {
+      nodeRefs.current[selectedStepIdx]?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [selectedStepIdx]);
 
   if (trace.length === 0) return null;
 
@@ -185,6 +207,7 @@ function InteractiveTraceGraph({ trace, fix }: { trace: NonNullable<RiskChain["t
               <React.Fragment key={idx}>
                 {/* Node */}
                 <div
+                  ref={(el) => { nodeRefs.current[idx] = el; }}
                   onClick={() => setSelectedStepIdx(idx)}
                   className={`flex flex-col items-center cursor-pointer group w-32 shrink-0 relative`}
                 >
