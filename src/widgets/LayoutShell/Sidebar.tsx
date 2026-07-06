@@ -10,6 +10,8 @@ export function Sidebar() {
   const { logout } = useAuth();
 
   const isDashboard = pathname === "/";
+  const isRiskReports = pathname.startsWith("/risk-reports");
+  const isScheduledScans = pathname.startsWith("/schedule-scans");
   const isDependency = pathname.startsWith("/dependency-scanner");
   const isConfig = pathname.startsWith("/config-scanner");
   const isSecret = pathname.startsWith("/secret-scanner");
@@ -40,6 +42,28 @@ export function Sidebar() {
         >
           <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isDashboard ? "text-primary-container" : ""}`}>dashboard</span>
           <span>Dashboard</span>
+        </Link>
+        <Link
+          href="/risk-reports"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-body-sm text-body-sm transition-all duration-200 group ${
+            isRiskReports
+              ? "bg-primary-container/10 text-primary-container font-medium"
+              : "text-text-secondary hover:text-text-primary hover:bg-surface-container hover:shadow-sm"
+          }`}
+        >
+          <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isRiskReports ? "text-primary-container" : ""}`}>summarize</span>
+          <span>Risk Reports</span>
+        </Link>
+        <Link
+          href="/schedule-scans"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-body-sm text-body-sm transition-all duration-200 group ${
+            isScheduledScans
+              ? "bg-primary-container/10 text-primary-container font-medium"
+              : "text-text-secondary hover:text-text-primary hover:bg-surface-container hover:shadow-sm"
+          }`}
+        >
+          <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isScheduledScans ? "text-primary-container" : ""}`}>event_repeat</span>
+          <span>Schedule Scans</span>
         </Link>
 
         <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2 px-2 mt-4">

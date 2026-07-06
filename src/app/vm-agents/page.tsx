@@ -10,8 +10,10 @@ import {
   getAgentScanLogsUrl,
   connectVmAgent,
   disconnectVmAgent,
+  createRiskAssessment,
+  fetchRiskAssessments,
 } from "@/shared/api/client";
-import type { AgentScanJob, VmAgent } from "@/shared/api/types";
+import type { AgentScanJob, BusinessRiskContext, RiskAssessment } from "@/shared/api/types";
 import { useAuth } from "@/shared/lib/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
@@ -29,6 +31,15 @@ const SCOPES = [
   { id: "full-os", label: "Full OS scan", description: "Agent scans recommended OS-level locations." },
   { id: "root", label: "Root level", description: "Starts from / with agent-side deny rules." },
 ] as const;
+
+const DEFAULT_BUSINESS_CONTEXT: BusinessRiskContext = {
+  assetCriticality: 5,
+  dataSensitivity: 5,
+  businessImpact: 5,
+  internetExposure: 5,
+  complianceRequirement: 5,
+  exploitWindow: 5,
+};
 
 export default function VmAgentsPage() {
   const { user } = useAuth();
@@ -48,12 +59,22 @@ export default function VmAgentsPage() {
     }
   });
 
+  const { data: riskAssessments = [] } = useQuery({
+    queryKey: ["risk-assessments", "vm-agent"],
+    queryFn: fetchRiskAssessments,
+    refetchInterval: (query) => {
+      const active = query.state.data?.some((item) => ["waiting", "running"].includes(item.status));
+      return active ? 4000 : false;
+    },
+  });
+
   const [selectedAgentId, setSelectedAgentId] = useState("");
   const [selectedReportId, setSelectedReportId] = useState("");
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
   const [selectedModules, setSelectedModules] = useState<Array<"dependency" | "config" | "secret" | "cipher">>(["dependency", "config", "secret", "cipher"]);
   const [scope, setScope] = useState<"full-os" | "root" | "selected" | "application">("selected");
   const [projectName, setProjectName] = useState("payment-service");
+  const [businessContext, setBusinessContext] = useState<BusinessRiskContext>(DEFAULT_BUSINESS_CONTEXT);
   const [starting, setStarting] = useState(false);
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -85,6 +106,7 @@ export default function VmAgentsPage() {
 
   const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
   const selectedReport = reports.find((job) => job.id === selectedReportId) || reports[0];
+  const selectedRiskAssessment = riskAssessments.find((item) => item.agentScanJobIds?.includes(selectedReport?.id || "")) || null;
   const hasAgents = agents.length > 0;
   const isAgentOnline = selectedAgent?.status === "online";
   const ownerEmail = user?.email || "your-login-email@example.com";
@@ -132,13 +154,20 @@ export default function VmAgentsPage() {
 
     setStarting(true);
     try {
-      await startAgentScan(selectedAgentId, {
+      const job = await startAgentScan(selectedAgentId, {
         projectName,
         scope,
         paths: scope === "selected" ? selectedPaths : [],
         modules: selectedModules,
       });
+      await createRiskAssessment({
+        sourceType: "vm-agent",
+        sourceLabel: job.sourceLabel,
+        agentScanJobIds: [job.id],
+        businessContext,
+      });
       queryClient.invalidateQueries({ queryKey: ["agent-reports"] });
+      queryClient.invalidateQueries({ queryKey: ["risk-assessments", "vm-agent"] });
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -436,6 +465,51 @@ export default function VmAgentsPage() {
             </div>
           </div>
 
+          <div className="relative z-10 mb-6 rounded-xl border border-border-divider bg-surface-container-lowest p-4">
+            <p className="text-sm font-semibold text-text-secondary mb-2 flex items-center gap-1">
+              Risk Engine Business Inputs
+              <InfoTooltip text="These values become part of this scan's risk assessment. Final risk is 70% technical scanner evidence and 30% these admin business inputs by default." />
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <BusinessSlider
+                label="Asset Criticality"
+                value={businessContext.assetCriticality}
+                tooltip="How important this VM service is to the bank. Internet banking and payment services should be higher than internal tools."
+                onChange={(value) => setBusinessContext((current) => ({ ...current, assetCriticality: value }))}
+              />
+              <BusinessSlider
+                label="Data Sensitivity"
+                value={businessContext.dataSensitivity}
+                tooltip="Whether this service handles customer PII, financial records, passwords, secrets, or regulated data."
+                onChange={(value) => setBusinessContext((current) => ({ ...current, dataSensitivity: value }))}
+              />
+              <BusinessSlider
+                label="Business Impact"
+                value={businessContext.businessImpact}
+                tooltip="Operational or revenue impact if this VM or service is compromised."
+                onChange={(value) => setBusinessContext((current) => ({ ...current, businessImpact: value }))}
+              />
+              <BusinessSlider
+                label="Internet Exposure"
+                value={businessContext.internetExposure}
+                tooltip="How reachable this target is from public or partner networks."
+                onChange={(value) => setBusinessContext((current) => ({ ...current, internetExposure: value }))}
+              />
+              <BusinessSlider
+                label="Compliance Requirement"
+                value={businessContext.complianceRequirement}
+                tooltip="How strongly this service maps to audit, PCI, RBI, privacy, or internal compliance controls."
+                onChange={(value) => setBusinessContext((current) => ({ ...current, complianceRequirement: value }))}
+              />
+              <BusinessSlider
+                label="Exploit Window"
+                value={businessContext.exploitWindow}
+                tooltip="How urgently the issue must be fixed based on exposure, release deadline, or bank policy."
+                onChange={(value) => setBusinessContext((current) => ({ ...current, exploitWindow: value }))}
+              />
+            </div>
+          </div>
+
           <div className="relative z-10 mb-6 border border-border-divider rounded-xl overflow-hidden bg-surface-container-lowest">
             <button 
               onClick={() => setShowAdvanced(!showAdvanced)}
@@ -495,6 +569,7 @@ export default function VmAgentsPage() {
                     </button>
                   ))}
                 </div>
+
               </div>
             </div>
           </div>
@@ -519,7 +594,7 @@ export default function VmAgentsPage() {
         </section>
       </div>
 
-      <VmReportDetails report={selectedReport} />
+      <VmReportDetails report={selectedReport} assessment={selectedRiskAssessment} />
     </div>
   );
 }
@@ -573,7 +648,7 @@ function useLiveLogs(reportId: string | null, active: boolean) {
   return { logs, scrollRef };
 }
 
-function VmReportDetails({ report }: { report?: AgentScanJob }) {
+function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assessment?: RiskAssessment | null }) {
   if (!report) {
     return (
       <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-card-padding min-h-[300px] flex flex-col items-center justify-center text-text-muted animate-in fade-in">
@@ -610,6 +685,7 @@ function VmReportDetails({ report }: { report?: AgentScanJob }) {
           </div>
           <div className="flex items-center gap-4">
             <StatusBadge status={report.status} large />
+            {assessment && <RiskAssessmentBadge assessment={assessment} />}
             {report.status !== "queued" && (
               <a
                 href={`/vm-agents/${report.id}`}
@@ -765,6 +841,53 @@ function VmReportDetails({ report }: { report?: AgentScanJob }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function RiskAssessmentBadge({ assessment }: { assessment: RiskAssessment }) {
+  const score = assessment.result?.risk?.final_risk_score;
+  const className = assessment.status === "completed"
+    ? "bg-green-100 text-green-800 border-green-200"
+    : assessment.status === "failed" || assessment.status === "cancelled"
+      ? "bg-red-100 text-red-800 border-red-200"
+      : "bg-yellow-100 text-yellow-800 border-yellow-200";
+
+  return (
+    <div className={`rounded-full border px-3 py-1.5 text-xs font-bold uppercase tracking-wider ${className}`}>
+      Risk {assessment.status}{score !== undefined ? ` / ${score}` : ""}
+    </div>
+  );
+}
+
+function BusinessSlider({
+  label,
+  value,
+  tooltip,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  tooltip: string;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="rounded-lg border border-border-divider bg-white p-3">
+      <div className="flex items-center justify-between gap-3">
+        <label className="text-xs font-bold text-text-secondary uppercase tracking-wide flex items-center gap-1">
+          {label}
+          <InfoTooltip text={tooltip} />
+        </label>
+        <span className="rounded bg-surface-container px-2 py-1 text-xs font-bold text-text-primary">{value}/10</span>
+      </div>
+      <input
+        type="range"
+        min={0}
+        max={10}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+        className="mt-3 w-full accent-primary"
+      />
+    </div>
   );
 }
 

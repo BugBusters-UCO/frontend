@@ -13,6 +13,189 @@ export type ScanJob = {
   logs?: LogEntry[];
 };
 
+export type BusinessRiskContext = {
+  assetCriticality: number;
+  dataSensitivity: number;
+  businessImpact: number;
+  internetExposure: number;
+  complianceRequirement: number;
+  exploitWindow: number;
+};
+
+export type RiskBusinessInput = {
+  key: string;
+  label: string;
+  default: number;
+  value: number;
+  meaning: string;
+  low_hint: string;
+  high_hint: string;
+};
+
+export type UnifiedRiskFinding = {
+  id: string;
+  scanner: "dependency" | "config" | "secret" | "cipher" | "unknown";
+  source_job_id?: string | null;
+  source_label?: string | null;
+  title: string;
+  severity: string;
+  category: string;
+  file_path?: string | null;
+  line_number?: number | null;
+  technical_score: number;
+  business_adjusted_score: number;
+  risk_level: "low" | "moderate" | "elevated" | "high" | "critical";
+  plain_language_summary: string;
+  remediation?: string | null;
+};
+
+export type UnifiedScannerRisk = {
+  scanner: "dependency" | "config" | "secret" | "cipher" | "unknown";
+  source_job_id?: string | null;
+  technical_score: number;
+  business_adjusted_score: number;
+  risk_level: "low" | "moderate" | "elevated" | "high" | "critical";
+  finding_count: number;
+  critical_findings: number;
+  high_findings: number;
+  reasons: string[];
+};
+
+export type UnifiedRiskPriority = {
+  rank: number;
+  scanner: "dependency" | "config" | "secret" | "cipher" | "unknown";
+  title: string;
+  severity: string;
+  category: string;
+  score: number;
+  risk_level: "low" | "moderate" | "elevated" | "high" | "critical";
+  source_job_id?: string | null;
+  file_path?: string | null;
+  line_number?: number | null;
+  why_first: string;
+  fix_first: string;
+  next_step: string;
+  suggested_owner: string;
+  sla: string;
+};
+
+export type ExecutiveRiskBrief = {
+  headline: string;
+  business_impact: string;
+  decision: string;
+  board_message: string;
+  top_actions: string[];
+};
+
+export type UnifiedRiskResponse = {
+  project_name: string;
+  environment: string;
+  technical_risk_score: number;
+  business_risk_score: number;
+  final_risk_score: number;
+  risk_level: "low" | "moderate" | "elevated" | "high" | "critical";
+  formula: {
+    technical_weight: number;
+    business_weight: number;
+    technical_risk_score: number;
+    business_risk_score: number;
+    final_risk_score: number;
+    expression: string;
+  };
+  business_inputs: RiskBusinessInput[];
+  scanner_scores: Record<string, UnifiedScannerRisk>;
+  top_findings: UnifiedRiskFinding[];
+  correlation_paths: Array<{
+    id: string;
+    title: string;
+    score: number;
+    risk_level: string;
+    scanners: string[];
+    story: string;
+    evidence: string[];
+    remediation: string[];
+  }>;
+  executive_summary: string;
+  developer_summary: string;
+  remediation_priorities: string[];
+  overall_priorities?: UnifiedRiskPriority[];
+  scanner_priorities?: Record<string, UnifiedRiskPriority[]>;
+  executive_brief?: ExecutiveRiskBrief | null;
+  ai_recommendation?: string | null;
+  ai_recommendations?: Array<{
+    finding_id: string;
+    source_job_id?: string | null;
+    scanner: "dependency" | "config" | "secret" | "cipher" | "unknown";
+    title: string;
+    model?: string | null;
+    prompt_policy: string;
+    recommendation: string;
+    fallback_used: boolean;
+    token_usage?: {
+      prompt_tokens?: number;
+      completion_tokens?: number;
+      total_tokens?: number;
+    };
+  }>;
+};
+
+export type RiskOverview = {
+  status: "ok" | "empty";
+  message?: string;
+  groups: Array<{
+    sourceLabel: string;
+    sourceType: string;
+    latestCreatedAt: string;
+    jobIds?: string[];
+    scanners: Array<"dependency" | "config" | "secret" | "cipher">;
+  }>;
+  selectedSourceLabel?: string | null;
+  selectedSourceType?: string;
+  missingScanners?: string[];
+  selectedJobIds?: string[];
+  scannerJobs?: Record<string, ScanJob>;
+  risk: UnifiedRiskResponse | null;
+};
+
+export type RiskAssessment = {
+  id: string;
+  userId?: string;
+  sourceType: "github" | "zip" | "local" | "vm-agent" | string;
+  sourceLabel: string;
+  status: "waiting" | "running" | "completed" | "failed" | "cancelled" | string;
+  scanJobIds: string[];
+  agentScanJobIds: string[];
+  businessContext?: BusinessRiskContext | null;
+  weights?: { technical?: number; business?: number } | null;
+  result?: {
+    risk?: UnifiedRiskResponse;
+    input?: {
+      scannerJobs?: Array<{
+        job_id: string;
+        scanner: "dependency" | "config" | "secret" | "cipher" | "unknown";
+        source_label?: string | null;
+        source_type?: string | null;
+        completed_at?: string | null;
+      }>;
+      skipped?: Array<{ job_id: string; type: string; reason: string }>;
+    };
+    [key: string]: unknown;
+    aiRemedies?: UnifiedRiskResponse["ai_recommendations"];
+    aiTokenUsage?: {
+      prompt_tokens?: number;
+      completion_tokens?: number;
+      total_tokens?: number;
+    };
+    aiPromptPolicy?: string;
+    aiGeneratedAt?: string;
+  } | null;
+  error?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+};
+
 export type LogEntry = {
   id: string;
   level: "info" | "success" | "warning" | "error";
@@ -627,6 +810,7 @@ export type GithubUser = {
 
 export type GithubRepository = {
   id: number;
+  importedRepositoryId?: string;
   name: string;
   fullName: string;
   private: boolean;
@@ -636,4 +820,34 @@ export type GithubRepository = {
   htmlUrl: string;
   language?: string | null;
   description?: string | null;
+};
+
+export type ScannerModule = "dependency" | "config" | "secret" | "cipher";
+
+export type ScheduledScan = {
+  id: string;
+  userId?: string;
+  importedRepositoryId: string;
+  name: string;
+  sourceType: "github" | string;
+  sourceLabel: string;
+  scanners: ScannerModule[];
+  frequency: "daily" | "weekly" | "monthly" | string;
+  timeOfDay: string;
+  timesPerDay: number;
+  weekdays: number[];
+  monthDays: number[];
+  timezone: string;
+  businessContext?: BusinessRiskContext | null;
+  reportEmail?: string | null;
+  enabled: boolean;
+  running: boolean;
+  lastRunAt?: string | null;
+  nextRunAt?: string | null;
+  lastStatus?: string | null;
+  lastRiskAssessmentId?: string | null;
+  lastScanJobIds?: string[];
+  lastError?: string | null;
+  createdAt: string;
+  updatedAt?: string;
 };

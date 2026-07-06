@@ -1,5 +1,5 @@
 import { getCookie, deleteCookie } from "cookies-next";
-import type { AgentScanJob, ScanJob, VmAgent } from "@/shared/api/types";
+import type { AgentScanJob, BusinessRiskContext, RiskAssessment, RiskOverview, ScanJob, ScheduledScan, ScannerModule, VmAgent } from "@/shared/api/types";
 
 const API_BASE_URL = "http://127.0.0.1:5000";
 
@@ -469,6 +469,86 @@ export function getAgentScanLogsUrl(scanId: string): string {
   return `${API_BASE_URL}/api/agents/scans/${scanId}/logs?authToken=${token || ""}`;
 }
 
+export async function fetchImportedGithubRepos(): Promise<any> {
+  const response = await apiFetch(`${API_BASE_URL}/api/github/repositories`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch imported repos");
+  return response.json();
+}
+
+// ------------------------------------------------------------------
+// Unified Risk Engine
+// ------------------------------------------------------------------
+
+export async function fetchRiskOverview(data: {
+  sourceLabel?: string | null;
+  businessContext?: BusinessRiskContext;
+} = {}): Promise<RiskOverview> {
+  const response = await apiFetch(`${API_BASE_URL}/api/risk/overview`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to fetch unified risk overview");
+  }
+  return response.json();
+}
+
+export async function createRiskAssessment(data: {
+  sourceType: "github" | "zip" | "local" | "vm-agent";
+  sourceLabel: string;
+  scanJobIds?: string[];
+  agentScanJobIds?: string[];
+  businessContext?: BusinessRiskContext;
+  weights?: { technical?: number; business?: number };
+}): Promise<RiskAssessment> {
+  const response = await apiFetch(`${API_BASE_URL}/api/risk/assessments`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to create risk assessment");
+  }
+  return response.json();
+}
+
+export async function generateRiskAssessmentRemedies(
+  assessmentId: string,
+  data: { findingIds?: string[]; limit?: number } = {}
+): Promise<RiskAssessment> {
+  const response = await apiFetch(`${API_BASE_URL}/api/risk/assessments/${assessmentId}/remedies`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to generate AI remedies");
+  }
+  return response.json();
+}
+
+export async function fetchRiskAssessments(): Promise<RiskAssessment[]> {
+  const response = await apiFetch(`${API_BASE_URL}/api/risk/assessments`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch risk assessments");
+  return response.json();
+}
+
+export async function fetchRiskAssessment(assessmentId: string): Promise<RiskAssessment> {
+  const response = await apiFetch(`${API_BASE_URL}/api/risk/assessments/${assessmentId}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch risk assessment");
+  return response.json();
+}
+
 export async function connectVmAgent(token: string): Promise<any> {
   const response = await apiFetch(`${API_BASE_URL}/api/agents/connect`, {
     method: "POST",
@@ -491,5 +571,74 @@ export async function disconnectVmAgent(): Promise<any> {
     const errData = await response.json().catch(() => ({}));
     throw new Error(errData.error || errData.message || "Failed to disconnect VM agent");
   }
+  return response.json();
+}
+
+// ------------------------------------------------------------------
+// Scheduled scans
+// ------------------------------------------------------------------
+
+export async function fetchScheduledScans(): Promise<ScheduledScan[]> {
+  const response = await apiFetch(`${API_BASE_URL}/api/scheduled-scans`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch scheduled scans");
+  return response.json();
+}
+
+export async function createScheduledScan(data: {
+  name: string;
+  importedRepositoryId: string;
+  scanners: ScannerModule[];
+  frequency: "daily" | "weekly" | "monthly";
+  timeOfDay: string;
+  timesPerDay: number;
+  weekdays?: number[];
+  monthDays?: number[];
+  timezone?: string;
+  businessContext?: BusinessRiskContext;
+  reportEmail?: string;
+  enabled?: boolean;
+}): Promise<ScheduledScan> {
+  const response = await apiFetch(`${API_BASE_URL}/api/scheduled-scans`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to create scheduled scan");
+  }
+  return response.json();
+}
+
+export async function updateScheduledScan(scheduleId: string, data: Partial<ScheduledScan>): Promise<ScheduledScan> {
+  const response = await apiFetch(`${API_BASE_URL}/api/scheduled-scans/${scheduleId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to update scheduled scan");
+  }
+  return response.json();
+}
+
+export async function deleteScheduledScan(scheduleId: string): Promise<{ deleted: boolean }> {
+  const response = await apiFetch(`${API_BASE_URL}/api/scheduled-scans/${scheduleId}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to delete scheduled scan");
+  return response.json();
+}
+
+export async function runScheduledScanNow(scheduleId: string): Promise<ScheduledScan> {
+  const response = await apiFetch(`${API_BASE_URL}/api/scheduled-scans/${scheduleId}/run-now`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to run scheduled scan");
   return response.json();
 }
