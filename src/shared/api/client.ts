@@ -469,6 +469,30 @@ export function getAgentScanLogsUrl(scanId: string): string {
   return `${API_BASE_URL}/api/agents/scans/${scanId}/logs?authToken=${token || ""}`;
 }
 
+export async function requestAgentBrowse(agentId: string, path: string): Promise<{ requestId: string }> {
+  const response = await apiFetch(`${API_BASE_URL}/api/agents/${agentId}/browse`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify({ path }),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to request directory browse");
+  }
+  return response.json();
+}
+
+export async function pollAgentBrowse(agentId: string, requestId: string): Promise<{ pending: boolean; result?: Array<{ name: string; path: string }> }> {
+  const response = await apiFetch(`${API_BASE_URL}/api/agents/${agentId}/browse/${requestId}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to poll directory browse");
+  }
+  return response.json();
+}
+
 export async function fetchImportedGithubRepos(): Promise<any> {
   const response = await apiFetch(`${API_BASE_URL}/api/github/repositories`, {
     headers: getAuthHeaders(),

@@ -8,11 +8,6 @@ import { AgentScanJob, LogEntry } from "@/shared/api/types";
 import { fetchAgentScan, getAgentScanLogsUrl } from "@/shared/api/client";
 import { SkeletonJobRow, SkeletonMetricsRow, SkeletonPanel } from "@/widgets/Skeleton";
 import { LiveExecutionLog } from "@/widgets/LiveExecutionLog";
-import { FindingsTable as DependencyFindingsTable } from "@/widgets/FindingsTable";
-import { ConfigAttackPathsList } from "@/widgets/config/ConfigAttackPathsList";
-import { SecretMetricsRow } from "@/widgets/secret/SecretMetricsRow";
-import { CipherMetricsRow } from "@/widgets/cipher/CipherMetricsRow";
-import { MetricsRow } from "@/widgets/MetricsRow";
 
 export default function VmAgentJobPage() {
   const { jobId } = useParams() as { jobId: string };
@@ -22,7 +17,6 @@ export default function VmAgentJobPage() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isScanning, setIsScanning] = useState(true);
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<string>(searchParams.get("tab") || "");
   const eventSourceRef = useRef<EventSource | null>(null);
 
   const { data: jobData, isLoading: isJobLoading, error: queryError } = useQuery({
@@ -40,10 +34,6 @@ export default function VmAgentJobPage() {
       } else if (isScanning && !eventSourceRef.current) {
         startLogStream(jobId);
       }
-
-      if (!activeTab && (jobData.result?.reports?.length ?? 0) > 0) {
-        setActiveTab(jobData.result?.reports?.[0]?.module || "");
-      }
     }
 
     return () => {
@@ -51,14 +41,7 @@ export default function VmAgentJobPage() {
         eventSourceRef.current.close();
       }
     };
-  }, [jobData, jobId, activeTab, isScanning, logs.length]);
-
-  useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab) {
-      setActiveTab(tab);
-    }
-  }, [searchParams]);
+  }, [jobData, jobId, isScanning, logs.length]);
 
   const startLogStream = (id: string) => {
     if (eventSourceRef.current) {
@@ -143,120 +126,38 @@ export default function VmAgentJobPage() {
         {!isScanning && reports.length > 0 && (
           <div className="flex flex-col gap-6 mt-4">
             <div className="bg-white rounded-xl border border-border-subtle p-6">
-              <h2 className="text-xl font-bold mb-4">VM Scan Summary</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 rounded-lg bg-surface-container-lowest border border-border-divider">
-                  <div className="text-sm text-text-muted">Total Modules Run</div>
-                  <div className="text-2xl font-bold text-text-primary">{reports.length}</div>
-                </div>
-                <div className="p-4 rounded-lg bg-surface-container-lowest border border-border-divider">
-                  <div className="text-sm text-text-muted">Total Findings</div>
-                  <div className="text-2xl font-bold text-text-primary">{result?.summary?.total_findings || 0}</div>
-                </div>
-                <div className="p-4 rounded-lg bg-surface-container-lowest border border-border-divider">
-                  <div className="text-sm text-text-muted">Max Risk Score</div>
-                  <div className="text-2xl font-bold text-severity-high">{result?.summary?.risk_score || 0}</div>
-                </div>
-                <div className="p-4 rounded-lg bg-surface-container-lowest border border-border-divider">
-                  <div className="text-sm text-text-muted">Target Paths</div>
-                  <div className="text-xl font-semibold text-text-primary truncate" title={job.selectedPaths?.join(", ")}>
-                    {job.selectedPaths?.length} paths
-                  </div>
-                </div>
+              <h2 className="text-xl font-bold mb-2">VM Scan Details</h2>
+              <p className="text-body-sm text-text-secondary mb-6">Select a scanner module below to view its full report and findings.</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {reports.map((report: any) => (
+                  <button
+                    key={report.module}
+                    onClick={() => router.push(`/${report.module}-scanner/${jobId}`)}
+                    className="flex flex-col text-left bg-surface-container-lowest border border-border-divider rounded-xl p-6 hover:shadow-md hover:border-primary transition-all group"
+                  >
+                    <div className="flex justify-between items-center mb-6 w-full">
+                      <h3 className="font-headline-sm text-headline-sm capitalize text-text-primary group-hover:text-primary transition-colors">
+                        {report.module} Scan
+                      </h3>
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide
+                        ${report.status === "completed" ? "bg-status-success-bg text-status-success" : 
+                          report.status === "failed" ? "bg-status-error-bg text-status-error" : 
+                          "bg-status-neutral-bg text-status-neutral"}
+                      `}>
+                        {report.status}
+                      </span>
+                    </div>
+                    
+                    <div className="mt-auto">
+                      <div className="text-4xl font-bold text-text-primary mb-1">
+                        {report.findings || 0}
+                      </div>
+                      <div className="text-sm text-text-secondary">Total Findings</div>
+                    </div>
+                  </button>
+                ))}
               </div>
-            </div>
-
-            <div className="flex gap-2 border-b border-border-divider">
-              {reports.map((report: any) => (
-                <button
-                  key={report.module}
-                  onClick={() => setActiveTab(report.module)}
-                  className={`px-4 py-3 font-semibold text-sm capitalize transition-colors border-b-2 ${
-                    activeTab === report.module
-                      ? "border-primary text-primary"
-                      : "border-transparent text-text-secondary hover:text-text-primary hover:bg-surface-container-lowest"
-                  }`}
-                >
-                  {report.module} Scanner
-                  {report.findings > 0 && (
-                    <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold rounded-full bg-severity-high-bg text-severity-high">
-                      {report.findings}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-4">
-              {reports.map((report: any) => {
-                if (activeTab !== report.module) return null;
-
-                const repResult = report.result;
-                if (!repResult) return <div key={report.module} className="p-8 text-center text-text-muted">No detailed results available for this module.</div>;
-
-                if (report.module === "dependency") {
-                  return (
-                    <div key={report.module} className="flex flex-col gap-6">
-                      <MetricsRow summary={repResult?.summary} />
-                      <DependencyFindingsTable findings={repResult?.findings} />
-                    </div>
-                  );
-                }
-                
-                if (report.module === "config") {
-                  return (
-                    <div key={report.module} className="flex flex-col gap-6">
-                      <ConfigAttackPathsList attackPaths={repResult?.attack_paths || repResult?.findings || []} />
-                    </div>
-                  );
-                }
-
-                if (report.module === "secret") {
-                  return (
-                    <div key={report.module} className="flex flex-col gap-6">
-                      <SecretMetricsRow summary={repResult?.summary} risk={repResult?.risk_analysis || {}} ciPolicy={repResult?.ci_policy || {}} />
-                      <div className="bg-white rounded-xl border border-border-subtle shadow-sm p-card-padding">
-                        <h3 className="font-section-header text-section-header mb-4">Secret Findings</h3>
-                        <div className="space-y-4">
-                          {repResult?.secrets?.map((sec: any, idx: number) => (
-                            <div key={idx} className="border border-border-divider rounded-lg p-4 bg-surface-container-lowest">
-                              <p className="font-bold text-text-primary text-sm">{sec.RuleID}</p>
-                              <p className="text-xs font-mono text-text-muted mt-1 break-all">{sec.File}:{sec.StartLine}</p>
-                            </div>
-                          ))}
-                          {!repResult?.secrets?.length && <p className="text-text-muted text-sm">No secrets found.</p>}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (report.module === "cipher") {
-                  return (
-                    <div key={report.module} className="flex flex-col gap-6">
-                      <CipherMetricsRow summary={repResult?.summary} ciPolicy={repResult?.ci_policy || {}} />
-                      <div className="bg-white rounded-xl border border-border-subtle shadow-sm p-card-padding">
-                        <h3 className="font-section-header text-section-header mb-4">Cipher Suites</h3>
-                        <div className="space-y-4">
-                          {repResult?.cipher_suites?.map((cs: any, idx: number) => (
-                            <div key={idx} className="border border-border-divider rounded-lg p-4 bg-surface-container-lowest">
-                              <p className="font-bold text-text-primary text-sm">{cs.name}</p>
-                              <p className="text-xs text-text-muted mt-1">{cs.protocol}</p>
-                            </div>
-                          ))}
-                          {!repResult?.cipher_suites?.length && <p className="text-text-muted text-sm">No cipher suites found.</p>}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div key={report.module} className="p-8 bg-surface-container rounded-xl text-center">
-                    <p className="text-text-secondary">Unsupported module renderer for {report.module}</p>
-                  </div>
-                );
-              })}
             </div>
           </div>
         )}
