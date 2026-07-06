@@ -21,6 +21,63 @@ export type LogEntry = {
   meta?: Record<string, unknown>;
 };
 
+export type AgentPath = {
+  path: string;
+  label: string;
+  type: string;
+  recommended?: boolean;
+  risk?: "low" | "medium" | "high" | string;
+};
+
+export type AgentInventory = {
+  paths: AgentPath[];
+  services: Array<{ name: string; status: string; ports?: number[] }>;
+  ports: number[];
+  updatedAt?: string;
+};
+
+export type VmAgent = {
+  id: string;
+  name: string;
+  hostname: string;
+  os?: string | null;
+  version?: string | null;
+  status: "online" | "offline" | "scanning" | "error";
+  lastSeenAt?: string | null;
+  inventory?: AgentInventory | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type AgentScanJob = {
+  id: string;
+  userId?: string;
+  agentId: string;
+  sourceLabel: string;
+  scope: "full-os" | "root" | "selected" | "application";
+  selectedPaths: string[];
+  modules: Array<"dependency" | "config" | "secret" | "cipher">;
+  status: "queued" | "running" | "stopping" | "stopped" | "completed" | "failed";
+  command?: Record<string, unknown> | null;
+  result?: {
+    source?: string;
+    summary?: {
+      status?: string;
+      total_findings?: number;
+      risk_score?: number;
+      [key: string]: unknown;
+    };
+    reports?: Array<{ module: string; status: string; findings: number; risk_score: number }>;
+    [key: string]: unknown;
+  } | null;
+  error?: string | null;
+  logs?: LogEntry[];
+  createdAt: string;
+  updatedAt?: string;
+  startedAt?: string | null;
+  completedAt?: string | null;
+};
+
 export type DependencyScanResult = {
   summary: {
     total_manifests: number;

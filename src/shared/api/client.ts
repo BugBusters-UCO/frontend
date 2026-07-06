@@ -1,5 +1,5 @@
 import { getCookie, deleteCookie } from "cookies-next";
-import type { ScanJob } from "@/shared/api/types";
+import type { AgentScanJob, ScanJob, VmAgent } from "@/shared/api/types";
 
 const API_BASE_URL = "http://127.0.0.1:5000";
 
@@ -372,4 +372,76 @@ export async function fetchCipherJobStatus(jobId: string): Promise<ScanJob> {
 export function getCipherScanLogsUrl(jobId: string): string {
   const token = getCookie("auth_token");
   return `${API_BASE_URL}/api/cipher-scans/${jobId}/logs?authToken=${token || ""}`;
+}
+
+// ------------------------------------------------------------------
+// VM Agent / OS-level Scanning
+// ------------------------------------------------------------------
+
+export async function fetchAgents(): Promise<VmAgent[]> {
+  const response = await apiFetch(`${API_BASE_URL}/api/agents`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch VM agents");
+  return response.json();
+}
+
+export async function fetchAgentInventory(agentId: string): Promise<{ agent: VmAgent; inventory: NonNullable<VmAgent["inventory"]> }> {
+  const response = await apiFetch(`${API_BASE_URL}/api/agents/${agentId}/inventory`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch agent inventory");
+  return response.json();
+}
+
+export async function fetchAgentScanReports(): Promise<AgentScanJob[]> {
+  const response = await apiFetch(`${API_BASE_URL}/api/agents/scan-reports`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch agent scan reports");
+  return response.json();
+}
+
+export async function startAgentScan(
+  agentId: string,
+  data: {
+    projectName?: string;
+    scope: "full-os" | "root" | "selected" | "application";
+    paths: string[];
+    modules: Array<"dependency" | "config" | "secret" | "cipher">;
+    maxDepth?: number;
+  }
+): Promise<AgentScanJob> {
+  const response = await apiFetch(`${API_BASE_URL}/api/agents/${agentId}/scans`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to start VM agent scan");
+  }
+  return response.json();
+}
+
+export async function fetchAgentScan(scanId: string): Promise<AgentScanJob> {
+  const response = await apiFetch(`${API_BASE_URL}/api/agents/scans/${scanId}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch VM scan");
+  return response.json();
+}
+
+export async function stopAgentScan(scanId: string): Promise<AgentScanJob> {
+  const response = await apiFetch(`${API_BASE_URL}/api/agents/scans/${scanId}/stop`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to stop VM scan");
+  return response.json();
+}
+
+export function getAgentScanLogsUrl(scanId: string): string {
+  const token = getCookie("auth_token");
+  return `${API_BASE_URL}/api/agents/scans/${scanId}/logs?authToken=${token || ""}`;
 }
