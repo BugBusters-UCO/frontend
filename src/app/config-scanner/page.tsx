@@ -32,7 +32,7 @@ export default function ConfigScannerLandingPage() {
              <span className="material-symbols-outlined text-primary-container text-3xl">settings_input_component</span>
            </div>
            <div>
-             <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">Config Scanner</h1>
+             <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">Config Scanner History</h1>
              <p className="font-body-sm text-body-sm text-text-secondary">Detect misconfigurations and hardcoded secrets in your codebase.</p>
            </div>
         </div>

@@ -14,7 +14,8 @@ export function Sidebar() {
   const isConfig = pathname.startsWith("/config-scanner");
   const isSecret = pathname.startsWith("/secret-scanner");
   const isCipher = pathname.startsWith("/cipher-scanner");
-  const isAgents = pathname.startsWith("/vm-agents");
+  const isAgentsHistory = pathname.startsWith("/vm-agents/history") || (pathname.startsWith("/vm-agents/") && pathname !== "/vm-agents/history" && pathname !== "/vm-agents");
+  const isAgents = pathname === "/vm-agents";
 
   const handleLogout = () => {
     logout();
@@ -42,7 +43,24 @@ export function Sidebar() {
         </Link>
 
         <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2 px-2 mt-4">
-          Modules
+          Module
+        </p>
+        <Link
+          href="/vm-agents"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-body-sm text-body-sm transition-all duration-200 group ${
+            isAgents
+              ? "bg-primary-container/10 text-primary-container font-medium"
+              : "text-text-secondary hover:text-text-primary hover:bg-surface-container hover:shadow-sm"
+          }`}
+        >
+          <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isAgents ? "text-primary-container" : ""}`}>
+            dns
+          </span>
+          <span>VM Dashboard</span>
+        </Link>
+
+        <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2 px-2 mt-4">
+          History
         </p>
         <Link
           href="/dependency-scanner"
@@ -55,7 +73,7 @@ export function Sidebar() {
           <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isDependency ? "text-primary-container" : ""}`}>
             inventory_2
           </span>
-          <span>Dependency Scanner</span>
+          <span>Dependency</span>
         </Link>
         <Link
           href="/config-scanner"
@@ -68,7 +86,7 @@ export function Sidebar() {
           <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isConfig ? "text-primary-container" : ""}`}>
             settings_input_component
           </span>
-          <span>Config Scanner</span>
+          <span>Config</span>
         </Link>
         <Link
           href="/secret-scanner"
@@ -81,7 +99,7 @@ export function Sidebar() {
           <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isSecret ? "text-primary-container" : ""}`}>
             vpn_key
           </span>
-          <span>Secret Scanner</span>
+          <span>Secret</span>
         </Link>
         <Link
           href="/cipher-scanner"
@@ -94,17 +112,17 @@ export function Sidebar() {
           <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isCipher ? "text-primary-container" : ""}`}>
             encrypted
           </span>
-          <span>Cipher Scanner</span>
+          <span>Cipher</span>
         </Link>
         <Link
-          href="/vm-agents"
+          href="/vm-agents/history"
           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-body-sm text-body-sm transition-all duration-200 group ${
-            isAgents
+            isAgentsHistory
               ? "bg-primary-container/10 text-primary-container font-medium"
               : "text-text-secondary hover:text-text-primary hover:bg-surface-container hover:shadow-sm"
           }`}
         >
-          <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isAgents ? "text-primary-container" : ""}`}>
+          <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isAgentsHistory ? "text-primary-container" : ""}`}>
             dns
           </span>
           <span>VM Agents</span>

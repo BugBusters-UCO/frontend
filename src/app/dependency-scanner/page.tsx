@@ -32,7 +32,7 @@ export default function DependencyScannerLandingPage() {
              <span className="material-symbols-outlined text-primary-container text-3xl">inventory_2</span>
            </div>
            <div>
-             <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">Dependency Scanner</h1>
+             <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">Dependency Scanner History</h1>
              <p className="font-body-sm text-body-sm text-text-secondary">Track vulnerabilities in your project's open source dependencies.</p>
            </div>
         </div>

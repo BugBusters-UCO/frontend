@@ -31,7 +31,7 @@ export default function SecretScannerLandingPage() {
             <span className="material-symbols-outlined text-primary-container text-3xl">vpn_key</span>
           </div>
           <div>
-            <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">Secret Scanner</h1>
+            <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">Secret Scanner History</h1>
             <p className="font-body-sm text-body-sm text-text-secondary">
               Detect hardcoded credentials, API keys, tokens, private keys, and banking integration secrets.
             </p>

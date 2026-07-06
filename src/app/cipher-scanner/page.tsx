@@ -31,7 +31,7 @@ export default function CipherScannerLandingPage() {
             <span className="material-symbols-outlined text-primary-container text-3xl">encrypted</span>
           </div>
           <div>
-            <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">Cipher Scanner</h1>
+            <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">Cipher Scanner History</h1>
             <p className="font-body-sm text-body-sm text-text-secondary">
               Pre-deployment TLS, cipher suite, certificate verification, and managed cloud TLS policy checks.
             </p>

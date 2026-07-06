@@ -468,3 +468,28 @@ export function getAgentScanLogsUrl(scanId: string): string {
   const token = getCookie("auth_token");
   return `${API_BASE_URL}/api/agents/scans/${scanId}/logs?authToken=${token || ""}`;
 }
+
+export async function connectVmAgent(token: string): Promise<any> {
+  const response = await apiFetch(`${API_BASE_URL}/api/agents/connect`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify({ token }),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.error || errData.message || "Failed to connect VM agent");
+  }
+  return response.json();
+}
+
+export async function disconnectVmAgent(): Promise<any> {
+  const response = await apiFetch(`${API_BASE_URL}/api/agents/disconnect`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.error || errData.message || "Failed to disconnect VM agent");
+  }
+  return response.json();
+}
