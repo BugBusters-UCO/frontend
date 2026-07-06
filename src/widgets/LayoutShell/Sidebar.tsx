@@ -16,6 +16,7 @@ export function Sidebar() {
   const isSecret = pathname.startsWith("/secret-scanner");
   const isCipher = pathname.startsWith("/cipher-scanner");
   const isStatic = pathname.startsWith("/static-analyzer");
+  const isAgents = pathname.startsWith("/vm-agents");
 
   const handleLogout = () => {
     logout();
@@ -109,6 +110,19 @@ export function Sidebar() {
             code_blocks
           </span>
           <span>Static Analyzer</span>
+        </Link>
+        <Link
+          href="/vm-agents"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-body-sm text-body-sm transition-all duration-200 group ${
+            isAgents
+              ? "bg-primary-container/10 text-primary-container font-medium"
+              : "text-text-secondary hover:text-text-primary hover:bg-surface-container hover:shadow-sm"
+          }`}
+        >
+          <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isAgents ? "text-primary-container" : ""}`}>
+            dns
+          </span>
+          <span>VM Agents</span>
         </Link>
       </div>
       <Link href="/" className="w-full">
