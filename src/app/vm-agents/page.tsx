@@ -11,6 +11,7 @@ import {
 } from "@/shared/api/client";
 import type { AgentPath, AgentScanJob, VmAgent } from "@/shared/api/types";
 import { useAuth } from "@/shared/lib/AuthContext";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const MODULES = [
   { id: "dependency", label: "Dependency Scanner", icon: "inventory_2" },
@@ -28,56 +29,50 @@ const SCOPES = [
 
 export default function VmAgentsPage() {
   const { user } = useAuth();
-  const [agents, setAgents] = useState<VmAgent[]>([]);
-  const [reports, setReports] = useState<AgentScanJob[]>([]);
+  const queryClient = useQueryClient();
+
+  const { data: agents = [], isLoading: isLoadingAgents, error: agentsError } = useQuery({
+    queryKey: ["agents"],
+    queryFn: fetchAgents,
+  });
+
+  const { data: reports = [], isLoading: isLoadingReports } = useQuery({
+    queryKey: ["agent-reports"],
+    queryFn: fetchAgentScanReports,
+    refetchInterval: (query) => {
+      const active = query.state.data?.some(job => ["queued", "running", "stopping"].includes(job.status));
+      return active ? 3000 : false;
+    }
+  });
+
   const [selectedAgentId, setSelectedAgentId] = useState("");
   const [selectedReportId, setSelectedReportId] = useState("");
-  const [inventory, setInventory] = useState<AgentPath[]>([]);
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
   const [selectedModules, setSelectedModules] = useState<Array<"dependency" | "config" | "secret" | "cipher">>([]);
   const [scope, setScope] = useState<"full-os" | "root" | "selected" | "application">("selected");
   const [projectName, setProjectName] = useState("payment-service");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
 
-  const applyInventory = (paths: AgentPath[]) => {
-    setInventory(paths);
-  };
+  const { data: inventoryData } = useQuery({
+    queryKey: ["agent-inventory", selectedAgentId],
+    queryFn: () => fetchAgentInventory(selectedAgentId),
+    enabled: !!selectedAgentId,
+  });
+
+  const inventory = inventoryData?.inventory?.paths || [];
 
   useEffect(() => {
-    Promise.all([fetchAgents(), fetchAgentScanReports()])
-      .then(([agentRows, reportRows]) => {
-        setAgents(agentRows || []);
-        setReports(reportRows || []);
-        if (reportRows?.[0]) setSelectedReportId(reportRows[0].id);
-        const first = agentRows?.[0];
-        if (first) {
-          setSelectedAgentId(first.id);
-          applyInventory(first.inventory?.paths || []);
-        }
-      })
-      .catch((err) => setError(err.message || "Failed to load VM agents"))
-      .finally(() => setLoading(false));
-  }, []);
+    if (agents.length > 0 && !selectedAgentId) {
+      setSelectedAgentId(agents[0].id);
+    }
+  }, [agents, selectedAgentId]);
 
   useEffect(() => {
-    if (!selectedAgentId) return;
-
-    let cancelled = false;
-    fetchAgentInventory(selectedAgentId)
-      .then(({ inventory }) => {
-        if (cancelled) return;
-        const paths = inventory?.paths || [];
-        applyInventory(paths);
-      })
-      .catch((err) => setError(err.message || "Failed to load agent inventory"));
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedAgentId, agents]);
+    if (reports.length > 0 && !selectedReportId) {
+      setSelectedReportId(reports[0].id);
+    }
+  }, [reports, selectedReportId]);
 
   const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
   const selectedReport = reports.find((job) => job.id === selectedReportId) || reports[0];
@@ -96,50 +91,14 @@ bash ./vm-agent/bugbusters-agent.sh loop`;
     return { total, active, stopped, findings };
   }, [reports, activeReports.length]);
 
-  useEffect(() => {
-    if (!activeReports.length && !selectedReportId) return;
-
-    const interval = window.setInterval(async () => {
-      try {
-        const reportRows = await fetchAgentScanReports();
-        setReports(reportRows || []);
-        const stillSelected = reportRows?.some((job) => job.id === selectedReportId);
-        if (!stillSelected && reportRows?.[0]) setSelectedReportId(reportRows[0].id);
-        if (selectedReportId) {
-          const updated = await fetchAgentScan(selectedReportId);
-          setReports((current) => current.map((job) => job.id === updated.id ? updated : job));
-        }
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Failed to refresh VM scan status");
-      }
-    }, 4000);
-
-    return () => window.clearInterval(interval);
-  }, [activeReports.length, selectedReportId]);
+  const loading = isLoadingAgents || isLoadingReports;
+  const error = agentsError ? (agentsError as Error).message : null;
 
   const refreshAll = async () => {
-    const [agentRows, reportRows] = await Promise.all([fetchAgents(), fetchAgentScanReports()]);
-    setAgents(agentRows || []);
-    setReports(reportRows || []);
-    if (!selectedReportId && reportRows?.[0]) setSelectedReportId(reportRows[0].id);
-    const nextAgent = agentRows?.find((agent) => agent.id === selectedAgentId) || agentRows?.[0];
-    setSelectedAgentId(nextAgent?.id || "");
-    if (!nextAgent) {
-      applyInventory([]);
-      return;
-    }
-
-    const cachedPaths = nextAgent.inventory?.paths || [];
-    if (cachedPaths.length) applyInventory(cachedPaths);
-
-    try {
-      const { inventory } = await fetchAgentInventory(nextAgent.id);
-      applyInventory(inventory?.paths || []);
-    } catch (err: unknown) {
-      if (!cachedPaths.length) {
-        setError(err instanceof Error ? err.message : "Failed to load agent inventory");
-      }
-    }
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["agents"] }),
+      queryClient.invalidateQueries({ queryKey: ["agent-reports"] })
+    ]);
   };
 
   const togglePath = (path: string) => {
@@ -157,40 +116,33 @@ bash ./vm-agent/bugbusters-agent.sh loop`;
   };
 
   const handleStart = async () => {
-    if (!selectedAgentId) {
-      setError("Select a VM agent first.");
-      return;
-    }
-    if (scope === "selected" && selectedPaths.length === 0) {
-      setError("Select at least one directory.");
-      return;
-    }
-    if (selectedModules.length === 0) {
-      setError("Select at least one scanner module.");
-      return;
-    }
-    setError(null);
+    if (!selectedAgentId) return;
+    if (scope === "selected" && selectedPaths.length === 0) return;
+    if (selectedModules.length === 0) return;
+
     setStarting(true);
     try {
-      const job = await startAgentScan(selectedAgentId, {
+      await startAgentScan(selectedAgentId, {
         projectName,
         scope,
         paths: scope === "selected" ? selectedPaths : [],
         modules: selectedModules,
-        maxDepth: 14,
       });
-      setReports((current) => [job, ...current.filter((item) => item.id !== job.id)]);
-      setSelectedReportId(job.id);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to start VM scan");
+      queryClient.invalidateQueries({ queryKey: ["agent-reports"] });
+    } catch (err: any) {
+      console.error(err);
     } finally {
       setStarting(false);
     }
   };
 
   const handleStop = async (scanId: string) => {
-    const job = await stopAgentScan(scanId);
-    setReports((current) => current.map((item) => item.id === scanId ? job : item));
+    try {
+      await stopAgentScan(scanId);
+      queryClient.invalidateQueries({ queryKey: ["agent-reports"] });
+    } catch (err: any) {
+      console.error(err);
+    }
   };
 
   const copyCommand = async (key: string, command: string) => {
@@ -257,7 +209,6 @@ bash ./vm-agent/bugbusters-agent.sh loop`;
                   key={agent.id}
                   onClick={() => {
                     setSelectedAgentId(agent.id);
-                    applyInventory(agent.inventory?.paths || []);
                   }}
                   className={`w-full text-left rounded-lg border p-4 transition-colors ${selectedAgentId === agent.id ? "border-primary bg-primary-container/5" : "border-border-divider hover:bg-surface-container-low"}`}
                 >
@@ -342,7 +293,6 @@ bash ./vm-agent/bugbusters-agent.sh loop`;
                 onChange={(event) => {
                   const nextAgent = agents.find((agent) => agent.id === event.target.value);
                   setSelectedAgentId(event.target.value);
-                  applyInventory(nextAgent?.inventory?.paths || []);
                 }}
                 disabled={!hasAgents}
                 className="mt-2 w-full rounded-lg border border-border-divider px-3 py-2 outline-none focus:border-primary"

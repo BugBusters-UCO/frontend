@@ -14,23 +14,46 @@ function getAuthHeaders(): Record<string, string> {
   };
 }
 
+import axios from "axios";
+
+const globalApiCache = new Map<string, { response: Response; time: number }>();
+const CACHE_TTL = 30000; // 30 seconds caching for fast UI navigation
+
 /**
- * Fetch wrapper that intercepts 401 responses and redirects to login.
+ * Axios wrapper that mimics fetch API to minimize refactoring,
+ * but uses axios under the hood.
  */
-async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  const response = await fetch(url, options);
-  
-  if (response.status === 401) {
-    // Clear cookies and redirect
-    deleteCookie("auth_token");
-    deleteCookie("bugbusters_github_session");
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
+async function apiFetch(url: string, options: any = {}): Promise<any> {
+  try {
+    const response = await axios({
+      url,
+      method: options.method || "GET",
+      headers: options.headers,
+      data: options.body,
+    });
+    return {
+      ok: true,
+      status: response.status,
+      json: async () => response.data,
+    };
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      deleteCookie("auth_token");
+      deleteCookie("bugbusters_github_session");
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+      throw new Error("Unauthorized");
     }
-    throw new Error("Unauthorized");
+    if (error.response) {
+      return {
+        ok: false,
+        status: error.response.status,
+        json: async () => error.response.data,
+      };
+    }
+    throw error;
   }
-  
-  return response;
 }
 
 // ------------------------------------------------------------------
@@ -162,7 +185,7 @@ export async function fetchScanJobs(): Promise<any> {
   return response.json();
 }
 
-export async function fetchJobStatus(jobId: string): Promise<any> {
+export async function fetchJobStatus(jobId: string, forceRefresh = false): Promise<any> {
   const response = await apiFetch(`${API_BASE_URL}/api/scans/${jobId}`, {
     headers: getAuthHeaders(),
   });
@@ -228,7 +251,7 @@ export async function fetchConfigScanJobs(): Promise<any> {
   return response.json();
 }
 
-export async function fetchConfigJobStatus(jobId: string): Promise<any> {
+export async function fetchConfigJobStatus(jobId: string, forceRefresh = false): Promise<any> {
   const response = await apiFetch(`${API_BASE_URL}/api/config-scans/${jobId}`, {
     headers: getAuthHeaders(),
   });
@@ -294,7 +317,7 @@ export async function fetchSecretScanJobs(): Promise<any> {
   return response.json();
 }
 
-export async function fetchSecretJobStatus(jobId: string): Promise<any> {
+export async function fetchSecretJobStatus(jobId: string, forceRefresh = false): Promise<any> {
   const response = await apiFetch(`${API_BASE_URL}/api/secret-scans/${jobId}`, {
     headers: getAuthHeaders(),
   });
@@ -361,7 +384,7 @@ export async function fetchCipherScanJobs(): Promise<ScanJob[]> {
   return response.json();
 }
 
-export async function fetchCipherJobStatus(jobId: string): Promise<ScanJob> {
+export async function fetchCipherJobStatus(jobId: string, forceRefresh = false): Promise<ScanJob> {
   const response = await apiFetch(`${API_BASE_URL}/api/cipher-scans/${jobId}`, {
     headers: getAuthHeaders(),
   });

@@ -7,46 +7,47 @@ import { fetchConfigJobStatus, getConfigScanLogsUrl } from "@/shared/api/client"
 import { LiveExecutionLog } from "@/widgets/LiveExecutionLog";
 import { SkeletonJobRow, SkeletonMetricsRow, SkeletonPanel } from "@/widgets/Skeleton";
 import { ArrowLeftCircle } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ConfigMetricsRow } from "@/widgets/config/ConfigMetricsRow";
+import { ConfigBusinessImpactPanel } from "@/widgets/config/ConfigBusinessImpactPanel";
+import { ConfigInteractiveGraph } from "@/widgets/config/ConfigInteractiveGraph";
+import { ConfigAttackPathsList } from "@/widgets/config/ConfigAttackPathsList";
+import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 
 export default function ConfigScannerJobPage() {
   const { jobId } = useParams() as { jobId: string };
   const router = useRouter();
 
-  const [job, setJob] = useState<ScanJob | null>(null);
+  const queryClient = useQueryClient();
+
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isScanning, setIsScanning] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"executive" | "technical">("executive");
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
+  const { data: jobData, isLoading: isJobLoading, error: queryError } = useQuery({
+    queryKey: ["config-job", jobId],
+    queryFn: () => fetchConfigJobStatus(jobId),
+  });
+
   useEffect(() => {
-    if (!jobId) return;
-
-    fetchConfigJobStatus(jobId)
-      .then((data) => {
-        setJob(data);
-
-        if (data.logs) {
-          setLogs(data.logs);
-        }
-        if (data.status === "completed" || data.status === "failed") {
-          setIsScanning(false);
-        } else {
-          startLogStream(jobId);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        setError("Failed to load job details.");
+    if (jobData) {
+      if (jobData.logs && logs.length === 0) {
+        setLogs(jobData.logs);
+      }
+      if (jobData.status === "completed" || jobData.status === "failed") {
         setIsScanning(false);
-      });
-
+      } else if (isScanning && !eventSourceRef.current) {
+        startLogStream(jobId);
+      }
+    }
     return () => {
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
       }
     };
-  }, [jobId]);
+  }, [jobData, jobId]);
 
   const startLogStream = (id: string) => {
     if (eventSourceRef.current) {
@@ -66,9 +67,7 @@ export default function ConfigScannerJobPage() {
           if (data.message.includes("completed") || data.level === "error") {
             es.close();
             setIsScanning(false);
-            fetchConfigJobStatus(id).then((jobData) => {
-              setJob(jobData);
-            }).catch(console.error);
+            queryClient.invalidateQueries({ queryKey: ["config-job", id] });
           }
         }
       } catch (err) {
@@ -80,23 +79,23 @@ export default function ConfigScannerJobPage() {
       es.close();
       setIsScanning(false);
       // Fetch final job status when connection drops (job ends)
-      fetchConfigJobStatus(id).then((jobData) => {
-        setJob(jobData);
-      }).catch(console.error);
+      queryClient.invalidateQueries({ queryKey: ["config-job", id] });
     };
   };
 
-  if (error) {
+  if (queryError) {
     return (
-      <div className="max-w-[1280px] mx-auto py-12">
-        <div className="bg-error-container text-on-error-container p-4 rounded-lg">
-          {error}
-        </div>
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="text-red-500 font-bold text-xl mb-4">Error loading scan results</div>
+        <p className="text-text-muted mb-6">{(queryError as Error).message || "Unknown error"}</p>
+        <button onClick={() => router.push("/")} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+          Return to Dashboard
+        </button>
       </div>
     );
   }
 
-  if (!job) {
+  if (isJobLoading || !jobData) {
     return (
       <div className="max-w-[1280px] mx-auto flex flex-col gap-6 pt-6">
         <SkeletonJobRow />
@@ -106,9 +105,14 @@ export default function ConfigScannerJobPage() {
     );
   }
 
-  const result = job?.result;
+  const job = jobData;
+  const result = jobData.result;
+  const summary = result?.summary;
+  const attackPaths = result?.attack_paths || [];
+  const findings = result?.findings || [];
 
-  console.log("Scan Data: ", job)
+  console.log(attackPaths);
+
   return (
     <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap">
       <div className="flex items-center gap-4">
@@ -116,7 +120,7 @@ export default function ConfigScannerJobPage() {
           onClick={() => router.back()}
           className="text-text-secondary hover:bg-surface-container p-2 rounded-full transition-colors flex items-center justify-center"
         >
-          <span className="material-symbols-outlined hover:cursor-pointer"><ArrowLeftCircle size={36}/></span>
+          <span className="material-symbols-outlined hover:cursor-pointer"><ArrowLeftCircle size={36} /></span>
         </button>
         <div>
           <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">
@@ -146,83 +150,74 @@ export default function ConfigScannerJobPage() {
 
         {!isScanning && result && (
           <div className="flex flex-col gap-6">
-            {/* Summary Row */}
-            {result.summary && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-element-gap">
-                <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-border-divider shadow-sm flex flex-col gap-2">
-                  <p className="font-body-sm text-body-sm text-text-muted font-medium">Risk Score</p>
-                  <p className="font-metric-value text-metric-value text-text-primary">{result.summary.risk_score || 0}</p>
-                </div>
-                <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-[#ffd6a5] bg-[#fff8eb] shadow-sm flex flex-col gap-2">
-                  <p className="font-body-sm text-body-sm text-[#8a5200] font-medium">Total Findings</p>
-                  <p className="font-metric-value text-metric-value text-[#8a5200]">{result.summary.total_findings || 0}</p>
-                </div>
-                <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-[#f3b4b4] shadow-sm flex flex-col gap-2">
-                  <p className="font-body-sm text-body-sm text-text-muted font-medium">Critical Findings</p>
-                  <p className="font-metric-value text-metric-value text-severity-critical">{result.summary.findings_by_severity?.critical || 0}</p>
-                </div>
-                <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-[#b7e4c7] shadow-sm flex flex-col gap-2">
-                  <p className="font-body-sm text-body-sm text-text-muted font-medium">Attack Paths</p>
-                  <p className="font-metric-value text-metric-value text-text-primary">{result.summary.attack_paths || 0}</p>
-                </div>
+            {/* Tab Navigation */}
+            <div className="flex border-b border-border-divider mb-4">
+              <button
+                className={`py-2 px-6 font-semibold text-sm transition-colors relative ${activeTab === "executive" ? "text-primary" : "text-text-muted hover:text-text-primary"}`}
+                onClick={() => setActiveTab("executive")}
+              >
+                Executive Summary
+                {activeTab === "executive" && <div className="absolute bottom-[-1px] left-0 w-full h-0.5 bg-primary rounded-t-full"></div>}
+              </button>
+              <button
+                className={`py-2 px-6 font-semibold text-sm transition-colors relative ${activeTab === "technical" ? "text-primary" : "text-text-muted hover:text-text-primary"}`}
+                onClick={() => setActiveTab("technical")}
+              >
+                Technical Details
+                {activeTab === "technical" && <div className="absolute bottom-[-1px] left-0 w-full h-0.5 bg-primary rounded-t-full"></div>}
+              </button>
+            </div>
+
+            {activeTab === "executive" && (
+              <div className="flex flex-col gap-6">
+                <ConfigMetricsRow summary={summary} />
+                <ConfigBusinessImpactPanel summary={summary} attackPaths={attackPaths} />
+
+                {attackPaths.length > 0 && (
+                  <>
+                    <ConfigInteractiveGraph attackPaths={attackPaths} />
+                    <ConfigAttackPathsList attackPaths={attackPaths} />
+                  </>
+                )}
               </div>
             )}
 
-            {/* Config Findings Table */}
-            {result.findings && result.findings.length > 0 && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
-                <h3 className="text-xl font-bold mb-4">Misconfigurations</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="border-b border-border-divider text-text-secondary text-sm">
-                        <th className="pb-2 font-medium">Severity</th>
-                        <th className="pb-2 font-medium">File</th>
-                        <th className="pb-2 font-medium">Title</th>
-                        <th className="pb-2 font-medium">Category</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-sm">
-                      {result.findings.map((finding: any, idx: number) => (
-                        <tr key={idx} className="border-b border-border-divider last:border-none">
-                          <td className="py-3 pr-4">
-                            <span className={`px-2 py-1 rounded text-xs font-semibold ${finding.severity === "critical" ? "bg-red-100 text-red-800" : finding.severity === "high" ? "bg-orange-100 text-orange-800" : finding.severity === "medium" ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}>
-                              {finding.severity.toUpperCase()}
-                            </span>
-                          </td>
-                          <td className="py-3 pr-4 font-mono text-xs">{finding.file_path}:{finding.line_number}</td>
-                          <td className="py-3 pr-4 font-medium">{finding.title}</td>
-                          <td className="py-3 pr-4 text-text-secondary">{finding.category}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* Attack Paths */}
-            {result.attack_paths && result.attack_paths.length > 0 && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
-                <h3 className="text-xl font-bold mb-4">Attack Paths</h3>
-                <div className="space-y-4">
-                  {result.attack_paths.map((ap: any, idx: number) => (
-                    <div key={idx} className="border border-red-200 bg-red-50 p-4 rounded flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-red-600">route</span>
-                        <span className="font-bold text-red-800">{ap.title}</span>
-                      </div>
-                      <p className="text-sm text-red-900">{ap.attack_story}</p>
-                      <div className="text-sm mt-2 font-mono bg-white p-2 border border-red-100 rounded">
-                        {ap.steps?.map((step: any, sIdx: number) => (
-                          <div key={sIdx} className="mb-1">
-                            {sIdx + 1}. {step.title} ({step.file_path}:{step.line_number})
-                          </div>
-                        ))}
-                      </div>
+            {activeTab === "technical" && (
+              <div className="flex flex-col gap-6">
+                {findings.length > 0 && (
+                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+                    <div className="flex items-center mb-4">
+                      <h3 className="text-xl font-bold">Misconfigurations</h3>
+                      <InfoTooltip text="Raw list of all detected infrastructure misconfigurations." />
                     </div>
-                  ))}
-                </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-border-divider text-text-secondary text-sm">
+                            <th className="pb-2 font-medium">Severity</th>
+                            <th className="pb-2 font-medium">File</th>
+                            <th className="pb-2 font-medium">Title</th>
+                            <th className="pb-2 font-medium">Category</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-sm">
+                          {findings.map((finding: any, idx: number) => (
+                            <tr key={idx} className="border-b border-border-divider last:border-none">
+                              <td className="py-3 pr-4">
+                                <span className={`px-2 py-1 rounded text-xs font-semibold ${finding.severity === "critical" ? "bg-red-100 text-red-800" : finding.severity === "high" ? "bg-orange-100 text-orange-800" : finding.severity === "medium" ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}>
+                                  {finding.severity.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="py-3 pr-4 font-mono text-xs">{finding.file_path}:{finding.line_number}</td>
+                              <td className="py-3 pr-4 font-medium">{finding.title}</td>
+                              <td className="py-3 pr-4 text-text-secondary">{finding.category}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

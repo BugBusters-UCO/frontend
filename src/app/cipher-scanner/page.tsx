@@ -1,41 +1,26 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { ScanJob } from "@/shared/api/types";
 import { fetchCipherScanJobs } from "@/shared/api/client";
 import { RecentJobs } from "@/widgets/RecentJobs";
-import { getCookie, deleteCookie } from "cookies-next";
+import { getCookie } from "cookies-next";
+import { useQuery } from "@tanstack/react-query";
 
 export default function CipherScannerLandingPage() {
   const router = useRouter();
-  const [jobs, setJobs] = useState<ScanJob[]>([]);
-  const [isLoadingJobs, setIsLoadingJobs] = useState(true);
 
-  useEffect(() => {
-    const currentSession = getCookie("bugbusters_github_session") as string | undefined;
+  const currentSession = getCookie("bugbusters_github_session") as string | undefined;
 
-    if (currentSession) {
-      fetchCipherScanJobs()
-        .then((cipherJobs) => {
-          setJobs((cipherJobs || []).sort((a: ScanJob, b: ScanJob) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-          setIsLoadingJobs(false);
-        })
-        .catch((err) => {
-          console.error("Failed to load cipher scans", err);
-          if (err.message && err.message.includes("401")) {
-            deleteCookie("bugbusters_github_session");
-          }
-          setJobs([]);
-          setIsLoadingJobs(false);
-        });
-    } else {
-      Promise.resolve().then(() => {
-        setJobs([]);
-        setIsLoadingJobs(false);
-      });
-    }
-  }, []);
+  const { data: jobs = [], isLoading: isLoadingJobs } = useQuery({
+    queryKey: ["cipher-jobs", currentSession],
+    queryFn: async () => {
+      const cipherJobs = await fetchCipherScanJobs();
+      return (cipherJobs || []).sort((a: ScanJob, b: ScanJob) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    },
+    enabled: !!currentSession,
+  });
 
   return (
     <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap">
@@ -52,15 +37,6 @@ export default function CipherScannerLandingPage() {
             </p>
           </div>
         </div>
-
-        <button
-          onClick={() => router.push("/")}
-          className="relative overflow-hidden group bg-primary-container text-white py-2.5 px-5 rounded-xl font-semibold text-body-sm transition-all duration-300 hover:shadow-lg transform active:scale-[0.98] flex items-center gap-2"
-        >
-          <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-          <span className="material-symbols-outlined text-[18px] relative z-10">add</span>
-          <span className="relative z-10">Scan New Target</span>
-        </button>
       </div>
 
       <RecentJobs jobs={jobs} isLoading={isLoadingJobs} />

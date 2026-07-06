@@ -6,34 +6,21 @@ import { ScanJob } from "@/shared/api/types";
 import { fetchScanJobs } from "@/shared/api/client";
 import { RecentJobs } from "@/widgets/RecentJobs";
 import { getCookie, deleteCookie } from "cookies-next";
+import { useQuery } from "@tanstack/react-query";
 
 export default function DependencyScannerLandingPage() {
   const router = useRouter();
-  const [jobs, setJobs] = useState<ScanJob[]>([]);
-  const [isLoadingJobs, setIsLoadingJobs] = useState(true);
+  
+  const currentSession = getCookie("bugbusters_github_session") as string | undefined;
 
-  useEffect(() => {
-    const currentSession = getCookie("bugbusters_github_session") as string | undefined;
-
-    if (currentSession) {
-      fetchScanJobs()
-        .then((depJobs) => {
-          setJobs((depJobs || []).sort((a: ScanJob, b: ScanJob) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-          setIsLoadingJobs(false);
-        })
-        .catch((err) => {
-          console.error("Failed to load dependency scans", err);
-          if (err.message && err.message.includes("401")) {
-             deleteCookie("bugbusters_github_session");
-          }
-          setJobs([]);
-          setIsLoadingJobs(false);
-        });
-    } else {
-      setJobs([]);
-      setIsLoadingJobs(false);
-    }
-  }, []);
+  const { data: jobs = [], isLoading: isLoadingJobs } = useQuery({
+    queryKey: ["dependency-jobs", currentSession],
+    queryFn: async () => {
+      const depJobs = await fetchScanJobs();
+      return (depJobs || []).sort((a: ScanJob, b: ScanJob) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    },
+    enabled: !!currentSession,
+  });
 
   return (
     <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap">
@@ -49,15 +36,6 @@ export default function DependencyScannerLandingPage() {
              <p className="font-body-sm text-body-sm text-text-secondary">Track vulnerabilities in your project's open source dependencies.</p>
            </div>
         </div>
-
-        <button
-          onClick={() => router.push("/")}
-          className="relative overflow-hidden group bg-primary-container text-white py-2.5 px-5 rounded-xl font-semibold text-body-sm transition-all duration-300 hover:shadow-lg transform active:scale-[0.98] flex items-center gap-2"
-        >
-          <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-          <span className="material-symbols-outlined text-[18px] relative z-10">add</span>
-          <span className="relative z-10">Scan New Target</span>
-        </button>
       </div>
 
       <div className="flex flex-col">

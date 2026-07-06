@@ -22,24 +22,49 @@ import {
 } from "@/shared/api/client";
 import { ScanConfig } from "@/widgets/ScanConfig";
 import { RecentJobs } from "@/widgets/RecentJobs";
-import { SkeletonJobRow } from "@/widgets/Skeleton";
+import { SkeletonJobRow, ScanConfigSkeleton } from "@/widgets/Skeleton";
+import { DisclaimerModal } from "@/widgets/DisclaimerModal";
 import Link from "next/link";
 import { getCookie, setCookie, deleteCookie } from "cookies-next";
+import { useQuery } from "@tanstack/react-query";
 
 export default function DashboardPage() {
   const router = useRouter();
   
-  const [githubUser, setGithubUser] = useState<GithubUser | null>(null);
-  const [repos, setRepos] = useState<GithubRepository[]>([]);
   const [selectedRepo, setSelectedRepo] = useState<string>("");
   const [isConnectingGithub, setIsConnectingGithub] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
-  const [jobs, setJobs] = useState<ScanJob[]>([]);
   const [activeScans, setActiveScans] = useState<ScanJob[]>([]);
-  const [isLoadingJobs, setIsLoadingJobs] = useState(true);
   const [githubSession, setGithubSession] = useState<string | null>(null);
   const [scanOptions, setScanOptions] = useState({ includeDev: true, useOsv: true, failOn: "high", includeLow: true });
+
+  const { data: githubData, isLoading: isLoadingGithub } = useQuery({
+    queryKey: ["githubData", githubSession],
+    queryFn: async () => {
+      const [userData, repoData] = await Promise.all([
+        fetchGithubUser(githubSession!),
+        fetchGithubRepos(githubSession!)
+      ]);
+      return { user: userData.user, repos: repoData.repositories };
+    },
+    enabled: !!githubSession,
+  });
+  
+  const githubUser = (githubData?.user as GithubUser) || null;
+  const repos = (githubData?.repos as GithubRepository[]) || [];
+
+  const { data: jobs = [], isLoading: isLoadingJobs } = useQuery({
+    queryKey: ["all-jobs", githubSession],
+    queryFn: async () => {
+      const [depJobs, configJobs, secretJobs, cipherJobs] = await Promise.all([
+        fetchScanJobs(), fetchConfigScanJobs(), fetchSecretScanJobs(), fetchCipherScanJobs()
+      ]);
+      return [...(depJobs || []), ...(configJobs || []), ...(secretJobs || []), ...(cipherJobs || [])]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    },
+    enabled: !!githubSession,
+  });
 
   useEffect(() => {
     // Check if auth successful (from query params)
@@ -60,36 +85,8 @@ export default function DashboardPage() {
 
     if (currentSession) {
       setGithubSession(currentSession);
-      loadGithubData(currentSession)
-        .then(() => Promise.all([fetchScanJobs(), fetchConfigScanJobs(), fetchSecretScanJobs(), fetchCipherScanJobs()]))
-        .then(([depJobs, configJobs, secretJobs, cipherJobs]) => {
-          setJobs([...(depJobs || []), ...(configJobs || []), ...(secretJobs || []), ...(cipherJobs || [])].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-          setIsLoadingJobs(false);
-        })
-        .catch(() => {
-          // Session invalid or expired
-          deleteCookie("bugbusters_github_session");
-          setGithubSession(null);
-          setJobs([]);
-          setIsLoadingJobs(false);
-        });
-    } else {
-      setJobs([]);
-      setIsLoadingJobs(false);
     }
   }, []);
-
-  const loadGithubData = async (session: string) => {
-    try {
-      const userData = await fetchGithubUser(session);
-      setGithubUser(userData.user);
-      const repoData = await fetchGithubRepos(session);
-      setRepos(repoData.repositories);
-    } catch (err) {
-      console.error("Failed to load GitHub data", err);
-      throw err;
-    }
-  };
 
   const handleConnectGithub = () => {
     setIsConnectingGithub(true);
@@ -100,8 +97,6 @@ export default function DashboardPage() {
   const handleDisconnectGithub = () => {
     deleteCookie("bugbusters_github_session");
     setGithubSession(null);
-    setGithubUser(null);
-    setRepos([]);
     setSelectedRepo("");
     
     // Also remove from URL if present
@@ -169,7 +164,7 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap">
-      {/* Page Header */}
+      <DisclaimerModal />
       <div>
         <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">Platform Overview</h1>
         <p className="font-body-sm text-body-sm text-text-secondary">Comprehensive security scanning for your codebase.</p>
@@ -241,21 +236,25 @@ export default function DashboardPage() {
             </div>
           )}
           
-          <ScanConfig
-            githubUser={githubUser}
-            repos={repos}
-            selectedRepo={selectedRepo}
-            setSelectedRepo={setSelectedRepo}
-            onConnectGithub={handleConnectGithub}
-            onDisconnectGithub={handleDisconnectGithub}
-            isConnectingGithub={isConnectingGithub}
-            onStartScan={handleStartGithubScan}
-            onUploadZip={handleUploadZip}
-            isScanning={isScanning}
-            error={scanError}
-            scanOptions={scanOptions}
-            setScanOptions={setScanOptions}
-          />
+          {isLoadingGithub ? (
+            <ScanConfigSkeleton />
+          ) : (
+            <ScanConfig
+              githubUser={githubUser}
+              repos={repos}
+              selectedRepo={selectedRepo}
+              setSelectedRepo={setSelectedRepo}
+              onConnectGithub={handleConnectGithub}
+              onDisconnectGithub={handleDisconnectGithub}
+              isConnectingGithub={isConnectingGithub}
+              onStartScan={handleStartGithubScan}
+              onUploadZip={handleUploadZip}
+              isScanning={isScanning}
+              error={scanError}
+              scanOptions={scanOptions}
+              setScanOptions={setScanOptions}
+            />
+          )}
         </div>
         <div className="flex flex-col">
           <RecentJobs jobs={jobs} isLoading={isLoadingJobs} />

@@ -7,6 +7,11 @@ import { fetchSecretJobStatus, getSecretScanLogsUrl } from "@/shared/api/client"
 import { LiveExecutionLog } from "@/widgets/LiveExecutionLog";
 import { SkeletonJobRow, SkeletonMetricsRow, SkeletonPanel } from "@/widgets/Skeleton";
 import { ArrowLeftCircle } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { SecretMetricsRow } from "@/widgets/secret/SecretMetricsRow";
+import { SecretBusinessImpactPanel } from "@/widgets/secret/SecretBusinessImpactPanel";
+import { SecretInteractiveGraph } from "@/widgets/secret/SecretInteractiveGraph";
+import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 
 function severityClass(severity?: string) {
   if (severity === "critical") return "bg-red-100 text-red-800";
@@ -52,36 +57,34 @@ export default function SecretScannerJobPage() {
   const { jobId } = useParams() as { jobId: string };
   const router = useRouter();
 
-  const [job, setJob] = useState<ScanJob | null>(null);
+  const queryClient = useQueryClient();
+
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isScanning, setIsScanning] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"executive" | "technical">("executive");
+  const [isExposureSidebarOpen, setIsExposureSidebarOpen] = useState(false);
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
-  useEffect(() => {
-    if (!jobId) return;
+  const { data: jobData, isLoading: isJobLoading, error: queryError } = useQuery({
+    queryKey: ["secret-job", jobId],
+    queryFn: () => fetchSecretJobStatus(jobId),
+  });
 
-    fetchSecretJobStatus(jobId)
-      .then((data) => {
-        setJob(data);
-        if (data.logs) setLogs(data.logs);
-        if (data.status === "completed" || data.status === "failed") {
-          setIsScanning(false);
-        } else {
-          startLogStream(jobId);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        setError("Failed to load job details.");
+  useEffect(() => {
+    if (jobData) {
+      if (jobData.logs && logs.length === 0) setLogs(jobData.logs);
+      if (jobData.status === "completed" || jobData.status === "failed") {
         setIsScanning(false);
-      });
+      } else if (isScanning && !eventSourceRef.current) {
+        startLogStream(jobId);
+      }
+    }
 
     return () => {
       if (eventSourceRef.current) eventSourceRef.current.close();
     };
-  }, [jobId]);
+  }, [jobData, jobId]);
 
   const startLogStream = (id: string) => {
     if (eventSourceRef.current) eventSourceRef.current.close();
@@ -98,7 +101,7 @@ export default function SecretScannerJobPage() {
           if (data.message.includes("Secret scan completed") || data.level === "error") {
             es.close();
             setIsScanning(false);
-            fetchSecretJobStatus(id).then(setJob).catch(console.error);
+            queryClient.invalidateQueries({ queryKey: ["secret-job", id] });
           }
         }
       } catch (err) {
@@ -109,19 +112,23 @@ export default function SecretScannerJobPage() {
     es.onerror = () => {
       es.close();
       setIsScanning(false);
-      fetchSecretJobStatus(id).then(setJob).catch(console.error);
+      queryClient.invalidateQueries({ queryKey: ["secret-job", id] });
     };
   };
 
-  if (error) {
+  if (queryError) {
     return (
-      <div className="max-w-[1280px] mx-auto py-12">
-        <div className="bg-error-container text-on-error-container p-4 rounded-lg">{error}</div>
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="text-red-500 font-bold text-xl mb-4">Error loading scan results</div>
+        <p className="text-text-muted mb-6">{(queryError as Error).message || "Unknown error"}</p>
+        <button onClick={() => router.push("/")} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+          Return to Dashboard
+        </button>
       </div>
     );
   }
 
-  if (!job) {
+  if (isJobLoading || !jobData) {
     return (
       <div className="max-w-[1280px] mx-auto flex flex-col gap-6 pt-6">
         <SkeletonJobRow />
@@ -131,6 +138,7 @@ export default function SecretScannerJobPage() {
     );
   }
 
+  const job = jobData;
   const result = job.result as any;
   const summary = result?.summary;
   const risk = result?.risk;
@@ -180,97 +188,40 @@ export default function SecretScannerJobPage() {
 
         {!isScanning && result && (
           <div className="flex flex-col gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-element-gap">
-              <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-border-divider shadow-sm flex flex-col gap-2">
-                <p className="font-body-sm text-body-sm text-text-muted font-medium">Risk Score</p>
-                <p className="font-metric-value text-metric-value text-text-primary">{summary?.risk_score || 0}</p>
-              </div>
-              <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-[#ffd6a5] bg-[#fff8eb] shadow-sm flex flex-col gap-2">
-                <p className="font-body-sm text-body-sm text-[#8a5200] font-medium">Secrets Found</p>
-                <p className="font-metric-value text-metric-value text-[#8a5200]">{summary?.total_findings || 0}</p>
-              </div>
-              <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-[#f3b4b4] shadow-sm flex flex-col gap-2">
-                <p className="font-body-sm text-body-sm text-text-muted font-medium">Unique Secrets</p>
-                <p className="font-metric-value text-metric-value text-severity-critical">{summary?.unique_secrets || 0}</p>
-              </div>
-              <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-[#b7e4c7] shadow-sm flex flex-col gap-2">
-                <p className="font-body-sm text-body-sm text-text-muted font-medium">Exposure Paths</p>
-                <p className="font-metric-value text-metric-value text-text-primary">{summary?.exposure_paths || 0}</p>
-              </div>
+            {/* Tab Navigation */}
+            <div className="flex border-b border-border-divider mb-4">
+              <button
+                className={`py-2 px-6 font-semibold text-sm transition-colors relative ${activeTab === "executive" ? "text-primary" : "text-text-muted hover:text-text-primary"}`}
+                onClick={() => setActiveTab("executive")}
+              >
+                Executive Summary
+                {activeTab === "executive" && <div className="absolute bottom-[-1px] left-0 w-full h-0.5 bg-primary rounded-t-full"></div>}
+              </button>
+              <button
+                className={`py-2 px-6 font-semibold text-sm transition-colors relative ${activeTab === "technical" ? "text-primary" : "text-text-muted hover:text-text-primary"}`}
+                onClick={() => setActiveTab("technical")}
+              >
+                Technical Details
+                {activeTab === "technical" && <div className="absolute bottom-[-1px] left-0 w-full h-0.5 bg-primary rounded-t-full"></div>}
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-element-gap">
-              <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-border-divider shadow-sm flex flex-col gap-2">
-                <p className="font-body-sm text-body-sm text-text-muted font-medium">Sensitive Data</p>
-                <p className="font-metric-value text-metric-value text-text-primary">{summary?.sensitive_data_findings || 0}</p>
-              </div>
-              <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-border-divider shadow-sm flex flex-col gap-2">
-                <p className="font-body-sm text-body-sm text-text-muted font-medium">Usage Paths</p>
-                <p className="font-metric-value text-metric-value text-text-primary">{summary?.usage_paths || 0}</p>
-              </div>
-              <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-border-divider shadow-sm flex flex-col gap-2">
-                <p className="font-body-sm text-body-sm text-text-muted font-medium">Git History</p>
-                <p className="font-metric-value text-metric-value text-text-primary">{summary?.historical_exposures || 0}</p>
-              </div>
-              <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-[#f3b4b4] shadow-sm flex flex-col gap-2">
-                <p className="font-body-sm text-body-sm text-text-muted font-medium">Compromised Matches</p>
-                <p className="font-metric-value text-metric-value text-severity-critical">{summary?.compromised_matches || 0}</p>
-              </div>
-            </div>
+            {activeTab === "executive" && (
+              <div className="flex flex-col gap-6">
+                <SecretMetricsRow summary={summary} risk={risk} ciPolicy={ciPolicy} />
+                
+                <SecretBusinessImpactPanel summary={summary} risk={risk} ciPolicy={ciPolicy} />
 
-            {risk && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
-                <div className="flex items-center justify-between gap-4 mb-4">
-                  <div>
-                    <h3 className="text-xl font-bold">Secret Risk Intelligence</h3>
-                    <p className="text-sm text-text-secondary">Rotation, confidence, and blast-radius indicators from detected secret types.</p>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${risk.rotation_required ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}>
-                    {risk.rotation_required ? "Rotation Required" : "No Rotation Required"}
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="border border-border-divider rounded-lg p-4">
-                    <p className="text-xs uppercase text-text-muted font-semibold mb-2">High Confidence</p>
-                    <p className="text-3xl font-bold">{risk.high_confidence_findings}</p>
-                  </div>
-                  <div className="border border-border-divider rounded-lg p-4">
-                    <p className="text-xs uppercase text-text-muted font-semibold mb-2">Exposed Types</p>
-                    <div className="flex flex-wrap gap-2">
-                      {(risk.exposed_secret_types || []).slice(0, 8).map((type: string) => (
-                        <span key={type} className="px-2 py-1 bg-surface-container text-xs rounded font-mono">{type}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="border border-border-divider rounded-lg p-4">
-                    <p className="text-xs uppercase text-text-muted font-semibold mb-2">CI Policy Gate</p>
-                    <p className={`text-2xl font-bold ${ciPolicy.className}`}>
-                      {ciPolicy.label}
-                    </p>
-                    <p className="text-xs text-text-secondary mt-2 leading-relaxed">{ciPolicy.detail}</p>
-                  </div>
-                </div>
-                {risk.reasons?.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    {risk.reasons.map((reason: string) => (
-                      <div key={reason} className="flex items-start gap-2 text-sm text-text-secondary">
-                        <span className="material-symbols-outlined text-[18px] text-severity-critical">warning</span>
-                        <span>{reason}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {(exposurePaths.length > 0 || rotationPlaybooks.length > 0) && (
-              <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6">
-                {exposurePaths.length > 0 && (
-                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+            {(exposurePaths.length > 0 || rotationPlaybooks.length > 0 || secretGraph) && (
+              <div className={`grid grid-cols-1 ${isExposureSidebarOpen && exposurePaths.length > 0 ? 'xl:grid-cols-[1fr_1.5fr]' : 'xl:grid-cols-1'} gap-6`}>
+                {isExposureSidebarOpen && exposurePaths.length > 0 && (
+                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6 h-fit">
                     <div className="flex items-center justify-between gap-4 mb-4">
                       <div>
-                        <h3 className="text-xl font-bold">Secret Exposure Paths</h3>
-                        <p className="text-sm text-text-secondary">How each leaked secret could turn into asset access and blast radius.</p>
+                        <div className="flex items-center">
+                          <h3 className="text-xl font-bold">Secret Exposure Paths</h3>
+                          <InfoTooltip text="How each leaked secret could turn into asset access and blast radius." />
+                        </div>
                       </div>
                       <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
                         {exposurePaths.length} paths
@@ -286,10 +237,6 @@ export default function SecretScannerJobPage() {
                                 <h4 className="font-bold text-red-900">{path.title}</h4>
                               </div>
                               <p className="text-xs text-red-900 font-mono">{path.file_path}:{path.line_number || "-"}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs uppercase text-red-700 font-semibold">Score</p>
-                              <p className="text-2xl font-bold text-red-900">{path.score}</p>
                             </div>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
@@ -325,33 +272,26 @@ export default function SecretScannerJobPage() {
                   </div>
                 )}
 
-                <div className="flex flex-col gap-6">
-                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
-                    <h3 className="text-xl font-bold mb-2">Secret Exposure Graph</h3>
-                    <p className="text-sm text-text-secondary mb-4">File to secret to asset to required rotation control.</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="border border-border-divider rounded-lg p-4">
-                        <p className="text-xs uppercase text-text-muted font-semibold">Nodes</p>
-                        <p className="text-3xl font-bold">{secretGraph?.nodes?.length || 0}</p>
-                      </div>
-                      <div className="border border-border-divider rounded-lg p-4">
-                        <p className="text-xs uppercase text-text-muted font-semibold">Edges</p>
-                        <p className="text-3xl font-bold">{secretGraph?.edges?.length || 0}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4 space-y-2 max-h-[260px] overflow-y-auto">
-                      {(secretGraph?.edges || []).slice(0, 10).map((edge: any, idx: number) => (
-                        <div key={`${edge.source}-${edge.target}-${idx}`} className="text-xs font-mono bg-surface-container-low rounded px-2 py-1">
-                          {edge.source} -[{edge.label}]-&gt; {edge.target}
-                        </div>
-                      ))}
-                    </div>
+                <div className="flex flex-col gap-6 w-full overflow-hidden">
+                  <div className="flex justify-end">
+                    <button 
+                      onClick={() => setIsExposureSidebarOpen(!isExposureSidebarOpen)}
+                      className="px-4 py-2 bg-white hover:bg-surface-container border border-border-subtle rounded-md text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm w-fit"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        {isExposureSidebarOpen ? 'keyboard_double_arrow_left' : 'keyboard_double_arrow_right'}
+                      </span>
+                      {isExposureSidebarOpen ? 'Hide Exposure Paths' : 'Show Exposure Paths'}
+                    </button>
                   </div>
+                  {secretGraph && <SecretInteractiveGraph graphData={secretGraph} />}
 
                   {rotationPlaybooks.length > 0 && (
                     <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
-                      <h3 className="text-xl font-bold mb-2">Rotation Playbooks</h3>
-                      <p className="text-sm text-text-secondary mb-4">Owner-aware steps generated for exposed credentials.</p>
+                      <div className="flex items-center mb-2">
+                        <h3 className="text-xl font-bold">Rotation Playbooks</h3>
+                        <InfoTooltip text="Owner-aware steps generated for exposed credentials." />
+                      </div>
                       <div className="space-y-3">
                         {rotationPlaybooks.slice(0, 4).map((playbook: any) => (
                           <div key={playbook.id} className="border border-border-divider rounded-lg p-4">
@@ -375,175 +315,186 @@ export default function SecretScannerJobPage() {
                 </div>
               </div>
             )}
-
-            {policyDecision && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
-                <h3 className="text-xl font-bold mb-2">Policy Decision</h3>
-                <p className="text-sm text-text-secondary mb-4">Why the scan should pass, block, or require manual review.</p>
-                <div className="flex flex-wrap gap-3 mb-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${policyDecision.status === "failed" ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}>
-                    {policyDecision.status}
-                  </span>
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-text-secondary">{policyDecision.gate}</span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs uppercase font-semibold text-text-muted mb-2">Reasons</p>
-                    <ul className="space-y-1 text-sm text-text-secondary">
-                      {(policyDecision.reasons || []).map((reason: string) => <li key={reason}>- {reason}</li>)}
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase font-semibold text-text-muted mb-2">Required Actions</p>
-                    <ul className="space-y-1 text-sm text-text-secondary">
-                      {(policyDecision.required_actions || []).map((action: string) => <li key={action}>- {action}</li>)}
-                    </ul>
-                  </div>
-                </div>
               </div>
             )}
 
-            {(sensitiveDataFindings.length > 0 || usagePaths.length > 0 || historicalExposures.length > 0 || compromisedMatches.length > 0) && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
-                <h3 className="text-xl font-bold mb-2">Advanced Secret Intelligence</h3>
-                <p className="text-sm text-text-secondary mb-5">
-                  Offline checks for sensitive financial data, usage sinks, Git history exposure, and known compromised fingerprints.
-                </p>
-
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-                  {usagePaths.length > 0 && (
-                    <div className="border border-border-divider rounded-lg p-4">
-                      <h4 className="font-bold mb-3 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[20px] text-primary-container">schema</span>
-                        Data-flow Usage Paths
-                      </h4>
-                      <div className="space-y-3 max-h-[320px] overflow-y-auto">
-                        {usagePaths.slice(0, 8).map((usage: any) => (
-                          <div key={usage.id} className="bg-surface-container-low rounded p-3">
-                            <div className="flex items-center justify-between gap-3">
-                              <span className="font-mono text-xs">{usage.variable_hint}</span>
-                              <span className="px-2 py-1 rounded text-xs bg-orange-100 text-orange-800 font-semibold">{usage.sink_type}</span>
-                            </div>
-                            <p className="text-xs text-text-muted mt-1">{usage.usage_file}:{usage.line_number || "-"}</p>
-                            <p className="text-sm text-text-secondary mt-2">{usage.impact}</p>
-                            <code className="block mt-2 text-xs whitespace-pre-wrap break-words">{usage.evidence}</code>
-                          </div>
-                        ))}
+            {activeTab === "technical" && (
+              <div className="flex flex-col gap-6">
+                {policyDecision && (
+                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+                    <div className="flex items-center mb-2">
+                      <h3 className="text-xl font-bold">Policy Decision</h3>
+                      <InfoTooltip text="Detailed rationale of why the scan should pass, block, or require manual review." />
+                    </div>
+                    <div className="flex flex-wrap gap-3 mb-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${policyDecision.status === "failed" ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}>
+                        {policyDecision.status}
+                      </span>
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-text-secondary">{policyDecision.gate}</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs uppercase font-semibold text-text-muted mb-2">Reasons</p>
+                        <ul className="space-y-1 text-sm text-text-secondary">
+                          {(policyDecision.reasons || []).map((reason: string) => <li key={reason}>- {reason}</li>)}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase font-semibold text-text-muted mb-2">Required Actions</p>
+                        <ul className="space-y-1 text-sm text-text-secondary">
+                          {(policyDecision.required_actions || []).map((action: string) => <li key={action}>- {action}</li>)}
+                        </ul>
                       </div>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {sensitiveDataFindings.length > 0 && (
-                    <div className="border border-border-divider rounded-lg p-4">
-                      <h4 className="font-bold mb-3 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[20px] text-primary-container">privacy_tip</span>
-                        Sensitive Banking Data
-                      </h4>
-                      <div className="space-y-3 max-h-[320px] overflow-y-auto">
-                        {sensitiveDataFindings.slice(0, 8).map((item: any) => (
-                          <div key={item.id} className="bg-surface-container-low rounded p-3">
-                            <div className="flex items-center justify-between gap-3">
-                              <span className="font-semibold">{item.data_type}</span>
-                              <span className={`px-2 py-1 rounded text-xs font-semibold ${severityClass(item.severity)}`}>{item.severity}</span>
-                            </div>
-                            <p className="text-xs text-text-muted mt-1">{item.file_path}:{item.line_number || "-"}</p>
-                            <code className="block mt-2 text-xs whitespace-pre-wrap break-words">{item.evidence}</code>
-                            <p className="text-xs text-text-secondary mt-2">{item.remediation}</p>
-                          </div>
-                        ))}
-                      </div>
+                {(sensitiveDataFindings.length > 0 || usagePaths.length > 0 || historicalExposures.length > 0 || compromisedMatches.length > 0) && (
+                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+                    <div className="flex items-center mb-2">
+                      <h3 className="text-xl font-bold">Advanced Secret Intelligence</h3>
+                      <InfoTooltip text="Offline checks for sensitive financial data, usage sinks, Git history exposure, and known compromised fingerprints." />
                     </div>
-                  )}
 
-                  {historicalExposures.length > 0 && (
-                    <div className="border border-border-divider rounded-lg p-4">
-                      <h4 className="font-bold mb-3 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[20px] text-primary-container">history</span>
-                        Git History Exposures
-                      </h4>
-                      <div className="space-y-3 max-h-[320px] overflow-y-auto">
-                        {historicalExposures.slice(0, 8).map((item: any) => (
-                          <div key={item.id} className="bg-red-50 border border-red-100 rounded p-3">
-                            <div className="flex items-center justify-between gap-3">
-                              <span className="font-mono text-xs">{item.commit?.slice(0, 10)}</span>
-                              <span className={`px-2 py-1 rounded text-xs font-semibold ${severityClass(item.severity)}`}>{item.secret_type}</span>
-                            </div>
-                            <p className="text-xs text-red-900 mt-1">{item.file_path || "unknown file"} {item.date ? `- ${item.date}` : ""}</p>
-                            <code className="block mt-2 text-xs whitespace-pre-wrap break-words">{item.evidence}</code>
-                            <p className="text-xs text-red-900 mt-2">{item.remediation}</p>
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-4">
+                      {usagePaths.length > 0 && (
+                        <div className="border border-border-divider rounded-lg p-4">
+                          <h4 className="font-bold mb-3 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[20px] text-primary-container">schema</span>
+                            Data-flow Usage Paths
+                          </h4>
+                          <div className="space-y-3 max-h-[320px] overflow-y-auto">
+                            {usagePaths.slice(0, 8).map((usage: any) => (
+                              <div key={usage.id} className="bg-surface-container-low rounded p-3">
+                                <div className="flex items-center justify-between gap-3">
+                                  <span className="font-mono text-xs">{usage.variable_hint}</span>
+                                  <span className="px-2 py-1 rounded text-xs bg-orange-100 text-orange-800 font-semibold">{usage.sink_type}</span>
+                                </div>
+                                <p className="text-xs text-text-muted mt-1">{usage.usage_file}:{usage.line_number || "-"}</p>
+                                <p className="text-sm text-text-secondary mt-2">{usage.impact}</p>
+                                <code className="block mt-2 text-xs whitespace-pre-wrap break-words">{usage.evidence}</code>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                        </div>
+                      )}
 
-                  {compromisedMatches.length > 0 && (
-                    <div className="border border-red-200 bg-red-50 rounded-lg p-4">
-                      <h4 className="font-bold mb-3 flex items-center gap-2 text-red-900">
-                        <span className="material-symbols-outlined text-[20px]">report</span>
-                        Offline Compromised Matches
-                      </h4>
-                      <div className="space-y-3">
-                        {compromisedMatches.slice(0, 8).map((item: any) => (
-                          <div key={item.id} className="bg-white border border-red-100 rounded p-3">
-                            <p className="font-mono text-xs">{item.secret_fingerprint}</p>
-                            <p className="text-xs text-red-900 mt-1">Source: {item.match_source}</p>
-                            <p className="text-sm text-red-950 mt-2">{item.action}</p>
+                      {sensitiveDataFindings.length > 0 && (
+                        <div className="border border-border-divider rounded-lg p-4">
+                          <h4 className="font-bold mb-3 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[20px] text-primary-container">privacy_tip</span>
+                            Sensitive Banking Data
+                          </h4>
+                          <div className="space-y-3 max-h-[320px] overflow-y-auto">
+                            {sensitiveDataFindings.slice(0, 8).map((item: any) => (
+                              <div key={item.id} className="bg-surface-container-low rounded p-3">
+                                <div className="flex items-center justify-between gap-3">
+                                  <span className="font-semibold">{item.data_type}</span>
+                                  <span className={`px-2 py-1 rounded text-xs font-semibold ${severityClass(item.severity)}`}>{item.severity}</span>
+                                </div>
+                                <p className="text-xs text-text-muted mt-1">{item.file_path}:{item.line_number || "-"}</p>
+                                <code className="block mt-2 text-xs whitespace-pre-wrap break-words">{item.evidence}</code>
+                                <p className="text-xs text-text-secondary mt-2">{item.remediation}</p>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+                        </div>
+                      )}
 
-            {findings.length > 0 && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
-                <h3 className="text-xl font-bold mb-4">Secrets and Remediation</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="border-b border-border-divider text-text-secondary text-sm">
-                        <th className="pb-2 font-medium">Severity</th>
-                        <th className="pb-2 font-medium">Secret Type</th>
-                        <th className="pb-2 font-medium">Location</th>
-                        <th className="pb-2 font-medium">Evidence</th>
-                        <th className="pb-2 font-medium">Confidence</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-sm">
-                      {findings.map((finding: any) => (
-                        <tr key={finding.id} className="border-b border-border-divider last:border-none align-top">
-                          <td className="py-3 pr-4">
-                            <span className={`px-2 py-1 rounded text-xs font-semibold ${severityClass(finding.severity)}`}>
-                              {finding.severity.toUpperCase()}
-                            </span>
-                          </td>
-                          <td className="py-3 pr-4">
-                            <div className="font-medium">{finding.title}</div>
-                            <div className="text-xs text-text-muted font-mono mt-1">{finding.secret_type}</div>
-                          </td>
-                          <td className="py-3 pr-4 font-mono text-xs">
-                            {finding.file_path}:{finding.line_number || "-"}
-                          </td>
-                          <td className="py-3 pr-4">
-                            <code className="block max-w-[420px] whitespace-pre-wrap break-words bg-surface-container-low px-2 py-1 rounded text-xs">
-                              {finding.evidence}
-                            </code>
-                            <div className="text-xs text-text-muted mt-2">
-                              {finding.remediation?.title}: {finding.remediation?.description}
-                            </div>
-                          </td>
-                          <td className="py-3 pr-4">
-                            <span className="font-semibold">{Math.round((finding.confidence || 0) * 100)}%</span>
-                            <div className="text-xs text-text-muted mt-1">{finding.validation_status}</div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      {historicalExposures.length > 0 && (
+                        <div className="border border-border-divider rounded-lg p-4">
+                          <h4 className="font-bold mb-3 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[20px] text-primary-container">history</span>
+                            Git History Exposures
+                          </h4>
+                          <div className="space-y-3 max-h-[320px] overflow-y-auto">
+                            {historicalExposures.slice(0, 8).map((item: any) => (
+                              <div key={item.id} className="bg-red-50 border border-red-100 rounded p-3">
+                                <div className="flex items-center justify-between gap-3">
+                                  <span className="font-mono text-xs">{item.commit?.slice(0, 10)}</span>
+                                  <span className={`px-2 py-1 rounded text-xs font-semibold ${severityClass(item.severity)}`}>{item.secret_type}</span>
+                                </div>
+                                <p className="text-xs text-red-900 mt-1">{item.file_path || "unknown file"} {item.date ? `- ${item.date}` : ""}</p>
+                                <code className="block mt-2 text-xs whitespace-pre-wrap break-words">{item.evidence}</code>
+                                <p className="text-xs text-red-900 mt-2">{item.remediation}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {compromisedMatches.length > 0 && (
+                        <div className="border border-red-200 bg-red-50 rounded-lg p-4">
+                          <h4 className="font-bold mb-3 flex items-center gap-2 text-red-900">
+                            <span className="material-symbols-outlined text-[20px]">report</span>
+                            Offline Compromised Matches
+                          </h4>
+                          <div className="space-y-3">
+                            {compromisedMatches.slice(0, 8).map((item: any) => (
+                              <div key={item.id} className="bg-white border border-red-100 rounded p-3">
+                                <p className="font-mono text-xs">{item.secret_fingerprint}</p>
+                                <p className="text-xs text-red-900 mt-1">Source: {item.match_source}</p>
+                                <p className="text-sm text-red-950 mt-2">{item.action}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {findings.length > 0 && (
+                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+                    <div className="flex items-center mb-4">
+                      <h3 className="text-xl font-bold">Secrets and Remediation</h3>
+                      <InfoTooltip text="Raw list of all detected secrets, their location, extracted evidence, and remediation steps." />
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-border-divider text-text-secondary text-sm">
+                            <th className="pb-2 font-medium">Severity</th>
+                            <th className="pb-2 font-medium">Secret Type</th>
+                            <th className="pb-2 font-medium">Location</th>
+                            <th className="pb-2 font-medium">Evidence</th>
+                            <th className="pb-2 font-medium">Confidence</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-sm">
+                          {findings.map((finding: any) => (
+                            <tr key={finding.id} className="border-b border-border-divider last:border-none align-top">
+                              <td className="py-3 pr-4">
+                                <span className={`px-2 py-1 rounded text-xs font-semibold ${severityClass(finding.severity)}`}>
+                                  {finding.severity.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="py-3 pr-4">
+                                <div className="font-medium">{finding.title}</div>
+                                <div className="text-xs text-text-muted font-mono mt-1">{finding.secret_type}</div>
+                              </td>
+                              <td className="py-3 pr-4 font-mono text-xs">
+                                {finding.file_path}:{finding.line_number || "-"}
+                              </td>
+                              <td className="py-3 pr-4">
+                                <code className="block max-w-[420px] whitespace-pre-wrap break-words bg-surface-container-low px-2 py-1 rounded text-xs">
+                                  {finding.evidence}
+                                </code>
+                                <div className="text-xs text-text-muted mt-2">
+                                  {finding.remediation?.title}: {finding.remediation?.description}
+                                </div>
+                              </td>
+                              <td className="py-3 pr-4">
+                                <span className="font-semibold">{Math.round((finding.confidence || 0) * 100)}%</span>
+                                <div className="text-xs text-text-muted mt-1">{finding.validation_status}</div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

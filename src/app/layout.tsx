@@ -7,6 +7,7 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jet
 
 import { ClientLayoutShell } from "@/widgets/LayoutShell/ClientLayoutShell";
 import { AuthProvider } from "@/shared/lib/AuthContext";
+import { ReactQueryProvider } from "@/shared/lib/ReactQueryProvider";
 
 export const metadata: Metadata = {
   title: "BugBusters Security Platform",
@@ -24,11 +25,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-background text-text-primary font-body-sm h-screen flex overflow-hidden">
-        <AuthProvider>
-          <ClientLayoutShell>
-            {children}
-          </ClientLayoutShell>
-        </AuthProvider>
+        <ReactQueryProvider>
+          <AuthProvider>
+            <ClientLayoutShell>
+              {children}
+            </ClientLayoutShell>
+          </AuthProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

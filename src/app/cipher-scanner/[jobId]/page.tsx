@@ -7,6 +7,11 @@ import { fetchCipherJobStatus, getCipherScanLogsUrl } from "@/shared/api/client"
 import { LiveExecutionLog } from "@/widgets/LiveExecutionLog";
 import { SkeletonJobRow, SkeletonMetricsRow, SkeletonPanel } from "@/widgets/Skeleton";
 import { ArrowLeftCircle } from "lucide-react";
+import { CipherMetricsRow } from "@/widgets/cipher/CipherMetricsRow";
+import { CipherBusinessImpactPanel } from "@/widgets/cipher/CipherBusinessImpactPanel";
+import { CipherInteractiveGraph } from "@/widgets/cipher/CipherInteractiveGraph";
+import { InfoTooltip } from "@/shared/ui/InfoTooltip";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 function severityClass(severity?: string) {
   if (severity === "critical") return "bg-red-100 text-red-800";
@@ -73,13 +78,18 @@ function ciPolicyExplanation(summary: CipherSummary, policyDecision: CipherPolic
 export default function CipherScannerJobPage() {
   const { jobId } = useParams() as { jobId: string };
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  const [job, setJob] = useState<ScanJob | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isScanning, setIsScanning] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"executive" | "technical">("executive");
 
   const eventSourceRef = useRef<EventSource | null>(null);
+
+  const { data: jobData, isLoading: isJobLoading, error: queryError } = useQuery({
+    queryKey: ["cipher-job", jobId],
+    queryFn: () => fetchCipherJobStatus(jobId),
+  });
 
   function startLogStream(id: string) {
     if (eventSourceRef.current) eventSourceRef.current.close();
@@ -96,7 +106,7 @@ export default function CipherScannerJobPage() {
           if (data.message.includes("Pre-deployment cipher scan completed") || data.level === "error") {
             es.close();
             setIsScanning(false);
-            fetchCipherJobStatus(id).then(setJob).catch(console.error);
+            queryClient.invalidateQueries({ queryKey: ["cipher-job", id] });
           }
         }
       } catch (err) {
@@ -107,43 +117,38 @@ export default function CipherScannerJobPage() {
     es.onerror = () => {
       es.close();
       setIsScanning(false);
-      fetchCipherJobStatus(id).then(setJob).catch(console.error);
+      queryClient.invalidateQueries({ queryKey: ["cipher-job", id] });
     };
   }
 
   useEffect(() => {
-    if (!jobId) return;
-
-    fetchCipherJobStatus(jobId)
-      .then((data) => {
-        setJob(data);
-        if (data.logs) setLogs(data.logs);
-        if (data.status === "completed" || data.status === "failed") {
-          setIsScanning(false);
-        } else {
-          startLogStream(jobId);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        setError("Failed to load cipher scan details.");
+    if (jobData) {
+      if (jobData.logs && logs.length === 0) setLogs(jobData.logs);
+      if (jobData.status === "completed" || jobData.status === "failed") {
         setIsScanning(false);
-      });
+      } else if (isScanning && !eventSourceRef.current) {
+        startLogStream(jobId);
+      }
+    }
 
     return () => {
       if (eventSourceRef.current) eventSourceRef.current.close();
     };
-  }, [jobId]);
+  }, [jobData, jobId]);
 
-  if (error) {
+  if (queryError) {
     return (
-      <div className="max-w-[1280px] mx-auto py-12">
-        <div className="bg-error-container text-on-error-container p-4 rounded-lg">{error}</div>
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="text-red-500 font-bold text-xl mb-4">Error loading scan results</div>
+        <p className="text-text-muted mb-6">{(queryError as Error).message || "Unknown error"}</p>
+        <button onClick={() => router.push("/")} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+          Return to Dashboard
+        </button>
       </div>
     );
   }
 
-  if (!job) {
+  if (isJobLoading || !jobData) {
     return (
       <div className="max-w-[1280px] mx-auto flex flex-col gap-6 pt-6">
         <SkeletonJobRow />
@@ -153,6 +158,7 @@ export default function CipherScannerJobPage() {
     );
   }
 
+  const job = jobData;
   const result = job.result as CipherScanResult | undefined;
   const summary = result?.summary;
   const findings = result?.findings || [];
@@ -219,24 +225,36 @@ export default function CipherScannerJobPage() {
 
         {!isScanning && result && (
           <div className="flex flex-col gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-element-gap">
-              <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-border-divider shadow-sm flex flex-col gap-2">
-                <p className="font-body-sm text-body-sm text-text-muted font-medium">Risk Score</p>
-                <p className="font-metric-value text-metric-value text-text-primary">{summary?.risk_score || 0}</p>
-              </div>
-              <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-[#ffd6a5] bg-[#fff8eb] shadow-sm flex flex-col gap-2">
-                <p className="font-body-sm text-body-sm text-[#8a5200] font-medium">TLS Findings</p>
-                <p className="font-metric-value text-metric-value text-[#8a5200]">{summary?.total_findings || 0}</p>
-              </div>
-              <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-[#f3b4b4] shadow-sm flex flex-col gap-2">
-                <p className="font-body-sm text-body-sm text-text-muted font-medium">Endpoint Policies</p>
-                <p className="font-metric-value text-metric-value text-text-primary">{summary?.endpoint_policies || 0}</p>
-              </div>
-              <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-[#b7e4c7] shadow-sm flex flex-col gap-2">
-                <p className="font-body-sm text-body-sm text-text-muted font-medium">Attack Paths</p>
-                <p className="font-metric-value text-metric-value text-text-primary">{summary?.attack_paths || 0}</p>
-              </div>
+            <div className="flex border-b border-border-divider mb-4">
+              <button
+                className={`py-2 px-6 font-semibold text-sm transition-colors relative ${activeTab === "executive" ? "text-primary" : "text-text-muted hover:text-text-primary"}`}
+                onClick={() => setActiveTab("executive")}
+              >
+                Executive Summary
+                {activeTab === "executive" && <div className="absolute bottom-[-1px] left-0 w-full h-0.5 bg-primary rounded-t-full"></div>}
+              </button>
+              <button
+                className={`py-2 px-6 font-semibold text-sm transition-colors relative ${activeTab === "technical" ? "text-primary" : "text-text-muted hover:text-text-primary"}`}
+                onClick={() => setActiveTab("technical")}
+              >
+                Technical Details
+                {activeTab === "technical" && <div className="absolute bottom-[-1px] left-0 w-full h-0.5 bg-primary rounded-t-full"></div>}
+              </button>
             </div>
+
+            {activeTab === "executive" && (
+              <div className="flex flex-col gap-6">
+                <CipherMetricsRow summary={summary} ciPolicy={ciPolicy} />
+                <CipherBusinessImpactPanel summary={summary} ciPolicy={ciPolicy} attackPaths={attackPaths} />
+
+                {policyGraph && (
+                  <CipherInteractiveGraph graphData={policyGraph} />
+                )}
+              </div>
+            )}
+
+            {activeTab === "technical" && (
+              <div className="flex flex-col gap-6">
 
             <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
               <div className="flex items-center justify-between gap-4 mb-4">
@@ -337,20 +355,9 @@ export default function CipherScannerJobPage() {
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                   {policyGraph && (
-                    <div className="border border-border-divider rounded-lg p-4">
-                      <h4 className="font-bold mb-2">Policy Graph Hotspots</h4>
-                      <p className="text-sm text-text-secondary mb-3">Most connected TLS nodes by risk-weighted graph edges.</p>
-                      <div className="space-y-2 max-h-[260px] overflow-y-auto">
-                        {(policyGraph.hotspots || []).slice(0, 8).map((hotspot: string) => {
-                          const node = policyGraph.nodes.find((item) => item.id === hotspot);
-                          return (
-                            <div key={hotspot} className="flex items-center justify-between gap-3 bg-surface-container-low rounded px-3 py-2 text-sm">
-                              <span className="font-mono break-all">{node?.label || hotspot}</span>
-                              <span className="px-2 py-1 rounded bg-surface-container text-xs">{node?.kind || "node"}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
+                    <div className="border border-border-divider rounded-lg p-4 bg-surface-container-lowest">
+                      <h4 className="font-bold mb-2">Policy Graph Data Available</h4>
+                      <p className="text-sm text-text-secondary mb-3">See Executive Summary for interactive visualization.</p>
                     </div>
                   )}
 
@@ -612,10 +619,6 @@ export default function CipherScannerJobPage() {
                           <h4 className="font-bold text-red-900">{path.title}</h4>
                           <p className="text-xs text-red-900 mt-1">Entry point: {path.entry_point}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-xs uppercase text-red-700 font-semibold">Score</p>
-                          <p className="text-2xl font-bold text-red-900">{path.score}</p>
-                        </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div className="bg-white border border-red-100 rounded p-3">
@@ -765,6 +768,8 @@ export default function CipherScannerJobPage() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
               </div>
             )}
           </div>
