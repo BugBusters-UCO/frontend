@@ -13,6 +13,51 @@ export type ScanJob = {
   logs?: LogEntry[];
 };
 
+export type DashboardStats = {
+  totalScans: number;
+  successfulScans: number;
+  failedScans: number;
+  totalFindings: number;
+  criticalFindings: number;
+  scanCounts: {
+    dependency: number;
+    config: number;
+    secret: number;
+    cipher: number;
+  };
+  scannerDetails: {
+    dependency: { scans: number; findings: number; critical: number; high: number; medium: number; low: number; };
+    config: { scans: number; findings: number; critical: number; high: number; medium: number; low: number; };
+    secret: { scans: number; findings: number; critical: number; high: number; medium: number; low: number; };
+    cipher: { scans: number; findings: number; critical: number; high: number; medium: number; low: number; };
+  };
+  scheduled: {
+    total: number;
+    failed: number;
+  };
+  agents: {
+    total: number;
+    connected: number;
+  };
+  githubConnected: boolean;
+  recentScans: Array<{
+    id: string;
+    sourceLabel: string;
+    scannerType: string;
+    status: string;
+    createdAt: string;
+  }>;
+  riskiestAssets: Array<{
+    sourceLabel: string;
+    criticalCount: number;
+    highCount: number;
+  }>;
+  trendData: Array<{
+    date: string;
+    findingsCount: number;
+  }>;
+};
+
 export type BusinessRiskContext = {
   assetCriticality: number;
   dataSensitivity: number;

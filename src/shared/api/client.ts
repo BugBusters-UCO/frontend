@@ -1,5 +1,5 @@
 import { getCookie, deleteCookie } from "cookies-next";
-import type { AgentScanJob, BusinessRiskContext, RiskAssessment, RiskOverview, ScanJob, ScheduledScan, ScannerModule, VmAgent } from "@/shared/api/types";
+import type { AgentScanJob, BusinessRiskContext, RiskAssessment, RiskOverview, ScanJob, ScheduledScan, ScannerModule, VmAgent, DashboardStats } from "@/shared/api/types";
 
 const API_BASE_URL = "http://127.0.0.1:5000";
 
@@ -92,6 +92,20 @@ export async function fetchCurrentUser(): Promise<any> {
   });
   if (!response.ok) {
     throw new Error("Not authenticated");
+  }
+  return response.json();
+}
+
+// ------------------------------------------------------------------
+// Dashboard
+// ------------------------------------------------------------------
+
+export async function fetchDashboardStats(): Promise<DashboardStats> {
+  const response = await apiFetch(`${API_BASE_URL}/api/dashboard/stats`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch dashboard stats");
   }
   return response.json();
 }
@@ -541,20 +555,37 @@ export async function createRiskAssessment(data: {
   return response.json();
 }
 
-export async function generateRiskAssessmentRemedies(
-  assessmentId: string,
-  data: { findingIds?: string[]; limit?: number } = {}
-): Promise<RiskAssessment> {
+export async function generateRiskAssessmentRemedies(assessmentId: string, options: { limit?: number }): Promise<RiskAssessment> {
   const response = await apiFetch(`${API_BASE_URL}/api/risk/assessments/${assessmentId}/remedies`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-    body: JSON.stringify(data),
+    headers: { ...getAuthHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify(options),
   });
   if (!response.ok) {
-    const errData = await response.json().catch(() => ({}));
-    throw new Error(errData.message || "Failed to generate AI remedies");
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || "Failed to generate risk remedies");
   }
   return response.json();
+}
+
+export async function downloadRiskReportPdf(assessmentId: string): Promise<void> {
+  const token = getCookie("auth_token");
+  const response = await axios({
+    url: `${API_BASE_URL}/api/risk/assessments/${assessmentId}/pdf`,
+    method: "GET",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    responseType: "blob",
+  });
+  
+  const blob = new Blob([response.data], { type: "application/pdf" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `risk-report-${assessmentId}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
 }
 
 export async function fetchRiskAssessments(): Promise<RiskAssessment[]> {

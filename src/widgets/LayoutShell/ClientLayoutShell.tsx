@@ -7,7 +7,7 @@ import { Sidebar } from "./Sidebar";
 
 export function ClientLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  
+
   const isAuthPage = pathname === "/login" || pathname === "/register";
 
   if (isAuthPage) {

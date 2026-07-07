@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
-import { fetchRiskAssessment, generateRiskAssessmentRemedies } from "@/shared/api/client";
+import { fetchRiskAssessment, generateRiskAssessmentRemedies, downloadRiskReportPdf } from "@/shared/api/client";
 import type { RiskAssessment, UnifiedRiskPriority } from "@/shared/api/types";
 
 const SCANNER_LABELS: Record<string, string> = {
@@ -22,6 +22,7 @@ export default function RiskReportDetailPage() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<"executive" | "technical">("executive");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
   const { data: assessment, isLoading } = useQuery({
@@ -55,6 +56,18 @@ export default function RiskReportDetailPage() {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    if (!assessment || assessment.status !== "completed") return;
+    setIsDownloading(true);
+    try {
+      await downloadRiskReportPdf(assessment.id);
+    } catch (error) {
+      alert("Failed to download PDF");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   if (isLoading) {
     return <div className="mx-auto max-w-[1280px] rounded-lg border border-border-divider bg-white p-6 text-sm text-text-muted">Loading risk report...</div>;
   }
@@ -77,10 +90,23 @@ export default function RiskReportDetailPage() {
               {assessment.sourceType} assessment / {assessment.status} / {new Date(assessment.createdAt).toLocaleString()}
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            <Metric label="Final" value={risk?.final_risk_score ?? "-"} tone={risk?.risk_level || "low"} />
-            <Metric label="Technical" value={risk?.technical_risk_score ?? "-"} tone={scoreTone(risk?.technical_risk_score || 0)} />
-            <Metric label="Business" value={risk?.business_risk_score ?? "-"} tone={scoreTone(risk?.business_risk_score || 0)} />
+          
+          <div className="flex flex-col items-end gap-3 shrink-0">
+            <button
+              onClick={handleDownloadPdf}
+              disabled={assessment.status !== "completed" || isDownloading}
+              className="flex items-center gap-2 rounded-lg bg-surface-container-high px-4 py-2 text-sm font-bold text-text-primary hover:bg-surface-container-highest disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                {isDownloading ? "hourglass_empty" : "download"}
+              </span>
+              {isDownloading ? "Generating PDF..." : "Export to PDF"}
+            </button>
+            <div className="grid grid-cols-3 gap-3">
+              <Metric label="Final" value={risk?.final_risk_score ?? "-"} tone={risk?.risk_level || "low"} />
+              <Metric label="Technical" value={risk?.technical_risk_score ?? "-"} tone={scoreTone(risk?.technical_risk_score || 0)} />
+              <Metric label="Business" value={risk?.business_risk_score ?? "-"} tone={scoreTone(risk?.business_risk_score || 0)} />
+            </div>
           </div>
         </div>
       </section>
@@ -198,7 +224,7 @@ function ExecutiveView({
           disabled={assessment.status !== "completed" || isGenerating}
           className="mt-5 w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
         >
-          {isGenerating ? "Generating remedies..." : assessment.result?.aiRemedies?.length ? "Regenerate AI remedies" : "Get AI remedies"}
+          {isGenerating ? "Generating remedies..." : assessment.result?.aiRemedies?.length ? "Regenerate remedies" : "Get remedies"}
         </button>
         {aiError && <p className="mt-2 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">{aiError}</p>}
       </section>
