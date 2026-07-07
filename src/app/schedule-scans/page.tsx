@@ -7,10 +7,12 @@ import {
   deleteScheduledScan,
   fetchImportedGithubRepos,
   fetchScheduledScans,
+  fetchAgents,
   runScheduledScanNow,
   updateScheduledScan
 } from "@/shared/api/client";
-import type { BusinessRiskContext, ScheduledScan, ScannerModule } from "@/shared/api/types";
+import type { BusinessRiskContext, ScheduledScan, ScannerModule, VmAgent } from "@/shared/api/types";
+import { RemoteFileExplorer } from "@/shared/ui/RemoteFileExplorer";
 
 const SCANNERS: Array<{ id: ScannerModule; label: string; icon: string }> = [
   { id: "dependency", label: "Dependency", icon: "inventory_2" },
@@ -59,12 +61,18 @@ type ScheduleFrequency = "daily" | "weekly" | "monthly";
 
 export default function ScheduleScansPage() {
   const [repos, setRepos] = useState<Repo[]>([]);
+  const [agents, setAgents] = useState<VmAgent[]>([]);
   const [schedules, setSchedules] = useState<ScheduledScan[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  const [sourceType, setSourceType] = useState<"github" | "vm-agent">("github");
   const [selectedRepoId, setSelectedRepoId] = useState("");
+  const [selectedAgentId, setSelectedAgentId] = useState("");
+  const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
+  
   const [name, setName] = useState("Daily banking security scan");
   const [selectedScanners, setSelectedScanners] = useState<ScannerModule[]>(["dependency", "config", "secret", "cipher"]);
   const [frequency, setFrequency] = useState<ScheduleFrequency>("daily");
@@ -81,9 +89,10 @@ export default function ScheduleScansPage() {
     setLoading(true);
     setError(null);
     try {
-      const [repoPayload, schedulePayload] = await Promise.all([
+      const [repoPayload, schedulePayload, agentsPayload] = await Promise.all([
         fetchImportedGithubRepos(),
-        fetchScheduledScans()
+        fetchScheduledScans(),
+        fetchAgents()
       ]);
       const nextRepos = ((repoPayload.repositories || []) as ImportedRepoPayload[]).map((repo) => ({
         id: repo.id,
@@ -95,7 +104,9 @@ export default function ScheduleScansPage() {
       }));
       setRepos(nextRepos);
       setSchedules(schedulePayload);
+      setAgents(agentsPayload);
       setSelectedRepoId((current) => current || nextRepos[0]?.id || "");
+      setSelectedAgentId((current) => current || agentsPayload[0]?.id || "");
     } catch (err: unknown) {
       setError(errorMessage(err, "Failed to load schedules"));
     } finally {
@@ -111,8 +122,16 @@ export default function ScheduleScansPage() {
   }, [refresh]);
 
   async function submitSchedule() {
-    if (!selectedRepo) {
+    if (sourceType === "github" && !selectedRepo) {
       setError("Import a GitHub repository before creating a schedule.");
+      return;
+    }
+    if (sourceType === "vm-agent" && !selectedAgentId) {
+      setError("Connect a VM Agent before creating a schedule.");
+      return;
+    }
+    if (sourceType === "vm-agent" && selectedPaths.length === 0) {
+      setError("Select at least one path to scan for VM Agent.");
       return;
     }
     if (!selectedScanners.length) {
@@ -125,7 +144,11 @@ export default function ScheduleScansPage() {
     try {
       await createScheduledScan({
         name,
-        importedRepositoryId: selectedRepo.id,
+        sourceType,
+        importedRepositoryId: sourceType === "github" ? selectedRepo?.id : undefined,
+        agentId: sourceType === "vm-agent" ? selectedAgentId : undefined,
+        selectedPaths: sourceType === "vm-agent" ? selectedPaths : undefined,
+        scope: sourceType === "vm-agent" ? "selected" : undefined,
         scanners: selectedScanners,
         frequency,
         timeOfDay,
@@ -161,21 +184,22 @@ export default function ScheduleScansPage() {
   }
 
   return (
-    <main className="min-h-screen bg-surface-container-low pl-64">
-      <section className="mx-auto max-w-7xl px-8 py-8">
-        <div className="mb-6 rounded-lg border border-border-divider bg-surface-container-lowest p-6 shadow-sm">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-label-caps font-label-caps uppercase tracking-widest text-text-muted">Automated Scan Scheduler</p>
-              <h1 className="mt-1 text-display-sm font-display-sm text-text-primary">Schedule Scans</h1>
-              <p className="mt-2 max-w-3xl text-body-md text-text-secondary">
-                Run dependency, config, secret, and cipher scans automatically for imported repositories. Completed runs are saved in normal scanner history, then scored by the risk engine.
-              </p>
+    <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap animate-in fade-in duration-500 pb-12">
+      <section className="mx-auto w-full px-8 py-8">
+        <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-inner">
+              <span className="material-symbols-outlined text-[24px] text-white">schedule</span>
             </div>
-            <button onClick={refresh} className="rounded-md border border-border-divider px-4 py-2 text-body-sm text-text-primary hover:bg-surface-container">
-              Refresh
-            </button>
+            <div>
+              <h1 className="text-headline-lg font-headline-lg text-text-primary mb-1">Schedule Scans</h1>
+              <p className="text-body-sm text-text-secondary">Run dependency, config, secret, and cipher scans automatically for repositories and agents.</p>
+            </div>
           </div>
+          <button onClick={refresh} className="rounded-md border border-border-divider bg-white px-4 py-2 text-body-sm font-bold text-text-primary hover:bg-surface-container transition shadow-sm">
+            <span className="material-symbols-outlined text-[16px] mr-2 align-text-bottom">refresh</span>
+            Refresh
+          </button>
         </div>
 
         {(error || message) && (
@@ -187,20 +211,62 @@ export default function ScheduleScansPage() {
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
           <section className="rounded-lg border border-border-divider bg-surface-container-lowest p-5 shadow-sm">
             <h2 className="text-title-md font-title-md text-text-primary">Create Schedule</h2>
+            
+            <div className="mb-5 mt-4 flex border-b border-border-divider">
+              <button
+                type="button"
+                className={`flex-1 py-3 text-body-sm font-bold transition-colors ${sourceType === "github" ? "border-b-2 border-primary text-primary" : "text-text-secondary hover:bg-surface-container/50"}`}
+                onClick={() => setSourceType("github")}
+              >
+                GitHub Repository
+              </button>
+              <button
+                type="button"
+                className={`flex-1 py-3 text-body-sm font-bold transition-colors ${sourceType === "vm-agent" ? "border-b-2 border-primary text-primary" : "text-text-secondary hover:bg-surface-container/50"}`}
+                onClick={() => setSourceType("vm-agent")}
+              >
+                VM Agent
+              </button>
+            </div>
+
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
               <label className="space-y-2">
                 <span className="text-body-sm font-medium text-text-secondary">Schedule name</span>
                 <input value={name} onChange={(event) => setName(event.target.value)} className="w-full rounded-md border border-border-divider px-3 py-2 text-body-sm outline-none focus:border-primary" />
               </label>
-              <label className="space-y-2">
-                <span className="text-body-sm font-medium text-text-secondary">Repository</span>
-                <select value={selectedRepoId} onChange={(event) => setSelectedRepoId(event.target.value)} className="w-full rounded-md border border-border-divider px-3 py-2 text-body-sm outline-none focus:border-primary">
-                  {repos.map((repo) => (
-                    <option key={repo.id} value={repo.id}>{repo.fullName}</option>
-                  ))}
-                </select>
-              </label>
+              
+              {sourceType === "github" ? (
+                <label className="space-y-2">
+                  <span className="text-body-sm font-medium text-text-secondary">Repository</span>
+                  <select value={selectedRepoId} onChange={(event) => setSelectedRepoId(event.target.value)} className="w-full rounded-md border border-border-divider px-3 py-2 text-body-sm outline-none focus:border-primary">
+                    {repos.map((repo) => (
+                      <option key={repo.id} value={repo.id}>{repo.fullName}</option>
+                    ))}
+                  </select>
+                </label>
+              ) : (
+                <label className="space-y-2">
+                  <span className="text-body-sm font-medium text-text-secondary">VM Agent</span>
+                  <select value={selectedAgentId} onChange={(event) => setSelectedAgentId(event.target.value)} className="w-full rounded-md border border-border-divider px-3 py-2 text-body-sm outline-none focus:border-primary">
+                    {agents.map((agent) => (
+                      <option key={agent.id} value={agent.id}>{agent.name} ({agent.hostname})</option>
+                    ))}
+                  </select>
+                </label>
+              )}
             </div>
+
+            {sourceType === "vm-agent" && (
+              <div className="mt-5">
+                <p className="text-body-sm font-medium text-text-secondary mb-2">Paths to scan</p>
+                <RemoteFileExplorer
+                  agentId={selectedAgentId}
+                  hasAgents={agents.length > 0}
+                  selectedPaths={selectedPaths}
+                  togglePath={(path) => setSelectedPaths((current) => current.includes(path) ? current.filter((item) => item !== path) : [...current, path])}
+                />
+              </div>
+            )}
 
             <div className="mt-5">
               <p className="text-body-sm font-medium text-text-secondary">Scanner modules</p>
@@ -297,13 +363,13 @@ export default function ScheduleScansPage() {
               ))
             ) : (
               <div className="rounded-lg border border-border-divider bg-surface-container-lowest p-6 text-center text-body-sm text-text-secondary">
-                No schedules yet. Create one for a repo imported from GitHub.
+                No schedules yet. Create one for a GitHub repository or VM Agent.
               </div>
             )}
           </section>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
 

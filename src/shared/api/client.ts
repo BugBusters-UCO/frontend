@@ -612,7 +612,11 @@ export async function fetchScheduledScans(): Promise<ScheduledScan[]> {
 
 export async function createScheduledScan(data: {
   name: string;
-  importedRepositoryId: string;
+  sourceType?: string;
+  importedRepositoryId?: string;
+  agentId?: string;
+  selectedPaths?: string[];
+  scope?: string;
   scanners: ScannerModule[];
   frequency: "daily" | "weekly" | "monthly";
   timeOfDay: string;

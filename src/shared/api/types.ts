@@ -827,9 +827,12 @@ export type ScannerModule = "dependency" | "config" | "secret" | "cipher";
 export type ScheduledScan = {
   id: string;
   userId?: string;
-  importedRepositoryId: string;
+  importedRepositoryId?: string | null;
+  agentId?: string | null;
+  selectedPaths?: string[];
+  scope?: "full-os" | "root" | "selected" | "application" | string;
   name: string;
-  sourceType: "github" | string;
+  sourceType: "github" | "vm-agent" | string;
   sourceLabel: string;
   scanners: ScannerModule[];
   frequency: "daily" | "weekly" | "monthly" | string;

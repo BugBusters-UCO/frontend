@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import ReactMarkdown from "react-markdown";
 import { fetchRiskAssessment, generateRiskAssessmentRemedies } from "@/shared/api/client";
 import type { RiskAssessment, UnifiedRiskPriority } from "@/shared/api/types";
 
@@ -113,32 +114,41 @@ export default function RiskReportDetailPage() {
 
           {aiRemedies.length > 0 && (
             <section className="rounded-lg border border-border-subtle bg-white p-5 shadow-sm">
-              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <h2 className="text-section-header font-section-header">AI Remedies</h2>
-                  <p className="mt-1 text-xs text-text-muted">{assessment.result?.aiPromptPolicy}</p>
-                </div>
-                {assessment.result?.aiTokenUsage && (
-                  <p className="rounded bg-surface-container-low px-3 py-2 font-mono text-xs text-text-muted">
-                    tokens prompt {assessment.result.aiTokenUsage.prompt_tokens || 0}, completion {assessment.result.aiTokenUsage.completion_tokens || 0}, total {assessment.result.aiTokenUsage.total_tokens || 0}
-                  </p>
-                )}
+              <div>
+                <h2 className="text-section-header font-section-header">Suggestion</h2>
               </div>
               <div className="mt-4 grid grid-cols-1 gap-3">
-                {aiRemedies.map((item) => (
-                  <article key={item.finding_id} className="rounded-lg border border-border-divider bg-surface-container-lowest p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="font-bold text-text-primary">{item.title}</h3>
-                      <span className="rounded bg-white px-2 py-1 text-xs font-bold uppercase text-text-muted">{item.scanner}</span>
-                    </div>
-                    <p className="mt-3 whitespace-pre-wrap text-sm text-text-secondary">{item.recommendation}</p>
-                    {item.token_usage?.total_tokens !== undefined && (
-                      <p className="mt-3 font-mono text-xs text-text-muted">
-                        tokens prompt {item.token_usage.prompt_tokens || 0}, completion {item.token_usage.completion_tokens || 0}, total {item.token_usage.total_tokens || 0}
-                      </p>
-                    )}
-                  </article>
-                ))}
+                {aiRemedies.map((item) => {
+                  const finding = risk?.top_findings?.find((f) => f.id === item.finding_id);
+                  const severity = finding?.severity || "unknown";
+                  return (
+                    <article key={item.finding_id} className={`rounded-lg border bg-surface-container-lowest p-4 ${severityBorder(severity)}`}>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {finding && <span className={`rounded px-2 py-1 text-xs font-bold uppercase ${riskBadge(severity)}`}>{severity}</span>}
+                          <h3 className="font-bold text-text-primary">{item.title}</h3>
+                        </div>
+                        <span className="rounded bg-white px-2 py-1 text-xs font-bold uppercase text-text-muted border border-border-divider">{item.scanner}</span>
+                      </div>
+                      <div className="mt-4 text-sm text-text-secondary leading-relaxed">
+                        <ReactMarkdown
+                          components={{
+                            h3: (props) => <h3 className="text-sm font-bold mt-4 mb-2 text-text-primary" {...props} />,
+                            p: (props) => <p className="mb-3" {...props} />,
+                            ul: (props) => <ul className="list-disc pl-5 mb-3 space-y-1" {...props} />,
+                            ol: (props) => <ol className="list-decimal pl-5 mb-3 space-y-1" {...props} />,
+                            li: (props) => <li {...props} />,
+                            strong: (props) => <strong className="font-semibold text-text-primary" {...props} />,
+                            code: (props) => <code className="bg-surface-container-low border border-border-subtle px-1.5 py-0.5 rounded font-mono text-[12px] text-text-primary" {...props} />,
+                            pre: (props) => <pre className="bg-surface-container-low border border-border-subtle p-3 rounded-md my-3 overflow-x-auto font-mono text-[12px] text-text-primary" {...props} />,
+                          }}
+                        >
+                          {item.recommendation}
+                        </ReactMarkdown>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             </section>
           )}
@@ -335,8 +345,17 @@ function scoreTone(score: number) {
 function riskBadge(level: string) {
   if (level === "critical") return "bg-red-100 text-red-800";
   if (level === "high") return "bg-orange-100 text-orange-800";
-  if (level === "elevated") return "bg-yellow-100 text-yellow-800";
-  return "bg-green-100 text-green-800";
+  if (level === "elevated" || level === "medium") return "bg-yellow-100 text-yellow-800";
+  if (level === "low") return "bg-green-100 text-green-800";
+  return "bg-surface-container-low text-text-muted";
+}
+
+function severityBorder(level: string) {
+  if (level === "critical") return "border-red-300 border-2";
+  if (level === "high") return "border-orange-300 border-2";
+  if (level === "elevated" || level === "medium") return "border-yellow-300 border-2";
+  if (level === "low") return "border-green-300 border-2";
+  return "border-border-divider";
 }
 
 function scoreClass(tone: string) {

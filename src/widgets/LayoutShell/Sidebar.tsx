@@ -152,12 +152,12 @@ export function Sidebar() {
           <span>VM Agents</span>
         </Link>
       </div>
-      <Link href="/" className="w-full">
+      {/* <Link href="/" className="w-full">
         <button className="w-full bg-primary text-on-primary py-2.5 rounded-lg font-body-sm text-body-sm font-medium hover:bg-surface-tint/80 transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-sm">
           <span className="material-symbols-outlined text-sm">play_arrow</span>{" "}
           Run New Scan
         </button>
-      </Link>
+      </Link> */}
 
       <div className="flex flex-col gap-1 pt-4 border-t border-border-divider">
         <button
