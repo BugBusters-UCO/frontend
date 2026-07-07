@@ -14,7 +14,16 @@ interface ScanConfigProps {
   onStartScan: () => void;
   isScanning: boolean;
   error: string | null;
-  scanOptions: { includeDev: boolean; useOsv: boolean; failOn: string; includeLow: boolean };
+  scanOptions: { 
+    includeDev: boolean; 
+    useOsv: boolean; 
+    failOn: string; 
+    includeLow: boolean;
+    runDependency: boolean;
+    runConfig: boolean;
+    runSecret: boolean;
+    runCipher: boolean;
+  };
   setScanOptions: (options: any) => void;
 }
 
@@ -156,8 +165,70 @@ export function ScanConfig({
           </div>
         </div>
 
-        {/* Settings Area */}
+        {/* Scanners Selection Area */}
         <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-text-muted">fact_check</span>
+            <h3 className="text-sm font-semibold text-text-primary uppercase tracking-wider">Scanners</h3>
+          </div>
+
+          <div className="bg-surface-container-lowest border border-border-subtle rounded-xl p-4 shadow-sm space-y-1">
+            <label className="flex items-center justify-between cursor-pointer group py-2.5 border-b border-border-divider last:border-0">
+              <div>
+                <span className="block text-body-sm font-medium text-text-primary group-hover:text-primary-container transition-colors">
+                  Dependency Scanner
+                </span>
+                <span className="text-[11px] text-text-muted">Scan dependencies for known vulnerabilities (CVEs)</span>
+              </div>
+              <div className="relative ml-4 shrink-0">
+                <input type="checkbox" className="sr-only peer" checked={scanOptions.runDependency} onChange={(e) => setScanOptions({ ...scanOptions, runDependency: e.target.checked })} />
+                <div className="w-9 h-5 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-container shadow-inner"></div>
+              </div>
+            </label>
+
+            <label className="flex items-center justify-between cursor-pointer group py-2.5 border-b border-border-divider last:border-0">
+              <div>
+                <span className="block text-body-sm font-medium text-text-primary group-hover:text-primary-container transition-colors">
+                  Configuration Scanner
+                </span>
+                <span className="text-[11px] text-text-muted">Detect misconfigurations in IaC and config files</span>
+              </div>
+              <div className="relative ml-4 shrink-0">
+                <input type="checkbox" className="sr-only peer" checked={scanOptions.runConfig} onChange={(e) => setScanOptions({ ...scanOptions, runConfig: e.target.checked })} />
+                <div className="w-9 h-5 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-container shadow-inner"></div>
+              </div>
+            </label>
+
+            <label className="flex items-center justify-between cursor-pointer group py-2.5 border-b border-border-divider last:border-0">
+              <div>
+                <span className="block text-body-sm font-medium text-text-primary group-hover:text-primary-container transition-colors">
+                  Secret Scanner
+                </span>
+                <span className="text-[11px] text-text-muted">Find exposed API keys, tokens, and credentials</span>
+              </div>
+              <div className="relative ml-4 shrink-0">
+                <input type="checkbox" className="sr-only peer" checked={scanOptions.runSecret} onChange={(e) => setScanOptions({ ...scanOptions, runSecret: e.target.checked })} />
+                <div className="w-9 h-5 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-container shadow-inner"></div>
+              </div>
+            </label>
+
+            <label className="flex items-center justify-between cursor-pointer group py-2.5 border-b border-border-divider last:border-0">
+              <div>
+                <span className="block text-body-sm font-medium text-text-primary group-hover:text-primary-container transition-colors">
+                  Cipher Scanner
+                </span>
+                <span className="text-[11px] text-text-muted">Identify weak cryptography algorithms in source code</span>
+              </div>
+              <div className="relative ml-4 shrink-0">
+                <input type="checkbox" className="sr-only peer" checked={scanOptions.runCipher} onChange={(e) => setScanOptions({ ...scanOptions, runCipher: e.target.checked })} />
+                <div className="w-9 h-5 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-container shadow-inner"></div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Settings Area */}
+        {/* <div className="space-y-4">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px] text-text-muted">tune</span>
             <h3 className="text-sm font-semibold text-text-primary uppercase tracking-wider">Settings</h3>
@@ -222,7 +293,7 @@ export function ScanConfig({
               onChange={(value) => setScanOptions({ ...scanOptions, failOn: value })}
             />
           </div>
-        </div>
+        </div> */}
 
         {error && (
           <div className="p-3 bg-error-container/50 text-on-error-container text-sm rounded-lg border border-[#ffb4ab] flex items-center gap-2 animate-in slide-in-from-bottom-2">

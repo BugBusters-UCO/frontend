@@ -18,6 +18,7 @@ export function Sidebar() {
   const isCipher = pathname.startsWith("/cipher-scanner");
   const isAgentsHistory = pathname.startsWith("/vm-agents/history") || (pathname.startsWith("/vm-agents/") && pathname !== "/vm-agents/history" && pathname !== "/vm-agents");
   const isAgents = pathname === "/vm-agents";
+  const isVCDashboard = pathname === "/vc-dashboard";
 
   const handleLogout = () => {
     logout();
@@ -81,6 +82,19 @@ export function Sidebar() {
             dns
           </span>
           <span>VM Dashboard</span>
+        </Link>
+        <Link
+          href="/vc-dashboard"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-body-sm text-body-sm transition-all duration-200 group ${
+            isVCDashboard
+              ? "bg-primary-container/10 text-primary-container font-medium"
+              : "text-text-secondary hover:text-text-primary hover:bg-surface-container hover:shadow-sm"
+          }`}
+        >
+          <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isVCDashboard ? "text-primary-container" : ""}`}>
+            account_tree
+          </span>
+          <span>VC Dashboard</span>
         </Link>
 
         <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2 px-2 mt-4">

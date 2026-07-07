@@ -469,10 +469,10 @@ export default function VmAgentsPage() {
           </div>
 
           <div className="relative z-10 mb-6 rounded-xl border border-border-divider bg-surface-container-lowest p-4">
-            <p className="text-sm font-semibold text-text-secondary mb-2 flex items-center gap-1">
+            <div className="text-sm font-semibold text-text-secondary mb-2 flex items-center gap-1">
               Risk Engine Business Inputs
               <InfoTooltip text="These values become part of this scan's risk assessment. Final risk is 70% technical scanner evidence and 30% these admin business inputs by default." />
-            </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <BusinessSlider
                 label="Asset Criticality"
