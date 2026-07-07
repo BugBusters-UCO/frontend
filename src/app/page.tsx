@@ -297,7 +297,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Scanner metrics */}
-      <div>
+      {/* <div>
         <div className="flex items-center gap-2 mb-4">
           <span className="material-symbols-outlined text-primary">analytics</span>
           <h2 className="text-lg font-semibold text-text-primary">Scanner metrics</h2>
@@ -351,7 +351,7 @@ export default function DashboardPage() {
             );
           })}
         </div>
-      </div>
+      </div> */}
 
       {/* System Status & Automation */}
       <div>
