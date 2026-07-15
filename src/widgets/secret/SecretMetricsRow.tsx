@@ -39,7 +39,7 @@ export function SecretMetricsRow({ summary, risk, ciPolicy }: SecretMetricsRowPr
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div className="bg-white rounded-lg border border-border-subtle shadow-sm p-4">
+      <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4">
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Total Findings
           <InfoTooltip text="Total number of hardcoded secrets, keys, and tokens found across the codebase." />
@@ -48,7 +48,7 @@ export function SecretMetricsRow({ summary, risk, ciPolicy }: SecretMetricsRowPr
         <p className="text-xs text-text-muted mt-1">{uniqueSecrets} unique fingerprints</p>
       </div>
 
-      <div className={`bg-white rounded-lg border border-border-subtle shadow-sm p-4 border-l-4 ${uniqueSecrets > 0 ? 'border-l-severity-high text-severity-high' : 'border-l-severity-low text-severity-low'}`}>
+      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 border-l-4 ${uniqueSecrets > 0 ? 'border-l-severity-high text-severity-high' : 'border-l-severity-low text-severity-low'}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Exposure Paths
           <InfoTooltip text="Confirmed paths where a leaked secret grants access to a sensitive asset or service." />
@@ -57,7 +57,7 @@ export function SecretMetricsRow({ summary, risk, ciPolicy }: SecretMetricsRowPr
         <p className="text-xs text-text-muted mt-1">attack vectors</p>
       </div>
 
-      <div className={`bg-white rounded-lg border border-border-subtle shadow-sm p-4 border-l-4 ${riskTone}`}>
+      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 border-l-4 ${riskTone}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Business Risk
           <InfoTooltip text="Overall severity based on the types of secrets exposed and their potential blast radius." />
@@ -67,7 +67,7 @@ export function SecretMetricsRow({ summary, risk, ciPolicy }: SecretMetricsRowPr
         </div>
       </div>
 
-      <div className={`bg-white rounded-lg border border-border-subtle shadow-sm p-4 border-l-4 ${action.color}`}>
+      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 border-l-4 ${action.color}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Action Required
           <InfoTooltip text="Recommended action based on rotation requirements and CI policy." />

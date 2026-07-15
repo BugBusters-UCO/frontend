@@ -88,7 +88,7 @@ export default function ScannerJobPage() {
       <div className="flex flex-col items-center justify-center py-20">
         <div className="text-red-500 font-bold text-xl mb-4">Error loading scan results</div>
         <p className="text-text-muted mb-6">{(queryError as Error).message || "Unknown error"}</p>
-        <button onClick={() => router.push("/")} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+        <button onClick={() => router.push("/")} className="px-6 py-2 bg-primary text-white rounded-2xl hover:bg-primary/90 transition-colors">
           Return to Dashboard
         </button>
       </div>
@@ -169,7 +169,7 @@ export default function ScannerJobPage() {
                 {result && result.findings && result.findings.length > 0 ? (
                   <FindingsTable findings={result.findings} />
                 ) : (
-                  <div className="bg-surface-container text-text-secondary p-8 rounded-lg text-center font-bold">
+                  <div className="bg-surface-container text-text-secondary p-8 rounded-2xl text-center font-bold">
                     No technical findings available.
                   </div>
                 )}

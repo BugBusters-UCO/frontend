@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 import {
   ReactFlow,
@@ -19,40 +20,40 @@ const PolicyNode = ({ data, selected }: NodeProps) => {
   const isHotspot = data.isHotspot as boolean;
   const kind = data.kind as string;
 
-  let bgClass = "bg-white";
-  let borderClass = "border-slate-200";
+  let bgClass = "bg-surface transition-colors duration-300";
+  let borderClass = "border-border-subtle";
   let iconClass = "text-slate-400";
   let icon = "dns";
 
   if (kind === "endpoint") {
-    borderClass = "border-blue-300";
-    bgClass = "bg-blue-50";
-    iconClass = "text-blue-500";
+    borderClass = "border-blue-300 dark:border-blue-800";
+    bgClass = "bg-blue-50 dark:bg-blue-950/40";
+    iconClass = "text-blue-500 dark:text-blue-400";
     icon = "router";
   } else if (kind === "policy") {
-    borderClass = "border-purple-300";
-    bgClass = "bg-purple-50";
-    iconClass = "text-purple-500";
+    borderClass = "border-purple-300 dark:border-purple-800";
+    bgClass = "bg-purple-50 dark:bg-purple-950/40";
+    iconClass = "text-purple-500 dark:text-purple-400";
     icon = "policy";
   }
 
   if (isHotspot) {
-    borderClass = "border-red-400";
-    bgClass = "bg-red-50";
-    iconClass = "text-red-500";
+    borderClass = "border-red-400 dark:border-red-800";
+    bgClass = "bg-red-50 dark:bg-red-950/40";
+    iconClass = "text-red-500 dark:text-red-400";
     icon = "local_fire_department";
   }
 
   return (
-    <div className={`relative flex items-center gap-3 min-w-[200px] max-w-[280px] p-3 rounded-lg border-2 ${bgClass} ${borderClass} transition-all duration-300 ${selected ? 'shadow-lg ring-2 ring-red-400 ring-offset-2 z-10 scale-[1.02]' : 'shadow-sm hover:shadow-md'}`}>
+    <div className={`relative flex items-center gap-3 min-w-[200px] max-w-[280px] p-3 rounded-2xl border-2 ${bgClass} ${borderClass} transition-all duration-300 ${selected ? 'shadow-lg ring-2 ring-red-400 ring-offset-2 z-10 scale-[1.02]' : 'shadow-sm hover:shadow-md'}`}>
       <Handle type="target" position={Position.Top} className="w-2 h-2 bg-slate-400 border-none" />
       
       <span className={`material-symbols-outlined ${iconClass} text-[24px]`}>{icon}</span>
       <div className="flex flex-col min-w-0 flex-1">
-        <div className="text-[12px] font-bold text-slate-800 break-words mb-1">
+        <div className="text-[12px] font-bold text-text-primary break-words mb-1">
           {data.label as string}
         </div>
-        <div className="text-[10px] uppercase tracking-widest font-semibold text-slate-500">
+        <div className="text-[10px] uppercase tracking-widest font-semibold text-text-muted">
           {kind}
         </div>
       </div>
@@ -73,6 +74,7 @@ interface CipherInteractiveGraphProps {
 }
 
 export function CipherInteractiveGraph({ graphData }: CipherInteractiveGraphProps) {
+  const { resolvedTheme } = useTheme();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -131,7 +133,7 @@ export function CipherInteractiveGraph({ graphData }: CipherInteractiveGraphProp
   }
 
   return (
-    <div className={`transition-all duration-300 ease-in-out ${isFullscreen ? "fixed inset-0 z-[100] bg-surface-container-lowest p-6 md:p-8 overflow-y-auto m-0 rounded-none border-0" : "bg-white rounded-xl border border-border-subtle shadow-sm p-card-padding overflow-hidden relative"}`}>
+    <div className={`transition-all duration-300 ease-in-out ${isFullscreen ? "fixed inset-0 z-[100] bg-surface-container-lowest p-6 md:p-8 overflow-y-auto m-0 rounded-none border-0" : "bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-card-padding overflow-hidden relative"}`}>
       <div className="flex justify-between items-start mb-6">
         <div>
           <div className="flex items-center">
@@ -150,7 +152,7 @@ export function CipherInteractiveGraph({ graphData }: CipherInteractiveGraphProp
           </div>
           <button 
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-1.5 hover:bg-surface-container rounded-md text-text-secondary hover:text-text-primary transition-colors border border-border-subtle bg-white shadow-sm flex items-center justify-center"
+            className="p-1.5 hover:bg-surface-container rounded-md text-text-secondary hover:text-text-primary transition-colors border border-border-subtle bg-surface transition-colors duration-300 shadow-sm flex items-center justify-center"
             title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
           >
             <span className="material-symbols-outlined text-[20px]">
@@ -160,7 +162,7 @@ export function CipherInteractiveGraph({ graphData }: CipherInteractiveGraphProp
         </div>
       </div>
 
-      <div className={`w-full border border-border-subtle rounded-xl bg-[#fafafa] shadow-inner relative overflow-hidden transition-all duration-300 ${isFullscreen ? "h-[calc(100vh-140px)]" : "h-[500px]"}`}>
+      <div className={`w-full border border-border-subtle rounded-2xl bg-surface-dim shadow-inner relative overflow-hidden transition-all duration-300 ${isFullscreen ? "h-[calc(100vh-140px)]" : "h-[500px]"}`}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -171,7 +173,7 @@ export function CipherInteractiveGraph({ graphData }: CipherInteractiveGraphProp
           fitViewOptions={{ padding: 0.2 }}
           minZoom={0.2}
         >
-          <Background color="#ccc" gap={16} />
+          <Background color={resolvedTheme === "dark" ? "#1e293b" : "#cbd5e1"} gap={16} />
           <Controls />
         </ReactFlow>
       </div>

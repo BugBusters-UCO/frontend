@@ -88,7 +88,7 @@ export default function ConfigScannerJobPage() {
       <div className="flex flex-col items-center justify-center py-20">
         <div className="text-red-500 font-bold text-xl mb-4">Error loading scan results</div>
         <p className="text-text-muted mb-6">{(queryError as Error).message || "Unknown error"}</p>
-        <button onClick={() => router.push("/")} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+        <button onClick={() => router.push("/")} className="px-6 py-2 bg-primary text-white rounded-2xl hover:bg-primary/90 transition-colors">
           Return to Dashboard
         </button>
       </div>
@@ -136,14 +136,14 @@ export default function ConfigScannerJobPage() {
         <LiveExecutionLog logs={logs} isRunning={isScanning} />
 
         {!isScanning && job?.status === "failed" && (
-          <div className="bg-error-container text-on-error-container p-4 rounded-lg border border-[#ffb4ab]">
+          <div className="bg-error-container text-on-error-container p-4 rounded-2xl border border-[#ffb4ab]">
             <h3 className="font-bold text-lg mb-2">Scan Failed</h3>
             <p>{job.error || "An unknown error occurred during the scan."}</p>
           </div>
         )}
 
         {!isScanning && job?.status === "completed" && !result && (
-          <div className="bg-surface-container-low text-text-secondary p-4 rounded-lg text-center">
+          <div className="bg-surface-container-low text-text-secondary p-4 rounded-2xl text-center">
             Scan completed but no results were returned.
           </div>
         )}
@@ -185,7 +185,7 @@ export default function ConfigScannerJobPage() {
             {activeTab === "technical" && (
               <div className="flex flex-col gap-6">
                 {findings.length > 0 && (
-                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+                  <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                     <div className="flex items-center mb-4">
                       <h3 className="text-xl font-bold">Misconfigurations</h3>
                       <InfoTooltip text="Raw list of all detected infrastructure misconfigurations." />

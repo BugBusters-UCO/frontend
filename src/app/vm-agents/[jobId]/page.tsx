@@ -79,7 +79,7 @@ export default function VmAgentJobPage() {
       <div className="flex flex-col items-center justify-center py-20">
         <div className="text-red-500 font-bold text-xl mb-4">Error loading VM Agent scan results</div>
         <p className="text-text-muted mb-6">{(queryError as Error).message || "Unknown error"}</p>
-        <button onClick={() => router.push("/vm-agents/history")} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+        <button onClick={() => router.push("/vm-agents/history")} className="px-6 py-2 bg-primary text-white rounded-2xl hover:bg-primary/90 transition-colors">
           Return to History
         </button>
       </div>
@@ -125,7 +125,7 @@ export default function VmAgentJobPage() {
         
         {!isScanning && reports.length > 0 && (
           <div className="flex flex-col gap-6 mt-4">
-            <div className="bg-white rounded-xl border border-border-subtle p-6">
+            <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle p-6">
               <h2 className="text-xl font-bold mb-2">VM Scan Details</h2>
               <p className="text-body-sm text-text-secondary mb-6">Select a scanner module below to view its full report and findings.</p>
               
@@ -134,7 +134,7 @@ export default function VmAgentJobPage() {
                   <button
                     key={report.module}
                     onClick={() => router.push(`/${report.module}-scanner/${jobId}`)}
-                    className="flex flex-col text-left bg-surface-container-lowest border border-border-divider rounded-xl p-6 hover:shadow-md hover:border-primary transition-all group"
+                    className="flex flex-col text-left bg-surface-container-lowest border border-border-divider rounded-2xl p-6 hover:shadow-md hover:border-primary transition-all group"
                   >
                     <div className="flex justify-between items-center mb-6 w-full">
                       <h3 className="font-headline-sm text-headline-sm capitalize text-text-primary group-hover:text-primary transition-colors">

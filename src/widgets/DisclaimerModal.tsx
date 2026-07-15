@@ -28,7 +28,7 @@ export function DisclaimerModal() {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-300">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col border border-border-divider animate-in zoom-in-95 duration-300">
+      <div className="bg-surface transition-colors duration-300 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col border border-border-divider animate-in zoom-in-95 duration-300">
         <div className="p-6 md:p-8 flex-1 overflow-y-auto max-h-[80vh]">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center shrink-0">
@@ -41,7 +41,7 @@ export function DisclaimerModal() {
           </div>
 
           <div className="space-y-6 text-sm text-text-secondary">
-            <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+            <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl">
               <h3 className="text-base font-bold text-blue-900 mb-2 flex items-center gap-2">
                 <span className="material-symbols-outlined text-[20px]">policy</span>
                 Our Commitment to Integrity
@@ -81,14 +81,14 @@ export function DisclaimerModal() {
         <div className="p-6 bg-surface-container-lowest border-t border-border-divider flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
           <button 
             onClick={handleDontShowAgain}
-            className="text-text-secondary hover:text-text-primary font-medium text-sm transition-colors flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-surface-container"
+            className="text-text-secondary hover:text-text-primary font-medium text-sm transition-colors flex items-center gap-2 px-4 py-2 rounded-2xl hover:bg-surface-container"
           >
             <span className="material-symbols-outlined text-[18px]">visibility_off</span>
             Don't Show Again
           </button>
           <button 
             onClick={handleUnderstood}
-            className="w-full sm:w-auto bg-primary-container hover:bg-primary-container/90 text-white font-semibold py-2.5 px-8 rounded-xl transition-all shadow-sm hover:shadow-md"
+            className="w-full sm:w-auto bg-primary-container hover:bg-primary-container/90 text-white font-semibold py-2.5 px-8 rounded-2xl transition-all shadow-sm hover:shadow-md"
           >
             I Understand
           </button>

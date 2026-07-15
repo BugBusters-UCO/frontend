@@ -38,7 +38,7 @@ export function CipherMetricsRow({ summary, ciPolicy }: CipherMetricsRowProps) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div className="bg-white rounded-lg border border-border-subtle shadow-sm p-4">
+      <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4">
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           TLS Posture
           <InfoTooltip text="Total endpoints with detected TLS policy/configuration issues." />
@@ -47,7 +47,7 @@ export function CipherMetricsRow({ summary, ciPolicy }: CipherMetricsRowProps) {
         <p className="text-xs text-text-muted mt-1">{totalFindings} findings detected</p>
       </div>
 
-      <div className={`bg-white rounded-lg border border-border-subtle shadow-sm p-4 border-l-4 ${attackPaths > 0 ? 'border-l-severity-high text-severity-high' : 'border-l-severity-low text-severity-low'}`}>
+      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 border-l-4 ${attackPaths > 0 ? 'border-l-severity-high text-severity-high' : 'border-l-severity-low text-severity-low'}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Attack Paths
           <InfoTooltip text="Chains where weak protocol choices can lead to banking traffic exposure." />
@@ -56,7 +56,7 @@ export function CipherMetricsRow({ summary, ciPolicy }: CipherMetricsRowProps) {
         <p className="text-xs text-text-muted mt-1">exposed routes</p>
       </div>
 
-      <div className={`bg-white rounded-lg border border-border-subtle shadow-sm p-4 border-l-4 ${riskTone}`}>
+      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 border-l-4 ${riskTone}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Infrastructure Risk
           <InfoTooltip text="Overall severity based on cryptography and TLS findings." />
@@ -66,7 +66,7 @@ export function CipherMetricsRow({ summary, ciPolicy }: CipherMetricsRowProps) {
         </div>
       </div>
 
-      <div className={`bg-white rounded-lg border border-border-subtle shadow-sm p-4 border-l-4 ${action.color}`}>
+      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 border-l-4 ${action.color}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Action Required
           <InfoTooltip text="Recommended action based on the identified issues and CI policy." />

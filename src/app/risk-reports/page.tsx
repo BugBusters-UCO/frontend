@@ -17,7 +17,7 @@ export default function RiskReportsPage() {
 
   return (
     <div className="mx-auto flex max-w-[1280px] flex-col gap-section-gap">
-      <section className="rounded-2xl border border-border-subtle bg-white p-8 shadow-sm">
+      <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-8 shadow-sm">
         <div className="flex items-center gap-5">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-container/10">
             <span className="material-symbols-outlined text-3xl text-primary-container">summarize</span>
@@ -29,7 +29,7 @@ export default function RiskReportsPage() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-border-subtle bg-white shadow-sm">
+      <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 shadow-sm">
         <div className="border-b border-border-divider p-5">
           <h2 className="text-section-header font-section-header">Assessment History</h2>
         </div>

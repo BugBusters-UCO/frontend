@@ -276,7 +276,7 @@ export default function VCDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-element-gap">
         <div className="flex flex-col gap-element-gap">
           {isScanning && progressStage && (
-            <div className="bg-white rounded-lg border border-border-subtle shadow-sm p-6 mb-4 animate-in fade-in duration-300">
+            <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-6 mb-4 animate-in fade-in duration-300">
               <h2 className="text-section-header font-section-header mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-xl animate-spin">refresh</span>
                 Scan in Progress

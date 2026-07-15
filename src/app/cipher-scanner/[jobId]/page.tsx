@@ -141,7 +141,7 @@ export default function CipherScannerJobPage() {
       <div className="flex flex-col items-center justify-center py-20">
         <div className="text-red-500 font-bold text-xl mb-4">Error loading scan results</div>
         <p className="text-text-muted mb-6">{(queryError as Error).message || "Unknown error"}</p>
-        <button onClick={() => router.push("/")} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+        <button onClick={() => router.push("/")} className="px-6 py-2 bg-primary text-white rounded-2xl hover:bg-primary/90 transition-colors">
           Return to Dashboard
         </button>
       </div>
@@ -211,14 +211,14 @@ export default function CipherScannerJobPage() {
         <LiveExecutionLog logs={logs} isRunning={isScanning} />
 
         {!isScanning && job.status === "failed" && (
-          <div className="bg-error-container text-on-error-container p-4 rounded-lg border border-[#ffb4ab]">
+          <div className="bg-error-container text-on-error-container p-4 rounded-2xl border border-[#ffb4ab]">
             <h3 className="font-bold text-lg mb-2">Scan Failed</h3>
             <p>{job.error || "An unknown error occurred during the cipher scan."}</p>
           </div>
         )}
 
         {!isScanning && job.status === "completed" && !result && (
-          <div className="bg-surface-container-low text-text-secondary p-4 rounded-lg text-center">
+          <div className="bg-surface-container-low text-text-secondary p-4 rounded-2xl text-center">
             Scan completed but no results were returned.
           </div>
         )}
@@ -256,7 +256,7 @@ export default function CipherScannerJobPage() {
             {activeTab === "technical" && (
               <div className="flex flex-col gap-6">
 
-            <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+            <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
               <div className="flex items-center justify-between gap-4 mb-4">
                 <div>
                   <h3 className="text-xl font-bold">Pre-Deployment TLS Intelligence</h3>
@@ -267,20 +267,20 @@ export default function CipherScannerJobPage() {
                 </span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="border border-border-divider rounded-lg p-4">
+                <div className="border border-border-divider rounded-2xl p-4">
                   <p className="text-xs uppercase text-text-muted font-semibold mb-2">TLS Facts</p>
                   <p className="text-3xl font-bold">{summary?.tls_facts || 0}</p>
                 </div>
-                <div className="border border-border-divider rounded-lg p-4">
+                <div className="border border-border-divider rounded-2xl p-4">
                   <p className="text-xs uppercase text-text-muted font-semibold mb-2">Profile</p>
                   <p className="text-2xl font-bold capitalize">{summary?.banking_profile || "strict"}</p>
                 </div>
-                <div className="border border-border-divider rounded-lg p-4">
+                <div className="border border-border-divider rounded-2xl p-4">
                   <p className="text-xs uppercase text-text-muted font-semibold mb-2">CI Policy Gate</p>
                   <p className={`text-2xl font-bold ${ciPolicy.className}`}>{ciPolicy.label}</p>
                   <p className="text-xs text-text-secondary mt-2 leading-relaxed">{ciPolicy.detail}</p>
                 </div>
-                <div className="border border-border-divider rounded-lg p-4">
+                <div className="border border-border-divider rounded-2xl p-4">
                   <p className="text-xs uppercase text-text-muted font-semibold mb-2">Remediation Actions</p>
                   <p className="text-3xl font-bold">{summary?.remediation_actions || 0}</p>
                 </div>
@@ -288,7 +288,7 @@ export default function CipherScannerJobPage() {
             </div>
 
             {(deploymentReadiness || policyGraph || environmentDrifts.length > 0 || agilityRisks.length > 0 || compatibilityRisks.length > 0 || mtlsReadiness.length > 0) && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+              <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                 <div className="flex items-center justify-between gap-4 mb-5">
                   <div>
                     <h3 className="text-xl font-bold">Banking Cipher Intelligence</h3>
@@ -302,23 +302,23 @@ export default function CipherScannerJobPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-5">
-                  <div className="border border-border-divider rounded-lg p-3">
+                  <div className="border border-border-divider rounded-2xl p-3">
                     <p className="text-xs uppercase text-text-muted font-semibold">Graph Nodes</p>
                     <p className="text-2xl font-bold">{policyGraph?.nodes?.length || 0}</p>
                   </div>
-                  <div className="border border-border-divider rounded-lg p-3">
+                  <div className="border border-border-divider rounded-2xl p-3">
                     <p className="text-xs uppercase text-text-muted font-semibold">Drifts</p>
                     <p className="text-2xl font-bold">{environmentDrifts.length}</p>
                   </div>
-                  <div className="border border-border-divider rounded-lg p-3">
+                  <div className="border border-border-divider rounded-2xl p-3">
                     <p className="text-xs uppercase text-text-muted font-semibold">Agility</p>
                     <p className="text-2xl font-bold">{agilityRisks.length}</p>
                   </div>
-                  <div className="border border-border-divider rounded-lg p-3">
+                  <div className="border border-border-divider rounded-2xl p-3">
                     <p className="text-xs uppercase text-text-muted font-semibold">Compatibility</p>
                     <p className="text-2xl font-bold">{compatibilityRisks.length}</p>
                   </div>
-                  <div className="border border-border-divider rounded-lg p-3">
+                  <div className="border border-border-divider rounded-2xl p-3">
                     <p className="text-xs uppercase text-text-muted font-semibold">mTLS Gaps</p>
                     <p className="text-2xl font-bold">{mtlsReadiness.filter((item: CipherMtls) => item.status !== "ready").length}</p>
                   </div>
@@ -326,7 +326,7 @@ export default function CipherScannerJobPage() {
 
                 {deploymentReadiness && (
                   <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-5">
-                    <div className="border border-red-100 bg-red-50 rounded-lg p-4">
+                    <div className="border border-red-100 bg-red-50 rounded-2xl p-4">
                       <p className="text-xs uppercase font-semibold text-red-700 mb-2">Blockers</p>
                       {(deploymentReadiness.blockers || []).length ? (
                         <ul className="space-y-1 text-sm text-red-950">{deploymentReadiness.blockers.map((item: string) => <li key={item}>- {item}</li>)}</ul>
@@ -334,7 +334,7 @@ export default function CipherScannerJobPage() {
                         <p className="text-sm text-red-900">None</p>
                       )}
                     </div>
-                    <div className="border border-yellow-100 bg-yellow-50 rounded-lg p-4">
+                    <div className="border border-yellow-100 bg-yellow-50 rounded-2xl p-4">
                       <p className="text-xs uppercase font-semibold text-yellow-700 mb-2">Warnings</p>
                       {(deploymentReadiness.warnings || []).length ? (
                         <ul className="space-y-1 text-sm text-yellow-950">{deploymentReadiness.warnings.map((item: string) => <li key={item}>- {item}</li>)}</ul>
@@ -342,7 +342,7 @@ export default function CipherScannerJobPage() {
                         <p className="text-sm text-yellow-900">None</p>
                       )}
                     </div>
-                    <div className="border border-green-100 bg-green-50 rounded-lg p-4">
+                    <div className="border border-green-100 bg-green-50 rounded-2xl p-4">
                       <p className="text-xs uppercase font-semibold text-green-700 mb-2">Strengths</p>
                       {(deploymentReadiness.strengths || []).length ? (
                         <ul className="space-y-1 text-sm text-green-950">{deploymentReadiness.strengths.map((item: string) => <li key={item}>- {item}</li>)}</ul>
@@ -355,18 +355,18 @@ export default function CipherScannerJobPage() {
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                   {policyGraph && (
-                    <div className="border border-border-divider rounded-lg p-4 bg-surface-container-lowest">
+                    <div className="border border-border-divider rounded-2xl p-4 bg-surface-container-lowest">
                       <h4 className="font-bold mb-2">Policy Graph Data Available</h4>
                       <p className="text-sm text-text-secondary mb-3">See Executive Summary for interactive visualization.</p>
                     </div>
                   )}
 
                   {environmentDrifts.length > 0 && (
-                    <div className="border border-yellow-200 bg-yellow-50 rounded-lg p-4">
+                    <div className="border border-yellow-200 bg-yellow-50 rounded-2xl p-4">
                       <h4 className="font-bold text-yellow-950 mb-2">Environment Drift</h4>
                       <div className="space-y-3 max-h-[260px] overflow-y-auto">
                         {environmentDrifts.slice(0, 4).map((drift: CipherDrift) => (
-                          <div key={drift.id} className="bg-white border border-yellow-100 rounded p-3">
+                          <div key={drift.id} className="bg-surface transition-colors duration-300 border border-yellow-100 rounded p-3">
                             <div className="flex items-center justify-between gap-3">
                               <p className="font-semibold text-yellow-950">{drift.title}</p>
                               <span className={`px-2 py-1 rounded text-xs font-semibold ${severityClass(drift.severity)}`}>{drift.severity}</span>
@@ -380,7 +380,7 @@ export default function CipherScannerJobPage() {
                   )}
 
                   {agilityRisks.length > 0 && (
-                    <div className="border border-border-divider rounded-lg p-4">
+                    <div className="border border-border-divider rounded-2xl p-4">
                       <h4 className="font-bold mb-2">Cipher Agility Risks</h4>
                       <div className="space-y-3 max-h-[260px] overflow-y-auto">
                         {agilityRisks.slice(0, 5).map((risk: CipherAgility) => (
@@ -396,7 +396,7 @@ export default function CipherScannerJobPage() {
                   )}
 
                   {(compatibilityRisks.length > 0 || mtlsReadiness.length > 0) && (
-                    <div className="border border-border-divider rounded-lg p-4">
+                    <div className="border border-border-divider rounded-2xl p-4">
                       <h4 className="font-bold mb-2">Compatibility And mTLS Readiness</h4>
                       <div className="space-y-3 max-h-[260px] overflow-y-auto">
                         {compatibilityRisks.slice(0, 4).map((risk: CipherCompatibility) => (
@@ -424,7 +424,7 @@ export default function CipherScannerJobPage() {
             )}
 
             {domainInventory.length > 0 && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+              <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                 <div className="flex items-center justify-between gap-4 mb-5">
                   <div>
                     <h3 className="text-xl font-bold">Domain And API Inventory</h3>
@@ -437,7 +437,7 @@ export default function CipherScannerJobPage() {
                 </div>
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                   {domainGroups.slice(0, 8).map((group) => (
-                    <div key={group.baseDomain} className="border border-border-divider rounded-lg p-4">
+                    <div key={group.baseDomain} className="border border-border-divider rounded-2xl p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <h4 className="font-bold">{group.baseDomain}</h4>
@@ -451,7 +451,7 @@ export default function CipherScannerJobPage() {
                       </div>
                       <div className="mt-4 space-y-3 max-h-[320px] overflow-y-auto">
                         {group.endpoints.slice(0, 12).map((endpoint: CipherDomainEndpoint) => (
-                          <div key={endpoint.id} className="bg-surface-container-low rounded-lg p-3">
+                          <div key={endpoint.id} className="bg-surface-container-low rounded-2xl p-3">
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 <p className="font-mono text-sm break-all">
@@ -486,7 +486,7 @@ export default function CipherScannerJobPage() {
             )}
 
             {liveTlsProbes.length > 0 && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+              <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                 <div className="flex items-center justify-between gap-4 mb-5">
                   <div>
                     <h3 className="text-xl font-bold">Live Deployment TLS Verification</h3>
@@ -500,7 +500,7 @@ export default function CipherScannerJobPage() {
                 </div>
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                   {liveTlsProbes.slice(0, 10).map((probe: CipherLiveProbe) => (
-                    <div key={probe.id} className="border border-border-divider rounded-lg p-4">
+                    <div key={probe.id} className="border border-border-divider rounded-2xl p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <h4 className="font-mono font-bold break-all">{probe.host}:{probe.port}</h4>
@@ -547,7 +547,7 @@ export default function CipherScannerJobPage() {
                         </ul>
                       )}
                       {probe.attacker_window && (
-                        <div className="mt-3 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-950">
+                        <div className="mt-3 rounded-2xl border border-red-100 bg-red-50 p-3 text-sm text-red-950">
                           <p className="font-semibold mb-1">Attacker mindset during delay window</p>
                           <p>{probe.attacker_window}</p>
                         </div>
@@ -560,12 +560,12 @@ export default function CipherScannerJobPage() {
             )}
 
             {endpointPolicies.length > 0 && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+              <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                 <h3 className="text-xl font-bold mb-2">Endpoint TLS Posture Grades</h3>
                 <p className="text-sm text-text-secondary mb-5">Risk-first grading of every detected TLS edge or policy-bearing file.</p>
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                   {endpointPolicies.slice(0, 8).map((policy: CipherEndpointPolicy) => (
-                    <div key={policy.id} className="border border-border-divider rounded-lg p-4">
+                    <div key={policy.id} className="border border-border-divider rounded-2xl p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <h4 className="font-bold">{policy.endpoint}</h4>
@@ -608,12 +608,12 @@ export default function CipherScannerJobPage() {
             )}
 
             {attackPaths.length > 0 && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+              <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                 <h3 className="text-xl font-bold mb-2">Cipher Attack Paths</h3>
                 <p className="text-sm text-text-secondary mb-5">How weak protocol/cipher choices can become banking traffic exposure before deployment.</p>
                 <div className="space-y-4">
                   {attackPaths.slice(0, 5).map((path: CipherAttackPath) => (
-                    <div key={path.id} className="border border-red-200 bg-red-50 rounded-lg p-4">
+                    <div key={path.id} className="border border-red-200 bg-red-50 rounded-2xl p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <h4 className="font-bold text-red-900">{path.title}</h4>
@@ -621,13 +621,13 @@ export default function CipherScannerJobPage() {
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                        <div className="bg-white border border-red-100 rounded p-3">
+                        <div className="bg-surface transition-colors duration-300 border border-red-100 rounded p-3">
                           <p className="text-xs uppercase font-semibold text-red-700 mb-2">Weakness Chain</p>
                           <ol className="space-y-1 text-sm text-red-950 list-decimal list-inside">
                             {(path.weakness_chain || []).map((step: string) => <li key={step}>{step}</li>)}
                           </ol>
                         </div>
-                        <div className="bg-white border border-red-100 rounded p-3">
+                        <div className="bg-surface transition-colors duration-300 border border-red-100 rounded p-3">
                           <p className="text-xs uppercase font-semibold text-red-700 mb-2">Banking Impact</p>
                           <ul className="space-y-1 text-sm text-red-950">
                             {(path.banking_impact || []).map((item: string) => <li key={item}>- {item}</li>)}
@@ -646,7 +646,7 @@ export default function CipherScannerJobPage() {
             {(policyDecision || remediationPlan.length > 0 || complianceMapping.length > 0) && (
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {policyDecision && (
-                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+                  <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                     <h3 className="text-xl font-bold mb-2">Policy Decision</h3>
                     <p className="text-sm text-text-secondary mb-4">Why pre-deployment TLS checks pass or block release.</p>
                     <div className="flex flex-wrap gap-3 mb-4">
@@ -672,12 +672,12 @@ export default function CipherScannerJobPage() {
                   </div>
                 )}
 
-                <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+                <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                   <h3 className="text-xl font-bold mb-2">Remediation and Compliance</h3>
                   <p className="text-sm text-text-secondary mb-4">Release-ready changes and mapped control gaps.</p>
                   <div className="space-y-3 max-h-[420px] overflow-y-auto">
                     {remediationPlan.slice(0, 6).map((item: CipherRemediation) => (
-                      <div key={item.id} className="border border-border-divider rounded-lg p-3">
+                      <div key={item.id} className="border border-border-divider rounded-2xl p-3">
                         <div className="flex items-start justify-between gap-3">
                           <p className="font-semibold">{item.title}</p>
                           <span className="px-2 py-1 rounded text-xs bg-surface-container text-text-secondary">P{item.priority}</span>
@@ -687,7 +687,7 @@ export default function CipherScannerJobPage() {
                       </div>
                     ))}
                     {complianceMapping.slice(0, 6).map((gap: CipherComplianceGap) => (
-                      <div key={`${gap.standard}-${gap.control}`} className="border border-yellow-200 bg-yellow-50 rounded-lg p-3">
+                      <div key={`${gap.standard}-${gap.control}`} className="border border-yellow-200 bg-yellow-50 rounded-2xl p-3">
                         <p className="font-semibold text-yellow-900">{gap.standard}</p>
                         <p className="text-sm text-yellow-950 mt-1">{gap.control}</p>
                         <p className="text-xs text-yellow-800 mt-2">{gap.finding_ids?.length || 0} linked finding(s)</p>
@@ -699,11 +699,11 @@ export default function CipherScannerJobPage() {
             )}
 
             {tlsFacts.length > 0 && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+              <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                 <h3 className="text-xl font-bold mb-4">Extracted TLS Facts</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto">
                   {tlsFacts.slice(0, 20).map((fact: CipherFact) => (
-                    <div key={fact.id} className="border border-border-divider rounded-lg p-3">
+                    <div key={fact.id} className="border border-border-divider rounded-2xl p-3">
                       <div className="flex items-center justify-between gap-3">
                         <span className="px-2 py-1 rounded bg-surface-container text-xs font-mono">{fact.fact_type}</span>
                         <span className="text-xs text-text-muted">{Math.round((fact.confidence || 0) * 100)}%</span>
@@ -717,7 +717,7 @@ export default function CipherScannerJobPage() {
             )}
 
             {findings.length > 0 && (
-              <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+              <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                 <h3 className="text-xl font-bold mb-4">TLS/Cipher Findings and Fixes</h3>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">

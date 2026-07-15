@@ -42,7 +42,7 @@ export function CipherBusinessImpactPanel({ summary, ciPolicy, attackPaths }: Ci
   if (summary.total_findings > 0) reasons.push(`${summary.total_findings} weak cryptographic findings detected.`);
 
   return (
-    <div className={`bg-white rounded-lg border-2 ${bgRisk} shadow-sm p-6`}>
+    <div className={`bg-surface transition-colors duration-300 rounded-2xl border-2 ${bgRisk} shadow-sm p-6`}>
       <div className="flex flex-col md:flex-row gap-8">
         <div className="md:w-1/3 flex flex-col justify-center border-b md:border-b-0 md:border-r border-border-divider pb-6 md:pb-0 md:pr-6">
           <div className="flex items-center mb-2">

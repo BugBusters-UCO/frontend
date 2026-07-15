@@ -16,41 +16,41 @@ export function LiveExecutionLog({ logs, isRunning }: LiveExecutionLogProps) {
   }, [logs]);
 
   return (
-    <div className="bg-terminal-bg rounded-lg border border-terminal-border shadow-sm flex flex-col max-h-140">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-terminal-border bg-[#1e293b] rounded-t-lg">
+    <div className="bg-terminal-bg rounded-2xl border border-terminal-border shadow-sm flex flex-col max-h-140 transition-colors duration-300">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-terminal-border bg-terminal-bg/80 rounded-t-2xl backdrop-blur">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-outline-variant text-[16px]">
+          <span className="material-symbols-outlined text-[#94a3b8] text-[16px]">
             terminal
           </span>
-          <span className="text-body-sm font-semibold text-outline-variant">
+          <span className="text-body-sm font-semibold text-[#94a3b8]">
             Live Execution Log
           </span>
         </div>
         <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-surface-variant opacity-50"></div>
-          <div className="w-3 h-3 rounded-full bg-surface-variant opacity-50"></div>
-          <div className="w-3 h-3 rounded-full bg-surface-variant opacity-50"></div>
+          <div className="w-3 h-3 rounded-full bg-[#475569] opacity-50"></div>
+          <div className="w-3 h-3 rounded-full bg-[#475569] opacity-50"></div>
+          <div className="w-3 h-3 rounded-full bg-[#475569] opacity-50"></div>
         </div>
       </div>
       <div
         ref={scrollRef}
-        className="p-4 font-code-sm text-code-sm text-outline-variant overflow-y-auto flex-1 space-y-1"
+        className="p-4 font-code-sm text-code-sm text-[#cbd5e1] overflow-y-auto flex-1 space-y-1"
       >
         {logs.length === 0 && !isRunning && (
           <div className="text-text-muted italic">Ready. Awaiting scan execution...</div>
         )}
         {logs.map((log, index) => {
-          let colorClass = "text-tertiary-fixed"; // default info
+          let colorClass = "text-[#60a5fa]"; // blue-400
           let badgeText = "INFO";
           
           if (log.level === "error") {
-            colorClass = "text-error";
+            colorClass = "text-[#f87171]"; // red-400
             badgeText = "ERROR";
           } else if (log.level === "warning") {
-            colorClass = "text-[#fbbf24]"; // amber
+            colorClass = "text-[#fbbf24]"; // amber-400
             badgeText = "WARN";
           } else if (log.level === "success") {
-            colorClass = "text-tertiary-fixed";
+            colorClass = "text-[#34d399]"; // emerald-400
             badgeText = "SUCCESS";
           }
 
@@ -63,9 +63,9 @@ export function LiveExecutionLog({ logs, isRunning }: LiveExecutionLogProps) {
 
           return (
             <div key={`${log.id}-${index}`} className="flex">
-              <span className="text-text-muted w-16 shrink-0">{time}</span>{" "}
+              <span className="text-[#64748b] w-16 shrink-0">{time}</span>{" "}
               <span className={`${colorClass} mr-2`}>[{badgeText}]</span>{" "}
-              <span className={log.level === "error" ? "text-error-container" : ""}>
+              <span className={log.level === "error" ? "text-[#f87171]" : "text-[#e2e8f0]"}>
                 {log.message}
               </span>
             </div>
@@ -73,8 +73,8 @@ export function LiveExecutionLog({ logs, isRunning }: LiveExecutionLogProps) {
         })}
         {isRunning && (
           <div className="flex">
-            <span className="text-text-muted w-16 shrink-0">--:--:--</span>{" "}
-            <span className="text-tertiary-fixed mr-2 animate-pulse">_</span>
+            <span className="text-[#64748b] w-16 shrink-0">--:--:--</span>{" "}
+            <span className="text-[#60a5fa] mr-2 animate-pulse">_</span>
           </div>
         )}
       </div>

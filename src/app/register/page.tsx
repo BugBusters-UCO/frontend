@@ -27,11 +27,11 @@ export default function RegisterPage() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-surface-container-lowest">
-      <div className="bg-white p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-md border border-border-subtle relative overflow-hidden">
+      <div className="bg-surface transition-colors duration-300 p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-md border border-border-subtle relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-container to-[#60a5fa]"></div>
         
         <div className="flex justify-center mb-8">
-          <div className="w-12 h-12 bg-primary-container/10 rounded-xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-primary-container/10 rounded-2xl flex items-center justify-center">
             <span className="material-symbols-outlined text-primary-container text-2xl">person_add</span>
           </div>
         </div>
@@ -40,7 +40,7 @@ export default function RegisterPage() {
         <p className="text-center text-text-secondary mb-8 text-body-sm">Get started with BugBusters</p>
 
         {error && (
-          <div className="bg-error-container/50 border border-[#ffb4ab] text-on-error-container p-3 rounded-lg mb-6 text-sm flex items-center gap-2">
+          <div className="bg-error-container/50 border border-[#ffb4ab] text-on-error-container p-3 rounded-2xl mb-6 text-sm flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px]">error</span>
             {error}
           </div>
@@ -54,7 +54,7 @@ export default function RegisterPage() {
               <input
                 type="text"
                 required
-                className="w-full bg-surface-container-lowest border border-border-subtle rounded-lg pl-10 pr-4 py-2.5 text-text-primary focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all"
+                className="w-full bg-surface-container-lowest border border-border-subtle rounded-2xl pl-10 pr-4 py-2.5 text-text-primary focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all"
                 placeholder="John Doe"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -68,7 +68,7 @@ export default function RegisterPage() {
               <input
                 type="email"
                 required
-                className="w-full bg-surface-container-lowest border border-border-subtle rounded-lg pl-10 pr-4 py-2.5 text-text-primary focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all"
+                className="w-full bg-surface-container-lowest border border-border-subtle rounded-2xl pl-10 pr-4 py-2.5 text-text-primary focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -82,7 +82,7 @@ export default function RegisterPage() {
               <input
                 type="password"
                 required
-                className="w-full bg-surface-container-lowest border border-border-subtle rounded-lg pl-10 pr-4 py-2.5 text-text-primary focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all"
+                className="w-full bg-surface-container-lowest border border-border-subtle rounded-2xl pl-10 pr-4 py-2.5 text-text-primary focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -91,7 +91,7 @@ export default function RegisterPage() {
           </div>
           <button
             type="submit"
-            className="w-full bg-primary-container text-white font-medium py-2.5 rounded-lg hover:bg-[#195fca] transition-all transform active:scale-[0.98] mt-2 shadow-sm"
+            className="w-full bg-primary-container text-white font-medium py-2.5 rounded-2xl hover:bg-[#195fca] transition-all transform active:scale-[0.98] mt-2 shadow-sm"
           >
             Create Account
           </button>

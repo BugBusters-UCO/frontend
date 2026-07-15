@@ -100,7 +100,7 @@ export function RemoteFileExplorer({
           <button
             type="button"
             onClick={() => togglePath(path)}
-            className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${isSelected ? 'bg-primary border-primary text-white' : 'border-border-divider bg-white'}`}
+            className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${isSelected ? 'bg-primary border-primary text-white' : 'border-border-divider bg-surface transition-colors duration-300'}`}
             disabled={!hasAgents}
           >
             {isSelected && <span className="material-symbols-outlined text-[12px]">check</span>}
@@ -130,7 +130,7 @@ export function RemoteFileExplorer({
   };
 
   return (
-    <div className="border border-border-divider rounded-lg bg-white overflow-hidden flex flex-col h-[280px]">
+    <div className="border border-border-divider rounded-2xl bg-surface transition-colors duration-300 overflow-hidden flex flex-col h-[280px]">
       <div className="p-2 border-b border-border-divider bg-surface-container-lowest flex items-center justify-between">
         <span className="text-xs font-bold text-text-secondary">Remote File Explorer</span>
         <button 

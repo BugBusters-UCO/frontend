@@ -24,7 +24,7 @@ export default function SecretScannerLandingPage() {
 
   return (
     <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap">
-      <div className="bg-white rounded-2xl border border-border-subtle shadow-sm p-8 relative overflow-hidden flex items-center justify-between">
+      <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-8 relative overflow-hidden flex items-center justify-between">
         <div className="absolute top-0 right-0 w-48 h-48 bg-primary-container/5 rounded-bl-[150px] -z-10"></div>
         <div className="flex items-center gap-5">
           <div className="w-14 h-14 rounded-2xl bg-primary-container/10 flex items-center justify-center">

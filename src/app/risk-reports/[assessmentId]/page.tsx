@@ -69,16 +69,16 @@ export default function RiskReportDetailPage() {
   };
 
   if (isLoading) {
-    return <div className="mx-auto max-w-[1280px] rounded-lg border border-border-divider bg-white p-6 text-sm text-text-muted">Loading risk report...</div>;
+    return <div className="mx-auto max-w-[1280px] rounded-2xl border border-border-divider bg-surface transition-colors duration-300 p-6 text-sm text-text-muted">Loading risk report...</div>;
   }
 
   if (!assessment) {
-    return <div className="mx-auto max-w-[1280px] rounded-lg border border-red-200 bg-red-50 p-6 text-sm text-red-700">Risk report not found.</div>;
+    return <div className="mx-auto max-w-[1280px] rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">Risk report not found.</div>;
   }
 
   return (
     <div className="mx-auto flex max-w-[1280px] flex-col gap-section-gap">
-      <section className="rounded-2xl border border-border-subtle bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-6 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <Link href="/risk-reports" className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
@@ -95,7 +95,7 @@ export default function RiskReportDetailPage() {
             <button
               onClick={handleDownloadPdf}
               disabled={assessment.status !== "completed" || isDownloading}
-              className="flex items-center gap-2 rounded-lg bg-surface-container-high px-4 py-2 text-sm font-bold text-text-primary hover:bg-surface-container-highest disabled:opacity-50"
+              className="flex items-center gap-2 rounded-2xl bg-surface-container-high px-4 py-2 text-sm font-bold text-text-primary hover:bg-surface-container-highest disabled:opacity-50"
             >
               <span className="material-symbols-outlined text-[18px]">
                 {isDownloading ? "hourglass_empty" : "download"}
@@ -112,12 +112,12 @@ export default function RiskReportDetailPage() {
       </section>
 
       {!risk ? (
-        <section className="rounded-lg border border-border-divider bg-white p-6 text-sm text-text-muted">
+        <section className="rounded-2xl border border-border-divider bg-surface transition-colors duration-300 p-6 text-sm text-text-muted">
           {assessment.error || "Risk score is not available yet. Keep the scanners running until this assessment completes."}
         </section>
       ) : (
         <>
-          <div className="flex rounded-lg border border-border-divider bg-white p-1 shadow-sm">
+          <div className="flex rounded-2xl border border-border-divider bg-surface transition-colors duration-300 p-1 shadow-sm">
             <button
               onClick={() => setTab("executive")}
               className={`flex-1 rounded-md px-4 py-2 text-sm font-bold ${tab === "executive" ? "bg-primary text-white" : "text-text-secondary hover:bg-surface-container"}`}
@@ -139,7 +139,7 @@ export default function RiskReportDetailPage() {
           )}
 
           {aiRemedies.length > 0 && (
-            <section className="rounded-lg border border-border-subtle bg-white p-5 shadow-sm">
+            <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
               <div>
                 <h2 className="text-section-header font-section-header">Suggestion</h2>
               </div>
@@ -148,13 +148,13 @@ export default function RiskReportDetailPage() {
                   const finding = risk?.top_findings?.find((f) => f.id === item.finding_id);
                   const severity = finding?.severity || "unknown";
                   return (
-                    <article key={item.finding_id} className={`rounded-lg border bg-surface-container-lowest p-4 ${severityBorder(severity)}`}>
+                    <article key={item.finding_id} className={`rounded-2xl border bg-surface-container-lowest p-4 ${severityBorder(severity)}`}>
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           {finding && <span className={`rounded px-2 py-1 text-xs font-bold uppercase ${riskBadge(severity)}`}>{severity}</span>}
                           <h3 className="font-bold text-text-primary">{item.title}</h3>
                         </div>
-                        <span className="rounded bg-white px-2 py-1 text-xs font-bold uppercase text-text-muted border border-border-divider">{item.scanner}</span>
+                        <span className="rounded bg-surface transition-colors duration-300 px-2 py-1 text-xs font-bold uppercase text-text-muted border border-border-divider">{item.scanner}</span>
                       </div>
                       <div className="mt-4 text-sm text-text-secondary leading-relaxed">
                         <ReactMarkdown
@@ -201,7 +201,7 @@ function ExecutiveView({
 
   return (
     <div className="grid grid-cols-1 gap-element-gap xl:grid-cols-[1.2fr_0.8fr]">
-      <section className="rounded-lg border border-border-subtle bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
         <h2 className="text-section-header font-section-header">Executive Decision View</h2>
         <div className="mt-4 space-y-4">
           <Insight label="Headline" value={brief?.headline || risk.executive_summary} icon="campaign" />
@@ -211,7 +211,7 @@ function ExecutiveView({
         </div>
       </section>
 
-      <section className="rounded-lg border border-border-subtle bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
         <h2 className="text-section-header font-section-header">What To Fix First</h2>
         <div className="mt-4 space-y-3">
           {(risk.overall_priorities || []).slice(0, 5).map((item) => (
@@ -222,7 +222,7 @@ function ExecutiveView({
           type="button"
           onClick={onGenerate}
           disabled={assessment.status !== "completed" || isGenerating}
-          className="mt-5 w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+          className="mt-5 w-full rounded-2xl bg-primary px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
         >
           {isGenerating ? "Generating remedies..." : assessment.result?.aiRemedies?.length ? "Regenerate remedies" : "Get remedies"}
         </button>
@@ -238,7 +238,7 @@ function TechnicalView({ assessment, scannerNames }: { assessment: RiskAssessmen
 
   return (
     <div className="space-y-5">
-      <section className="rounded-lg border border-border-subtle bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
         <h2 className="text-section-header font-section-header">Overall Technical Priority Order</h2>
         <p className="mt-1 text-sm text-text-secondary">{risk.developer_summary}</p>
         <div className="mt-4 space-y-3">
@@ -248,14 +248,14 @@ function TechnicalView({ assessment, scannerNames }: { assessment: RiskAssessmen
         </div>
       </section>
 
-      <section className="rounded-lg border border-border-subtle bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
         <h2 className="text-section-header font-section-header">Priorities By Scanner</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
           {scannerNames.length === 0 ? (
             <p className="text-sm text-text-muted">No scanner-specific priority items were found.</p>
           ) : (
             scannerNames.map((scanner) => (
-              <div key={scanner} className="rounded-lg border border-border-divider p-4">
+              <div key={scanner} className="rounded-2xl border border-border-divider p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="font-bold text-text-primary">{SCANNER_LABELS[scanner] || scanner}</h3>
                   <span className="rounded bg-surface-container-low px-2 py-1 text-xs font-bold text-text-muted">
@@ -273,11 +273,11 @@ function TechnicalView({ assessment, scannerNames }: { assessment: RiskAssessmen
         </div>
       </section>
 
-      <section className="rounded-lg border border-border-subtle bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
         <h2 className="text-section-header font-section-header">Scanner Score Evidence</h2>
         <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-4">
           {Object.values(risk.scanner_scores).map((scanner) => (
-            <div key={scanner.scanner} className="rounded-lg border border-border-divider p-4">
+            <div key={scanner.scanner} className="rounded-2xl border border-border-divider p-4">
               <p className="text-xs font-bold uppercase text-text-muted">{scanner.scanner}</p>
               <p className="mt-2 text-2xl font-black text-text-primary">{scanner.business_adjusted_score}</p>
               <p className="mt-1 text-xs text-text-muted">{scanner.finding_count} finding(s), {scanner.critical_findings} critical, {scanner.high_findings} high</p>
@@ -294,13 +294,13 @@ function TechnicalView({ assessment, scannerNames }: { assessment: RiskAssessmen
 
 function PriorityRow({ item, compact = false }: { item: UnifiedRiskPriority; compact?: boolean }) {
   return (
-    <article className={`rounded-lg border border-border-divider bg-surface-container-lowest ${compact ? "p-3" : "p-4"}`}>
+    <article className={`rounded-2xl border border-border-divider bg-surface-container-lowest ${compact ? "p-3" : "p-4"}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded bg-primary-container px-2 py-1 text-xs font-black text-white">#{item.rank}</span>
             <span className={`rounded px-2 py-1 text-xs font-bold uppercase ${riskBadge(item.risk_level)}`}>{item.risk_level}</span>
-            <span className="rounded bg-white px-2 py-1 text-xs font-bold uppercase text-text-muted">{item.scanner}</span>
+            <span className="rounded bg-surface transition-colors duration-300 px-2 py-1 text-xs font-bold uppercase text-text-muted">{item.scanner}</span>
           </div>
           <h3 className="mt-2 font-bold text-text-primary">{item.title}</h3>
           <p className="mt-1 text-xs text-text-muted">
@@ -334,7 +334,7 @@ function PriorityRow({ item, compact = false }: { item: UnifiedRiskPriority; com
 
 function Metric({ label, value, tone }: { label: string | number; value: string | number; tone: string }) {
   return (
-    <div className="rounded-lg border border-border-divider bg-surface-container-lowest p-4 text-right">
+    <div className="rounded-2xl border border-border-divider bg-surface-container-lowest p-4 text-right">
       <p className="text-xs font-bold uppercase text-text-muted">{label}</p>
       <p className={`mt-1 text-3xl font-black ${scoreClass(tone)}`}>{value}</p>
     </div>
@@ -343,7 +343,7 @@ function Metric({ label, value, tone }: { label: string | number; value: string 
 
 function Insight({ label, value, icon }: { label: string; value: string; icon: string }) {
   return (
-    <div className="rounded-lg border border-border-divider bg-surface-container-lowest p-4">
+    <div className="rounded-2xl border border-border-divider bg-surface-container-lowest p-4">
       <div className="flex items-center gap-2">
         <span className="material-symbols-outlined text-[20px] text-primary-container">{icon}</span>
         <p className="text-xs font-bold uppercase text-text-muted">{label}</p>

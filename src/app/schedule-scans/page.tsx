@@ -188,7 +188,7 @@ export default function ScheduleScansPage() {
       <section className="mx-auto w-full px-8 py-8">
         <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-inner">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-inner">
               <span className="material-symbols-outlined text-[24px] text-white">schedule</span>
             </div>
             <div>
@@ -196,7 +196,7 @@ export default function ScheduleScansPage() {
               <p className="text-body-sm text-text-secondary">Run dependency, config, secret, and cipher scans automatically for repositories and agents.</p>
             </div>
           </div>
-          <button onClick={refresh} className="rounded-md border border-border-divider bg-white px-4 py-2 text-body-sm font-bold text-text-primary hover:bg-surface-container transition shadow-sm">
+          <button onClick={refresh} className="rounded-md border border-border-divider bg-surface transition-colors duration-300 px-4 py-2 text-body-sm font-bold text-text-primary hover:bg-surface-container transition shadow-sm">
             <span className="material-symbols-outlined text-[16px] mr-2 align-text-bottom">refresh</span>
             Refresh
           </button>
@@ -209,7 +209,7 @@ export default function ScheduleScansPage() {
         )}
 
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <section className="rounded-lg border border-border-divider bg-surface-container-lowest p-5 shadow-sm">
+          <section className="rounded-2xl border border-border-divider bg-surface-container-lowest p-5 shadow-sm">
             <h2 className="text-title-md font-title-md text-text-primary">Create Schedule</h2>
             
             <div className="mb-5 mt-4 flex border-b border-border-divider">
@@ -348,7 +348,7 @@ export default function ScheduleScansPage() {
           </section>
 
           <section className="space-y-4">
-            <div className="rounded-lg border border-border-divider bg-surface-container-lowest p-5 shadow-sm">
+            <div className="rounded-2xl border border-border-divider bg-surface-container-lowest p-5 shadow-sm">
               <h2 className="text-title-md font-title-md text-text-primary">Active Schedules</h2>
               <p className="mt-1 text-body-sm text-text-secondary">
                 Scheduler runs in the backend every minute. Each run creates scanner jobs and a risk report.
@@ -356,13 +356,13 @@ export default function ScheduleScansPage() {
             </div>
 
             {loading ? (
-              <div className="rounded-lg border border-border-divider bg-surface-container-lowest p-6 text-body-sm text-text-secondary">Loading schedules...</div>
+              <div className="rounded-2xl border border-border-divider bg-surface-container-lowest p-6 text-body-sm text-text-secondary">Loading schedules...</div>
             ) : schedules.length ? (
               schedules.map((schedule) => (
                 <ScheduleCard key={schedule.id} schedule={schedule} onRefresh={refresh} />
               ))
             ) : (
-              <div className="rounded-lg border border-border-divider bg-surface-container-lowest p-6 text-center text-body-sm text-text-secondary">
+              <div className="rounded-2xl border border-border-divider bg-surface-container-lowest p-6 text-center text-body-sm text-text-secondary">
                 No schedules yet. Create one for a GitHub repository or VM Agent.
               </div>
             )}
@@ -387,7 +387,7 @@ function ScheduleCard({ schedule, onRefresh }: { schedule: ScheduledScan; onRefr
   }
 
   return (
-    <article className="rounded-lg border border-border-divider bg-surface-container-lowest p-5 shadow-sm">
+    <article className="rounded-2xl border border-border-divider bg-surface-container-lowest p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-title-sm font-title-sm text-text-primary">{schedule.name}</h3>

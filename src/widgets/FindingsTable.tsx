@@ -9,35 +9,29 @@ export function FindingsTable({ findings }: FindingsTableProps) {
   if (!findings || findings.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-lg border border-border-subtle shadow-sm overflow-hidden mt-6">
-      <div className="px-card-padding py-4 border-b border-border-divider flex justify-between items-center bg-surface-bright">
-        <h2 className="text-section-header font-section-header">
+    <div className="bg-surface rounded-2xl border border-border-subtle shadow-sm overflow-hidden mt-8 transition-colors duration-300">
+      <div className="px-6 py-5 border-b border-border-divider flex justify-between items-center bg-surface-container">
+        <h2 className="text-section-header font-section-header text-text-primary tracking-tight">
           Vulnerabilities & Fixes
         </h2>
-        {/* <button className="flex items-center gap-2 text-body-sm text-text-secondary hover:text-text-primary border border-border-subtle rounded-md px-3 py-1.5 bg-white">
-          <span className="material-symbols-outlined text-[18px]">
-            filter_list
-          </span>{" "}
-          Filter
-        </button> */}
       </div>
-      <div className="max-h-[400px] overflow-auto">
+      <div className="max-h-[500px] overflow-auto">
         <table className="w-full text-left border-collapse min-w-[800px]">
-          <thead className="sticky top-0 z-10 bg-surface-container-lowest shadow-[0_1px_0_var(--color-border-divider)]">
+          <thead className="sticky top-0 z-10 bg-surface-container/90 backdrop-blur-sm shadow-[0_1px_0_var(--color-border-divider)]">
             <tr>
-              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider bg-surface-container-lowest">
+              <th className="py-4 px-6 font-table-header text-table-header text-text-muted uppercase tracking-wider">
                 Package
               </th>
-              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider bg-surface-container-lowest">
+              <th className="py-4 px-6 font-table-header text-table-header text-text-muted uppercase tracking-wider">
                 Severity
               </th>
-              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider bg-surface-container-lowest">
+              <th className="py-4 px-6 font-table-header text-table-header text-text-muted uppercase tracking-wider">
                 Issue
               </th>
-              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider bg-surface-container-lowest">
+              <th className="py-4 px-6 font-table-header text-table-header text-text-muted uppercase tracking-wider">
                 Introduced By
               </th>
-              <th className="py-3 px-4 font-table-header text-table-header text-text-muted uppercase tracking-wider text-right bg-surface-container-lowest">
+              <th className="py-4 px-6 font-table-header text-table-header text-text-muted uppercase tracking-wider text-right">
                 Recommended Fix
               </th>
             </tr>
@@ -50,25 +44,25 @@ export function FindingsTable({ findings }: FindingsTableProps) {
               let sevBadge = null;
               if (severityLower === "critical") {
                 sevBadge = (
-                  <span className="px-2 py-1 bg-severity-critical text-white rounded-full text-body-xs font-semibold">
+                  <span className="px-2.5 py-1 bg-severity-critical text-white rounded-full text-body-xs font-semibold shadow-sm">
                     Critical
                   </span>
                 );
               } else if (severityLower === "high") {
                 sevBadge = (
-                  <span className="px-2 py-1 bg-severity-high-bg text-severity-high rounded-full text-body-xs font-semibold border border-[#fca5a5]">
+                  <span className="px-2.5 py-1 bg-severity-high-bg text-severity-high rounded-full text-body-xs font-semibold border border-[#fca5a5]/30">
                     High
                   </span>
                 );
               } else if (severityLower === "medium") {
                 sevBadge = (
-                  <span className="px-2 py-1 bg-severity-medium-bg text-severity-medium rounded-full text-body-xs font-semibold border border-[#fcd34d]">
+                  <span className="px-2.5 py-1 bg-severity-medium-bg text-severity-medium rounded-full text-body-xs font-semibold border border-[#fcd34d]/30">
                     Medium
                   </span>
                 );
               } else {
                 sevBadge = (
-                  <span className="px-2 py-1 bg-severity-low-bg text-severity-low rounded-full text-body-xs font-semibold border border-[#86efac]">
+                  <span className="px-2.5 py-1 bg-severity-low-bg text-severity-low rounded-full text-body-xs font-semibold border border-[#86efac]/30">
                     {f.severity}
                   </span>
                 );
@@ -79,23 +73,23 @@ export function FindingsTable({ findings }: FindingsTableProps) {
                   key={`${f.id}-${i}`}
                   className={`${
                     isLast ? "" : "border-b border-border-divider"
-                  } hover:bg-surface-container-low transition-colors group`}
+                  } hover:bg-surface-container-high transition-colors group`}
                 >
-                  <td className="py-3 px-4 font-code-sm">
+                  <td className="py-4 px-6 font-code-sm text-text-primary font-medium">
                     {f.package_name}@{f.installed_version}
                   </td>
-                  <td className="py-3 px-4">{sevBadge}</td>
-                  <td className="py-3 px-4">{f.summary}</td>
-                  <td className="py-3 px-4 text-text-secondary">
-                    via <code>{f.ecosystem}</code>
+                  <td className="py-4 px-6">{sevBadge}</td>
+                  <td className="py-4 px-6 text-text-secondary">{f.summary}</td>
+                  <td className="py-4 px-6 text-text-secondary">
+                    via <code className="bg-surface-dim px-1.5 py-0.5 rounded text-text-primary">{f.ecosystem}</code>
                   </td>
-                  <td className="py-3 px-4 text-right">
+                  <td className="py-4 px-6 text-right">
                     {f.fix.auto_remediable ? (
-                      <button className="bg-white border border-border-subtle text-text-primary px-3 py-1.5 rounded-md hover:bg-surface-container-low transition-colors text-body-sm">
+                      <button className="bg-surface border border-border-subtle text-text-primary px-4 py-2 rounded-2xl shadow-sm hover:bg-surface-container hover:shadow transition-all text-body-sm font-medium focus:ring-2 focus:ring-primary/50">
                         {f.fix.title}
                       </button>
                     ) : (
-                      <span className="text-text-muted italic text-body-sm">
+                      <span className="text-text-muted italic text-body-sm bg-surface-dim px-3 py-1.5 rounded-2xl border border-border-divider">
                         Manual fix required
                       </span>
                     )}

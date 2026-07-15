@@ -17,8 +17,8 @@ export function Skeleton({
     none: "rounded-none",
     sm: "rounded-sm",
     md: "rounded-md",
-    lg: "rounded-lg",
-    xl: "rounded-xl",
+    lg: "rounded-2xl",
+    xl: "rounded-2xl",
     full: "rounded-full",
   }[rounded];
 
@@ -32,7 +32,7 @@ export function Skeleton({
 
 export function SkeletonJobRow() {
   return (
-    <div className="flex items-center justify-between p-3 border rounded-lg border-border-divider">
+    <div className="flex items-center justify-between p-3 border rounded-2xl border-border-divider">
       <div className="flex flex-col gap-2 w-1/2">
         <Skeleton width="60%" height={16} />
         <Skeleton width="40%" height={12} />
@@ -44,7 +44,7 @@ export function SkeletonJobRow() {
 
 export function SkeletonPanel() {
   return (
-    <div className="bg-surface-container-lowest p-card-padding rounded-lg border border-border-divider shadow-sm flex flex-col gap-4">
+    <div className="bg-surface-container-lowest p-card-padding rounded-2xl border border-border-divider shadow-sm flex flex-col gap-4">
       <Skeleton width="30%" height={24} />
       <div className="flex flex-col gap-2">
         <Skeleton width="100%" height={16} />
@@ -59,7 +59,7 @@ export function SkeletonMetricsRow() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-element-gap">
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="bg-surface-container-lowest p-card-padding rounded-lg border border-border-divider shadow-sm flex flex-col gap-2">
+        <div key={i} className="bg-surface-container-lowest p-card-padding rounded-2xl border border-border-divider shadow-sm flex flex-col gap-2">
           <Skeleton width="40%" height={14} />
           <Skeleton width="60%" height={32} />
         </div>
@@ -70,7 +70,7 @@ export function SkeletonMetricsRow() {
 
 export function ScanConfigSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 flex flex-col h-full relative overflow-hidden">
+    <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-6 flex flex-col h-full relative overflow-hidden">
       <div className="flex items-center gap-3 mb-6">
         <Skeleton width={40} height={40} rounded="xl" />
         <div>
@@ -86,7 +86,7 @@ export function ScanConfigSkeleton() {
             <Skeleton width={60} height={16} />
           </div>
           
-          <div className="bg-surface-container-lowest rounded-xl border border-border-subtle p-1 shadow-sm">
+          <div className="bg-surface-container-lowest rounded-2xl border border-border-subtle p-1 shadow-sm">
              <div className="p-3">
                 <div className="flex items-center justify-between mb-3 px-1">
                   <div className="flex items-center gap-2.5">
@@ -108,7 +108,7 @@ export function ScanConfigSkeleton() {
             <div className="h-px bg-border-divider flex-1"></div>
           </div>
 
-          <div className="border-2 border-dashed border-border-subtle rounded-xl p-5 bg-surface-container-lowest flex flex-col items-center justify-center">
+          <div className="border-2 border-dashed border-border-subtle rounded-2xl p-5 bg-surface-container-lowest flex flex-col items-center justify-center">
             <Skeleton width={32} height={32} rounded="full" className="mb-2" />
             <Skeleton width={150} height={16} className="mb-1.5" />
             <Skeleton width={200} height={12} />
@@ -121,7 +121,7 @@ export function ScanConfigSkeleton() {
             <Skeleton width={70} height={16} />
           </div>
 
-          <div className="bg-surface-container-lowest border border-border-subtle rounded-xl p-4 shadow-sm space-y-1">
+          <div className="bg-surface-container-lowest border border-border-subtle rounded-2xl p-4 shadow-sm space-y-1">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center justify-between py-2.5 border-b border-border-divider last:border-0">
                 <div>
@@ -133,7 +133,7 @@ export function ScanConfigSkeleton() {
             ))}
           </div>
 
-          <div className="bg-surface-container-lowest border border-border-subtle rounded-xl p-4 shadow-sm">
+          <div className="bg-surface-container-lowest border border-border-subtle rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <Skeleton width={110} height={14} />
               <Skeleton width={16} height={16} rounded="full" />

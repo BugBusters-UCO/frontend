@@ -13,7 +13,7 @@ export function ConfigAttackPathsList({ attackPaths }: ConfigAttackPathsListProp
   }
 
   return (
-    <div className="bg-white rounded-xl border border-border-subtle shadow-sm p-card-padding mt-6">
+    <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-card-padding mt-6">
       <div className="flex items-center mb-4">
         <h2 className="text-section-header font-section-header">
           Attack Path Details
@@ -27,9 +27,9 @@ export function ConfigAttackPathsList({ attackPaths }: ConfigAttackPathsListProp
           const severityColor = path.severity === "critical" ? "text-severity-critical" : path.severity === "high" ? "text-severity-high" : path.severity === "medium" ? "text-severity-medium" : "text-severity-low";
           
           return (
-            <div key={path.id || index} className="border border-border-divider rounded-lg overflow-hidden transition-all shadow-sm">
+            <div key={path.id || index} className="border border-border-divider rounded-2xl overflow-hidden transition-all shadow-sm">
               <div 
-                className={`p-4 flex items-center justify-between cursor-pointer hover:bg-surface-container-lowest transition-colors ${isExpanded ? 'bg-surface-container-lowest border-b border-border-divider' : 'bg-white'}`}
+                className={`p-4 flex items-center justify-between cursor-pointer hover:bg-surface-container-lowest transition-colors ${isExpanded ? 'bg-surface-container-lowest border-b border-border-divider' : 'bg-surface transition-colors duration-300'}`}
                 onClick={() => setExpandedIndex(isExpanded ? null : index)}
               >
                 <div className="flex items-center gap-3">
@@ -64,8 +64,8 @@ export function ConfigAttackPathsList({ attackPaths }: ConfigAttackPathsListProp
                   <div className="relative border-l-2 border-red-200 ml-3 pl-6 pb-2 space-y-6">
                     {path.steps?.map((step: any, stepIdx: number) => (
                       <div key={stepIdx} className="relative">
-                        <div className="absolute -left-[33px] top-1 w-4 h-4 rounded-full bg-white border-2 border-red-400 z-10 shadow-sm"></div>
-                        <div className="bg-white border border-border-divider rounded-lg p-3 shadow-sm">
+                        <div className="absolute -left-[33px] top-1 w-4 h-4 rounded-full bg-surface transition-colors duration-300 border-2 border-red-400 z-10 shadow-sm"></div>
+                        <div className="bg-surface transition-colors duration-300 border border-border-divider rounded-2xl p-3 shadow-sm">
                           <div className="flex items-start justify-between mb-1.5">
                             <span className="text-xs font-bold text-red-500 uppercase tracking-widest">
                               Step {stepIdx + 1}
@@ -90,7 +90,7 @@ export function ConfigAttackPathsList({ attackPaths }: ConfigAttackPathsListProp
                   </div>
 
                   {path.remediation && (
-                    <div className="mt-2 bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="mt-2 bg-green-50 border border-green-200 rounded-2xl p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="material-symbols-outlined text-green-600 text-[18px]">build</span>
                         <h4 className="text-sm font-bold text-green-900">Remediation</h4>

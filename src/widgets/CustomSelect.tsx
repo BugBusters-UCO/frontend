@@ -47,7 +47,7 @@ export function CustomSelect({
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full bg-surface-container-lowest border ${
           isOpen ? "border-primary-container ring-1 ring-primary-container" : "border-border-subtle"
-        } rounded-lg px-4 py-2.5 text-left text-body-sm flex items-center justify-between transition-all duration-200 outline-none ${
+        } rounded-2xl px-4 py-2.5 text-left text-body-sm flex items-center justify-between transition-all duration-200 outline-none ${
           disabled ? "opacity-50 cursor-not-allowed" : "hover:border-primary-container cursor-pointer"
         }`}
       >
@@ -64,7 +64,7 @@ export function CustomSelect({
       </button>
 
       {isOpen && !disabled && (
-        <div className="absolute z-50 w-full mt-1.5 bg-white border border-border-subtle rounded-lg shadow-lg max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200 py-1.5">
+        <div className="absolute z-50 w-full mt-1.5 bg-surface transition-colors duration-300 border border-border-subtle rounded-2xl shadow-lg max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200 py-1.5">
           {options.length === 0 ? (
             <div className="px-4 py-3 text-body-sm text-text-muted text-center">
               No options available

@@ -33,7 +33,7 @@ export function InfoTooltip({ text }: InfoTooltipProps) {
   };
 
   return (
-    <div className="inline-flex items-center ml-1.5 align-middle cursor-help">
+    <span className="inline-flex items-center ml-1.5 align-middle cursor-help">
       <span 
         ref={iconRef}
         onMouseEnter={handleMouseEnter}
@@ -52,6 +52,6 @@ export function InfoTooltip({ text }: InfoTooltipProps) {
         </div>,
         document.body
       )}
-    </div>
+    </span>
   );
 }

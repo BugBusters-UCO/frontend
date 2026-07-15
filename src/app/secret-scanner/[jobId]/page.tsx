@@ -121,7 +121,7 @@ export default function SecretScannerJobPage() {
       <div className="flex flex-col items-center justify-center py-20">
         <div className="text-red-500 font-bold text-xl mb-4">Error loading scan results</div>
         <p className="text-text-muted mb-6">{(queryError as Error).message || "Unknown error"}</p>
-        <button onClick={() => router.push("/")} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+        <button onClick={() => router.push("/")} className="px-6 py-2 bg-primary text-white rounded-2xl hover:bg-primary/90 transition-colors">
           Return to Dashboard
         </button>
       </div>
@@ -174,14 +174,14 @@ export default function SecretScannerJobPage() {
         <LiveExecutionLog logs={logs} isRunning={isScanning} />
 
         {!isScanning && job.status === "failed" && (
-          <div className="bg-error-container text-on-error-container p-4 rounded-lg border border-[#ffb4ab]">
+          <div className="bg-error-container text-on-error-container p-4 rounded-2xl border border-[#ffb4ab]">
             <h3 className="font-bold text-lg mb-2">Scan Failed</h3>
             <p>{job.error || "An unknown error occurred during the scan."}</p>
           </div>
         )}
 
         {!isScanning && job.status === "completed" && !result && (
-          <div className="bg-surface-container-low text-text-secondary p-4 rounded-lg text-center">
+          <div className="bg-surface-container-low text-text-secondary p-4 rounded-2xl text-center">
             Scan completed but no results were returned.
           </div>
         )}
@@ -215,7 +215,7 @@ export default function SecretScannerJobPage() {
             {(exposurePaths.length > 0 || rotationPlaybooks.length > 0 || secretGraph) && (
               <div className={`grid grid-cols-1 ${isExposureSidebarOpen && exposurePaths.length > 0 ? 'xl:grid-cols-[1fr_1.5fr]' : 'xl:grid-cols-1'} gap-6`}>
                 {isExposureSidebarOpen && exposurePaths.length > 0 && (
-                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6 h-fit">
+                  <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6 h-fit">
                     <div className="flex items-center justify-between gap-4 mb-4">
                       <div>
                         <div className="flex items-center">
@@ -229,7 +229,7 @@ export default function SecretScannerJobPage() {
                     </div>
                     <div className="space-y-4">
                       {exposurePaths.slice(0, 5).map((path: any) => (
-                        <div key={path.id} className="border border-red-200 bg-red-50 rounded-lg p-4">
+                        <div key={path.id} className="border border-red-200 bg-red-50 rounded-2xl p-4">
                           <div className="flex items-start justify-between gap-4">
                             <div>
                               <div className="flex items-center gap-2 mb-1">
@@ -257,7 +257,7 @@ export default function SecretScannerJobPage() {
                               </ul>
                             </div>
                           </div>
-                          <div className="mt-4 bg-white border border-red-100 rounded p-3">
+                          <div className="mt-4 bg-surface transition-colors duration-300 border border-red-100 rounded p-3">
                             <p className="text-xs uppercase font-semibold text-red-700 mb-2">Abuse Sequence</p>
                             <div className="space-y-1 text-sm text-red-950">
                               {(path.abuse_sequence || []).map((step: string, idx: number) => (
@@ -276,7 +276,7 @@ export default function SecretScannerJobPage() {
                   <div className="flex justify-end">
                     <button 
                       onClick={() => setIsExposureSidebarOpen(!isExposureSidebarOpen)}
-                      className="px-4 py-2 bg-white hover:bg-surface-container border border-border-subtle rounded-md text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm w-fit"
+                      className="px-4 py-2 bg-surface transition-colors duration-300 hover:bg-surface-container border border-border-subtle rounded-md text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm w-fit"
                     >
                       <span className="material-symbols-outlined text-[18px]">
                         {isExposureSidebarOpen ? 'keyboard_double_arrow_left' : 'keyboard_double_arrow_right'}
@@ -287,14 +287,14 @@ export default function SecretScannerJobPage() {
                   {secretGraph && <SecretInteractiveGraph graphData={secretGraph} />}
 
                   {rotationPlaybooks.length > 0 && (
-                    <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+                    <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                       <div className="flex items-center mb-2">
                         <h3 className="text-xl font-bold">Rotation Playbooks</h3>
                         <InfoTooltip text="Owner-aware steps generated for exposed credentials." />
                       </div>
                       <div className="space-y-3">
                         {rotationPlaybooks.slice(0, 4).map((playbook: any) => (
-                          <div key={playbook.id} className="border border-border-divider rounded-lg p-4">
+                          <div key={playbook.id} className="border border-border-divider rounded-2xl p-4">
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 <p className="font-semibold">{playbook.secret_type}</p>
@@ -321,7 +321,7 @@ export default function SecretScannerJobPage() {
             {activeTab === "technical" && (
               <div className="flex flex-col gap-6">
                 {policyDecision && (
-                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+                  <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                     <div className="flex items-center mb-2">
                       <h3 className="text-xl font-bold">Policy Decision</h3>
                       <InfoTooltip text="Detailed rationale of why the scan should pass, block, or require manual review." />
@@ -350,7 +350,7 @@ export default function SecretScannerJobPage() {
                 )}
 
                 {(sensitiveDataFindings.length > 0 || usagePaths.length > 0 || historicalExposures.length > 0 || compromisedMatches.length > 0) && (
-                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+                  <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                     <div className="flex items-center mb-2">
                       <h3 className="text-xl font-bold">Advanced Secret Intelligence</h3>
                       <InfoTooltip text="Offline checks for sensitive financial data, usage sinks, Git history exposure, and known compromised fingerprints." />
@@ -358,7 +358,7 @@ export default function SecretScannerJobPage() {
 
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-4">
                       {usagePaths.length > 0 && (
-                        <div className="border border-border-divider rounded-lg p-4">
+                        <div className="border border-border-divider rounded-2xl p-4">
                           <h4 className="font-bold mb-3 flex items-center gap-2">
                             <span className="material-symbols-outlined text-[20px] text-primary-container">schema</span>
                             Data-flow Usage Paths
@@ -380,7 +380,7 @@ export default function SecretScannerJobPage() {
                       )}
 
                       {sensitiveDataFindings.length > 0 && (
-                        <div className="border border-border-divider rounded-lg p-4">
+                        <div className="border border-border-divider rounded-2xl p-4">
                           <h4 className="font-bold mb-3 flex items-center gap-2">
                             <span className="material-symbols-outlined text-[20px] text-primary-container">privacy_tip</span>
                             Sensitive Banking Data
@@ -402,7 +402,7 @@ export default function SecretScannerJobPage() {
                       )}
 
                       {historicalExposures.length > 0 && (
-                        <div className="border border-border-divider rounded-lg p-4">
+                        <div className="border border-border-divider rounded-2xl p-4">
                           <h4 className="font-bold mb-3 flex items-center gap-2">
                             <span className="material-symbols-outlined text-[20px] text-primary-container">history</span>
                             Git History Exposures
@@ -424,14 +424,14 @@ export default function SecretScannerJobPage() {
                       )}
 
                       {compromisedMatches.length > 0 && (
-                        <div className="border border-red-200 bg-red-50 rounded-lg p-4">
+                        <div className="border border-red-200 bg-red-50 rounded-2xl p-4">
                           <h4 className="font-bold mb-3 flex items-center gap-2 text-red-900">
                             <span className="material-symbols-outlined text-[20px]">report</span>
                             Offline Compromised Matches
                           </h4>
                           <div className="space-y-3">
                             {compromisedMatches.slice(0, 8).map((item: any) => (
-                              <div key={item.id} className="bg-white border border-red-100 rounded p-3">
+                              <div key={item.id} className="bg-surface transition-colors duration-300 border border-red-100 rounded p-3">
                                 <p className="font-mono text-xs">{item.secret_fingerprint}</p>
                                 <p className="text-xs text-red-900 mt-1">Source: {item.match_source}</p>
                                 <p className="text-sm text-red-950 mt-2">{item.action}</p>
@@ -445,7 +445,7 @@ export default function SecretScannerJobPage() {
                 )}
 
                 {findings.length > 0 && (
-                  <div className="bg-surface-container-lowest rounded-lg border border-border-divider p-6">
+                  <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
                     <div className="flex items-center mb-4">
                       <h3 className="text-xl font-bold">Secrets and Remediation</h3>
                       <InfoTooltip text="Raw list of all detected secrets, their location, extracted evidence, and remediation steps." />

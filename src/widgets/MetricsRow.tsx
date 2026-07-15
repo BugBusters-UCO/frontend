@@ -48,23 +48,23 @@ export function MetricsRow({ summary }: MetricsRowProps) {
   const vulnTone = vulnerable > 0 ? "text-severity-high border-l-severity-high" : "text-severity-low border-l-severity-low";
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div className="bg-white rounded-lg border border-border-subtle shadow-sm p-4">
-        <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 transition-colors duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-md">
+        <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-2">
           Scanned Packages
           <InfoTooltip text="Total number of dependencies parsed from the manifest files." />
         </div>
         <div className="text-metric-value font-metric-value">{deps}</div>
       </div>
-      <div className={`bg-white rounded-lg border border-border-subtle shadow-sm p-4 border-l-4 ${vulnTone}`}>
-        <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
+      <div className={`bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 border-l-4 transition-colors duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-md ${vulnTone}`}>
+        <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-2">
           Vulnerable Packages
           <InfoTooltip text="Number of dependencies with known CVEs or security issues." />
         </div>
         <div className={`text-metric-value font-metric-value ${vulnTone.split(" ")[0]}`}>{vulnerable}</div>
       </div>
-      <div className={`bg-white rounded-lg border border-border-subtle shadow-sm p-4 border-l-4 ${riskTone}`}>
-        <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
+      <div className={`bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 border-l-4 transition-colors duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-md ${riskTone}`}>
+        <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-2">
           Business Risk
           <InfoTooltip text="Overall severity of exposure based on how close vulnerabilities are to critical endpoints." />
         </div>
@@ -72,8 +72,8 @@ export function MetricsRow({ summary }: MetricsRowProps) {
           {getRiskLabel(score)}
         </div>
       </div>
-      <div className={`bg-white rounded-lg border border-border-subtle shadow-sm p-4 border-l-4 ${actionTone}`}>
-        <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
+      <div className={`bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 border-l-4 transition-colors duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-md ${actionTone}`}>
+        <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-2">
           Action Required
           <InfoTooltip text="Recommended action based on the highest risk level detected." />
         </div>

@@ -227,7 +227,7 @@ export default function VmAgentsPage() {
 
   return (
     <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap animate-in fade-in duration-500">
-      <div className="bg-white rounded-2xl border border-border-subtle shadow-sm p-8 flex items-center justify-between gap-6 transition-all">
+      <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-8 flex items-center justify-between gap-6 transition-all">
         <div className="flex items-center gap-5">
           <div className="w-14 h-14 rounded-2xl bg-primary-container/10 flex items-center justify-center shrink-0">
             <span className="material-symbols-outlined text-primary-container text-3xl">dns</span>
@@ -239,7 +239,7 @@ export default function VmAgentsPage() {
         </div>
         <div className="flex items-center gap-3">
           {agents.some(a => a.status === 'online') ? (
-            <button onClick={handleDisconnect} disabled={isDisconnecting} className="px-4 py-2 rounded-lg bg-surface-container border border-border-divider text-severity-critical hover:bg-severity-critical/10 transition-colors shadow-sm flex items-center gap-2 font-medium disabled:opacity-50">
+            <button onClick={handleDisconnect} disabled={isDisconnecting} className="px-4 py-2 rounded-2xl bg-surface-container border border-border-divider text-severity-critical hover:bg-severity-critical/10 transition-colors shadow-sm flex items-center gap-2 font-medium disabled:opacity-50">
               {isDisconnecting ? (
                 <span className="material-symbols-outlined text-[18px] animate-spin">sync</span>
               ) : (
@@ -248,12 +248,12 @@ export default function VmAgentsPage() {
               {isDisconnecting ? "Disconnecting..." : "Disconnect Agent"}
             </button>
           ) : (
-            <button onClick={() => setIsConnectModalOpen(true)} className="px-4 py-2 rounded-lg bg-primary-container text-white hover:bg-primary-hover transition-colors shadow-sm flex items-center gap-2 font-medium">
+            <button onClick={() => setIsConnectModalOpen(true)} className="px-4 py-2 rounded-2xl bg-primary-container text-white hover:bg-primary-hover transition-colors shadow-sm flex items-center gap-2 font-medium">
               <span className="material-symbols-outlined text-[18px]">cable</span>
               Connect Agent
             </button>
           )}
-          <button onClick={refreshAll} className="px-4 py-2 rounded-lg border border-border-divider text-text-secondary hover:bg-surface-container transition-colors shadow-sm flex items-center gap-2">
+          <button onClick={refreshAll} className="px-4 py-2 rounded-2xl border border-border-divider text-text-secondary hover:bg-surface-container transition-colors shadow-sm flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px]">refresh</span>
             Refresh
           </button>
@@ -262,7 +262,7 @@ export default function VmAgentsPage() {
 
       {isConnectModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md border border-border-subtle p-6">
+          <div className="bg-surface transition-colors duration-300 rounded-2xl shadow-xl w-full max-w-md border border-border-subtle p-6">
             <h3 className="font-headline-sm text-headline-sm text-text-primary mb-2">Connect VM Agent</h3>
             <p className="text-body-sm text-text-secondary mb-4">Enter your agent token to start the VM Agent process remotely on this machine.</p>
             <input 
@@ -270,19 +270,19 @@ export default function VmAgentsPage() {
               placeholder="e.g. dev-agent-token" 
               value={agentToken} 
               onChange={e => setAgentToken(e.target.value)}
-              className="w-full px-3 py-2 border border-border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-container mb-4"
+              className="w-full px-3 py-2 border border-border-divider rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-container mb-4"
             />
             <div className="flex justify-end gap-3">
               <button 
                 onClick={() => setIsConnectModalOpen(false)} 
-                className="px-4 py-2 text-text-secondary hover:bg-surface-container rounded-lg transition-colors"
+                className="px-4 py-2 text-text-secondary hover:bg-surface-container rounded-2xl transition-colors"
                 disabled={isConnecting}
               >
                 Cancel
               </button>
               <button 
                 onClick={handleConnect} 
-                className="px-4 py-2 bg-primary-container text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-primary-container text-white rounded-2xl hover:bg-primary-hover transition-colors disabled:opacity-50"
                 disabled={isConnecting}
               >
                 {isConnecting ? "Connecting..." : "Connect"}
@@ -299,11 +299,11 @@ export default function VmAgentsPage() {
         <Metric label="Open Findings" value={metrics.findings || "0"} tone="danger" icon="warning" />
       </div>
 
-      {error && <div className="rounded-lg border border-red-200 bg-red-50 text-red-800 p-4 animate-in slide-in-from-top-2">{error}</div>}
+      {error && <div className="rounded-2xl border border-red-200 bg-red-50 text-red-800 p-4 animate-in slide-in-from-top-2">{error}</div>}
 
       <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-element-gap">
         <div className="space-y-5">
-          <section className="bg-white rounded-lg border border-border-subtle shadow-sm p-card-padding transition-all">
+          <section className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-card-padding transition-all">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-section-header font-section-header flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary-container">sensors</span>
@@ -311,15 +311,15 @@ export default function VmAgentsPage() {
               </h2>
             </div>
             
-            {/* <div className="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-100 text-xs text-blue-800">
+            {/* <div className="mb-4 p-3 rounded-2xl bg-blue-50 border border-blue-100 text-xs text-blue-800">
               <p className="font-bold mb-1">How to connect / disconnect:</p>
               <p className="mb-2">Run the agent script on your VM using the commands below. To disconnect, simply stop the script (Ctrl+C) on your server.</p>
               <div className="space-y-2 mt-2">
-                <div className="rounded bg-white p-2 border border-blue-100">
+                <div className="rounded bg-surface transition-colors duration-300 p-2 border border-blue-100">
                   <CommandHeader title="Windows Server" copied={copiedCommand === "windows"} onCopy={() => copyCommand("windows", windowsCommand)} />
                   <code className="block whitespace-pre-wrap break-words font-mono text-[10px]">{windowsCommand}</code>
                 </div>
-                <div className="rounded bg-white p-2 border border-blue-100">
+                <div className="rounded bg-surface transition-colors duration-300 p-2 border border-blue-100">
                   <CommandHeader title="Linux Server" copied={copiedCommand === "linux"} onCopy={() => copyCommand("linux", linuxCommand)} />
                   <code className="block whitespace-pre-wrap break-words font-mono text-[10px]">{linuxCommand}</code>
                 </div>
@@ -328,19 +328,19 @@ export default function VmAgentsPage() {
 
             <div className="space-y-3">
               {loading ? (
-                <div className="p-4 rounded-lg bg-surface-container-lowest border border-border-divider animate-pulse">
+                <div className="p-4 rounded-2xl bg-surface-container-lowest border border-border-divider animate-pulse">
                   <div className="h-4 bg-surface-container w-1/3 rounded mb-2"></div>
                   <div className="h-3 bg-surface-container w-1/2 rounded"></div>
                 </div>
               ) : agents.length === 0 ? (
-                <div className="rounded-xl border-2 border-dashed border-border-divider p-5 text-sm text-text-secondary bg-surface-container-lowest flex items-center justify-center min-h-[100px]">
+                <div className="rounded-2xl border-2 border-dashed border-border-divider p-5 text-sm text-text-secondary bg-surface-container-lowest flex items-center justify-center min-h-[100px]">
                   <p className="font-medium text-text-primary text-center">No VM agents connected. Use the commands above to register one.</p>
                 </div>
               ) : agents.map((agent) => (
                 <button
                   key={agent.id}
                   onClick={() => setSelectedAgentId(agent.id)}
-                  className={`w-full text-left rounded-xl border p-4 transition-all duration-300 ${selectedAgentId === agent.id ? "border-primary bg-primary-container/5 shadow-sm ring-1 ring-primary/20" : "border-border-divider hover:bg-surface-container hover:shadow-sm"}`}
+                  className={`w-full text-left rounded-2xl border p-4 transition-all duration-300 ${selectedAgentId === agent.id ? "border-primary bg-primary-container/5 shadow-sm ring-1 ring-primary/20" : "border-border-divider hover:bg-surface-container hover:shadow-sm"}`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -373,7 +373,7 @@ export default function VmAgentsPage() {
             </div>
           </section>
 
-          <section className="bg-white rounded-lg border border-border-subtle shadow-sm p-card-padding transition-all">
+          <section className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-card-padding transition-all">
             <h2 className="text-section-header font-section-header mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-primary-container">history</span>
               Scan History
@@ -385,7 +385,7 @@ export default function VmAgentsPage() {
                   <p className="text-sm">No scans initiated yet</p>
                 </div>
               ) : reports.map((job) => (
-                <div key={job.id} className={`rounded-xl border p-3 transition-all duration-300 ${selectedReport?.id === job.id ? "border-primary bg-primary-container/5 ring-1 ring-primary/20" : "border-border-divider hover:border-border-subtle"}`}>
+                <div key={job.id} className={`rounded-2xl border p-3 transition-all duration-300 ${selectedReport?.id === job.id ? "border-primary bg-primary-container/5 ring-1 ring-primary/20" : "border-border-divider hover:border-border-subtle"}`}>
                   <button type="button" onClick={() => setSelectedReportId(job.id)} className="w-full text-left group">
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -396,7 +396,7 @@ export default function VmAgentsPage() {
                     </div>
                   </button>
                   {["queued", "running", "stopping"].includes(job.status) && (
-                    <button onClick={() => handleStop(job.id)} className="mt-4 w-full rounded-lg border border-red-200 text-red-700 py-2 text-xs font-bold hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5">
+                    <button onClick={() => handleStop(job.id)} className="mt-4 w-full rounded-2xl border border-red-200 text-red-700 py-2 text-xs font-bold hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5">
                       <span className="material-symbols-outlined text-[16px]">stop_circle</span>
                       Halt Scan
                     </button>
@@ -407,7 +407,7 @@ export default function VmAgentsPage() {
           </section>
         </div>
 
-        <section className="bg-white rounded-lg border border-border-subtle shadow-sm p-card-padding flex flex-col transition-all relative overflow-hidden">
+        <section className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-card-padding flex flex-col transition-all relative overflow-hidden">
           <div className="flex items-start justify-between gap-4 mb-6 relative z-10">
             <div>
               <h2 className="text-section-header font-section-header flex items-center gap-2">
@@ -433,7 +433,7 @@ export default function VmAgentsPage() {
               <input
                 value={projectName}
                 onChange={(event) => setProjectName(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-border-divider px-4 py-2.5 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                className="mt-2 w-full rounded-2xl border border-border-divider px-4 py-2.5 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                 placeholder="payment-service"
               />
             </div>
@@ -443,7 +443,7 @@ export default function VmAgentsPage() {
                 value={selectedAgentId}
                 onChange={(event) => setSelectedAgentId(event.target.value)}
                 disabled={!hasAgents}
-                className="mt-2 w-full rounded-xl border border-border-divider px-4 py-2.5 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm bg-white"
+                className="mt-2 w-full rounded-2xl border border-border-divider px-4 py-2.5 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm bg-surface transition-colors duration-300"
               >
                 {!hasAgents && <option value="">No agents available</option>}
                 {agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name} ({agent.hostname})</option>)}
@@ -459,7 +459,7 @@ export default function VmAgentsPage() {
                   key={module.id}
                   onClick={() => toggleModule(module.id)}
                   disabled={!isAgentOnline}
-                  className={`rounded-xl border p-4 text-center transition-all duration-300 ${selectedModules.includes(module.id) ? "border-primary bg-primary-container text-white shadow-md transform scale-[1.02]" : "border-border-divider hover:bg-surface-container bg-surface-container-lowest text-text-secondary"} ${!isAgentOnline ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`rounded-2xl border p-4 text-center transition-all duration-300 ${selectedModules.includes(module.id) ? "border-primary bg-primary-container text-white shadow-md transform scale-[1.02]" : "border-border-divider hover:bg-surface-container bg-surface-container-lowest text-text-secondary"} ${!isAgentOnline ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <span className={`material-symbols-outlined text-[24px] mb-2 ${selectedModules.includes(module.id) ? "text-white" : "text-text-muted"}`}>{module.icon}</span>
                   <p className="text-xs font-bold">{module.label}</p>
@@ -468,7 +468,7 @@ export default function VmAgentsPage() {
             </div>
           </div>
 
-          <div className="relative z-10 mb-6 rounded-xl border border-border-divider bg-surface-container-lowest p-4">
+          <div className="relative z-10 mb-6 rounded-2xl border border-border-divider bg-surface-container-lowest p-4">
             <div className="text-sm font-semibold text-text-secondary mb-2 flex items-center gap-1">
               Risk Engine Business Inputs
               <InfoTooltip text="These values become part of this scan's risk assessment. Final risk is 70% technical scanner evidence and 30% these admin business inputs by default." />
@@ -513,7 +513,7 @@ export default function VmAgentsPage() {
             </div>
           </div>
 
-          <div className="relative z-10 mb-6 border border-border-divider rounded-xl overflow-hidden bg-surface-container-lowest">
+          <div className="relative z-10 mb-6 border border-border-divider rounded-2xl overflow-hidden bg-surface-container-lowest">
             <button 
               onClick={() => setShowAdvanced(!showAdvanced)}
               className="w-full flex items-center justify-between p-4 bg-surface-container-lowest hover:bg-surface-container transition-colors text-sm font-semibold text-text-primary"
@@ -534,7 +534,7 @@ export default function VmAgentsPage() {
                       key={item.id}
                       onClick={() => setScope(item.id)}
                       disabled={!isAgentOnline}
-                      className={`text-left rounded-lg border p-3 transition-colors ${scope === item.id ? "border-primary bg-primary-container/5 ring-1 ring-primary/30" : "border-border-divider hover:bg-surface-container"} ${!isAgentOnline ? "opacity-50 cursor-not-allowed" : ""}`}
+                      className={`text-left rounded-2xl border p-3 transition-colors ${scope === item.id ? "border-primary bg-primary-container/5 ring-1 ring-primary/30" : "border-border-divider hover:bg-surface-container"} ${!isAgentOnline ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <p className="font-semibold text-sm">{item.label}</p>
                       <p className="text-[11px] text-text-muted mt-1 leading-relaxed">{item.description}</p>
@@ -563,7 +563,7 @@ export default function VmAgentsPage() {
             <button
               onClick={handleStart}
               disabled={starting || !isAgentOnline || selectedModules.length === 0}
-              className="flex-1 bg-primary text-white rounded-xl py-3.5 font-bold hover:bg-primary-hover disabled:opacity-50 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm"
+              className="flex-1 bg-primary text-white rounded-2xl py-3.5 font-bold hover:bg-primary-hover disabled:opacity-50 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm"
             >
               {starting ? (
                 <span className="flex items-center gap-2"><span className="material-symbols-outlined animate-spin text-[18px]">sync</span> Queueing...</span>
@@ -636,7 +636,7 @@ function useLiveLogs(reportId: string | null, active: boolean) {
 function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assessment?: RiskAssessment | null }) {
   if (!report) {
     return (
-      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-card-padding min-h-[300px] flex flex-col items-center justify-center text-text-muted animate-in fade-in">
+      <section className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-card-padding min-h-[300px] flex flex-col items-center justify-center text-text-muted animate-in fade-in">
         <span className="material-symbols-outlined text-5xl mb-4 opacity-20">analytics</span>
         <h2 className="text-xl font-bold text-text-primary mb-1">Execution Report</h2>
         <p className="text-sm">Select a scan history item to view its details.</p>
@@ -655,7 +655,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
   const completedModules = report.result?.reports?.map((r: any) => r.module) || [];
 
   return (
-    <section className="bg-white rounded-2xl border border-border-subtle shadow-sm flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <section className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="p-card-padding border-b border-border-divider bg-surface-container-lowest">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>
@@ -674,7 +674,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
             {report.status !== "queued" && (
               <a
                 href={`/vm-agents/${report.id}`}
-                className="bg-primary text-white rounded-lg px-4 py-2 text-sm font-bold shadow hover:bg-primary-hover transition-colors flex items-center gap-2"
+                className="bg-primary text-white rounded-2xl px-4 py-2 text-sm font-bold shadow hover:bg-primary-hover transition-colors flex items-center gap-2"
               >
                 View Full Scan Report
                 <span className="material-symbols-outlined text-[18px]">open_in_new</span>
@@ -684,7 +684,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
         </div>
 
         <div className="mt-6 flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 rounded-xl border border-border-divider bg-white p-4 shadow-sm flex items-start gap-4">
+          <div className="flex-1 rounded-2xl border border-border-divider bg-surface transition-colors duration-300 p-4 shadow-sm flex items-start gap-4">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
               report.status === 'completed' ? 'bg-green-100 text-green-700' :
               report.status === 'failed' ? 'bg-red-100 text-red-700' :
@@ -701,7 +701,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
           </div>
           
           <div className="flex gap-4">
-            <div className="rounded-xl border border-border-divider bg-white p-4 shadow-sm min-w-[120px] flex flex-col items-center justify-center">
+            <div className="rounded-2xl border border-border-divider bg-surface transition-colors duration-300 p-4 shadow-sm min-w-[120px] flex flex-col items-center justify-center">
               <p className="text-xs font-bold uppercase text-text-muted mb-1">Findings</p>
               <p className={`text-3xl font-black ${Number(summary.total_findings || 0) > 0 ? "text-severity-critical" : "text-green-600"}`}>
                 {summary.total_findings || 0}
@@ -711,7 +711,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
         </div>
       </div>
 
-      <div className="p-card-padding bg-white">
+      <div className="p-card-padding bg-surface transition-colors duration-300">
         <p className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-6 flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px]">account_tree</span>
           Execution Pipeline
@@ -740,7 +740,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
                 <>
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 shadow-sm ${
                     isCompleted ? 'bg-primary-container border-primary-container text-white scale-100 hover:scale-110' :
-                    isCurrent ? 'bg-white border-primary text-primary scale-110 ring-4 ring-primary/20' :
+                    isCurrent ? 'bg-surface transition-colors duration-300 border-primary text-primary scale-110 ring-4 ring-primary/20' :
                     'bg-surface-container-lowest border-border-divider text-text-muted scale-90'
                   }`}>
                     {moduleIcon}
@@ -755,12 +755,12 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
                 <a
                   key={moduleName}
                   href={`/vm-agents/${report.id}?tab=${moduleName}`}
-                  className="flex flex-col items-center gap-2 bg-white px-2 cursor-pointer group"
+                  className="flex flex-col items-center gap-2 bg-surface transition-colors duration-300 px-2 cursor-pointer group"
                 >
                   {innerContent}
                 </a>
               ) : (
-                <div key={moduleName} className="flex flex-col items-center gap-2 bg-white px-2">
+                <div key={moduleName} className="flex flex-col items-center gap-2 bg-surface transition-colors duration-300 px-2">
                   {innerContent}
                 </div>
               );
@@ -773,7 +773,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
           Real-Time Execution Logs
         </p>
         
-        <div className="rounded-xl bg-[#0d1117] border border-[#30363d] overflow-hidden shadow-inner">
+        <div className="rounded-2xl bg-[#0d1117] border border-[#30363d] overflow-hidden shadow-inner">
           <div className="flex items-center gap-2 px-4 py-2 bg-[#161b22] border-b border-[#30363d]">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
@@ -856,7 +856,7 @@ function BusinessSlider({
   onChange: (value: number) => void;
 }) {
   return (
-    <div className="rounded-lg border border-border-divider bg-white p-3">
+    <div className="rounded-2xl border border-border-divider bg-surface transition-colors duration-300 p-3">
       <div className="flex items-center justify-between gap-3">
         <label className="text-xs font-bold text-text-secondary uppercase tracking-wide flex items-center gap-1">
           {label}
@@ -924,7 +924,7 @@ function Metric({ label, value, tone, icon, spinning = false }: { label: string;
         <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">{label}</p>
         <p className={`text-3xl font-black ${color}`}>{value}</p>
       </div>
-      <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-white shadow-sm border ${border}`}>
+      <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-surface transition-colors duration-300 shadow-sm border ${border}`}>
         <span className={`material-symbols-outlined text-[24px] ${color} ${spinning ? 'animate-spin' : 'group-hover:scale-110 transition-transform'}`}>{icon}</span>
       </div>
     </div>
@@ -942,7 +942,7 @@ function CommandHeader({ title, copied, onCopy }: { title: string; copied: boole
         type="button"
         onClick={onCopy}
         className={`inline-flex items-center gap-1 rounded border px-2 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-          copied ? 'bg-green-100 border-green-200 text-green-700' : 'bg-white border-border-divider text-text-secondary hover:bg-surface-container hover:text-text-primary'
+          copied ? 'bg-green-100 border-green-200 text-green-700' : 'bg-surface transition-colors duration-300 border-border-divider text-text-secondary hover:bg-surface-container hover:text-text-primary'
         }`}
       >
         <span className="material-symbols-outlined text-[14px]">{copied ? "check" : "content_copy"}</span>

@@ -30,7 +30,7 @@ export default function VmAgentHistoryPage() {
   return (
     <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap">
       {/* Page Header */}
-      <div className="bg-white rounded-2xl border border-border-subtle shadow-sm p-8 relative overflow-hidden flex items-center justify-between">
+      <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-8 relative overflow-hidden flex items-center justify-between">
         <div className="absolute top-0 right-0 w-48 h-48 bg-primary-container/5 rounded-bl-[150px] -z-10"></div>
         <div className="flex items-center gap-5">
            <div className="w-14 h-14 rounded-2xl bg-primary-container/10 flex items-center justify-center">
@@ -43,14 +43,14 @@ export default function VmAgentHistoryPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-border-subtle shadow-sm p-card-padding">
+      <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-card-padding">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-section-header font-section-header">Recent Scans by Project</h2>
         </div>
         
         <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
           {isLoading ? (
-            <div className="border border-border-divider rounded-lg overflow-hidden">
+            <div className="border border-border-divider rounded-2xl overflow-hidden">
               <div className="bg-surface-container-lowest px-4 py-3 border-b border-border-divider flex items-center gap-2">
                  <span className="material-symbols-outlined text-text-secondary text-xl">folder_open</span>
                  <div className="h-4 bg-surface-container-high animate-pulse rounded w-32" />
@@ -67,7 +67,7 @@ export default function VmAgentHistoryPage() {
             </div>
           ) : (
             Object.entries(groupedJobs).map(([project, projectJobs]) => (
-            <div key={project} className="border border-border-divider rounded-lg overflow-hidden">
+            <div key={project} className="border border-border-divider rounded-2xl overflow-hidden">
               <div className="bg-surface-container-lowest px-4 py-3 border-b border-border-divider flex items-center gap-2">
                 <span className="material-symbols-outlined text-text-secondary text-xl">folder_open</span>
                 <h3 className="font-semibold text-body-sm text-text-primary">{project}</h3>

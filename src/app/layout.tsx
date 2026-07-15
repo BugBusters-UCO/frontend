@@ -8,6 +8,7 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jet
 import { ClientLayoutShell } from "@/widgets/LayoutShell/ClientLayoutShell";
 import { AuthProvider } from "@/shared/lib/AuthContext";
 import { ReactQueryProvider } from "@/shared/lib/ReactQueryProvider";
+import { ThemeProvider } from "@/shared/lib/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "BugBusters Security Platform",
@@ -20,18 +21,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased light`}>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
-      <body className="bg-background text-text-primary font-body-sm h-screen flex overflow-hidden">
-        <ReactQueryProvider>
-          <AuthProvider>
-            <ClientLayoutShell>
-              {children}
-            </ClientLayoutShell>
-          </AuthProvider>
-        </ReactQueryProvider>
+      <body className="bg-background text-text-primary font-body-sm h-screen flex overflow-hidden transition-colors duration-300" suppressHydrationWarning>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <ReactQueryProvider>
+            <AuthProvider>
+              <ClientLayoutShell>
+                {children}
+              </ClientLayoutShell>
+            </AuthProvider>
+          </ReactQueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { RiskChain } from "@/shared/api/types";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 import {
@@ -22,12 +23,12 @@ interface BlastRadiusMapProps {
 
 const getKindConfig = (kind: string) => {
   switch (kind) {
-    case "route": return { icon: "input", color: "text-blue-500", bg: "bg-blue-50/80", border: "border-blue-200", ring: "ring-blue-400", accent: "bg-blue-400" };
-    case "manifest": return { icon: "description", color: "text-purple-500", bg: "bg-purple-50/80", border: "border-purple-200", ring: "ring-purple-400", accent: "bg-purple-400" };
-    case "risk": return { icon: "warning", color: "text-amber-500", bg: "bg-amber-50/80", border: "border-amber-200", ring: "ring-amber-400", accent: "bg-amber-400" };
-    case "import": return { icon: "account_tree", color: "text-emerald-500", bg: "bg-emerald-50/80", border: "border-emerald-200", ring: "ring-emerald-400", accent: "bg-emerald-400" };
-    case "sensitive-use": return { icon: "gpp_maybe", color: "text-red-500", bg: "bg-red-50/80", border: "border-red-200", ring: "ring-red-400", accent: "bg-red-400" };
-    default: return { icon: "code", color: "text-slate-500", bg: "bg-slate-50/80", border: "border-slate-200", ring: "ring-slate-400", accent: "bg-slate-400" };
+    case "route": return { icon: "input", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100/50 dark:bg-blue-950/40", border: "border-blue-200 dark:border-blue-900/50", ring: "ring-blue-500", accent: "bg-blue-500" };
+    case "manifest": return { icon: "description", color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-100/50 dark:bg-purple-950/40", border: "border-purple-200 dark:border-purple-900/50", ring: "ring-purple-500", accent: "bg-purple-500" };
+    case "risk": return { icon: "warning", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100/50 dark:bg-amber-950/40", border: "border-amber-200 dark:border-amber-900/50", ring: "ring-amber-500", accent: "bg-amber-500" };
+    case "import": return { icon: "account_tree", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100/50 dark:bg-emerald-950/40", border: "border-emerald-200 dark:border-emerald-900/50", ring: "ring-emerald-500", accent: "bg-emerald-500" };
+    case "sensitive-use": return { icon: "gpp_maybe", color: "text-red-600 dark:text-red-400", bg: "bg-red-100/50 dark:bg-red-950/40", border: "border-red-200 dark:border-red-900/50", ring: "ring-red-500", accent: "bg-red-500" };
+    default: return { icon: "code", color: "text-text-muted dark:text-slate-400", bg: "bg-slate-100/50 dark:bg-slate-900/40", border: "border-border-subtle dark:border-slate-800/50", ring: "ring-slate-500", accent: "bg-surface-dim transition-colors duration-3000" };
   }
 };
 
@@ -35,14 +36,22 @@ const CustomNode = ({ data, selected }: NodeProps) => {
   const config = getKindConfig(data.kind as string);
   
   return (
-    <div className={`relative flex items-center gap-3 w-56 p-2.5 rounded-xl bg-white/95 backdrop-blur-md transition-all duration-300 overflow-visible ${selected ? `shadow-lg ${config.ring} ring-2 ring-offset-2 z-10 scale-[1.02] border-transparent` : `border border-border-subtle shadow-sm hover:shadow-md hover:${config.ring} hover:ring-1 hover:border-transparent`}`}>
+    <div className={`relative flex items-center gap-3 w-56 p-2.5 rounded-2xl bg-surface/95 border backdrop-blur-md transition-all duration-300 overflow-visible ${
+      selected 
+        ? `border-primary shadow-[0_0_20px_rgba(31,111,235,0.3)] ring-1 ring-primary/50 z-10 scale-[1.02]` 
+        : `border-border-subtle shadow-sm hover:border-primary/50`
+    }`}>
       
       {/* Left accent color bar inside node */}
       <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${config.accent}`}></div>
 
-      <Handle type="target" position={Position.Left} className="w-3 h-3 bg-white border-2 border-slate-400" />
+      <Handle 
+        type="target" 
+        position={Position.Left} 
+        className="!w-2.5 !h-2.5 !bg-primary !border-2 !border-background shadow-[0_0_8px_rgba(31,111,235,0.8)]" 
+      />
       
-      <div className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center ml-2 ${config.bg} border ${config.border}`}>
+      <div className={`w-9 h-9 shrink-0 rounded-2xl flex items-center justify-center ml-2 ${config.bg} border ${config.border}`}>
         <span className={`material-symbols-outlined text-[18px] ${config.color}`}>
           {config.icon}
         </span>
@@ -52,12 +61,16 @@ const CustomNode = ({ data, selected }: NodeProps) => {
         <div className={`text-[9px] uppercase tracking-widest font-bold mb-0.5 ${config.color}`}>
           {data.kind as string}
         </div>
-        <div className="text-[11px] font-bold text-slate-800 truncate" title={data.label as string}>
+        <div className="text-[11px] font-bold text-text-primary truncate" title={data.label as string}>
           {data.label as string}
         </div>
       </div>
       
-      <Handle type="source" position={Position.Right} className="w-3 h-3 bg-white border-2 border-slate-400" />
+      <Handle 
+        type="source" 
+        position={Position.Right} 
+        className="!w-2.5 !h-2.5 !bg-primary !border-2 !border-background shadow-[0_0_8px_rgba(31,111,235,0.8)]" 
+      />
     </div>
   );
 };
@@ -72,11 +85,11 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
 
   if (!chains || chains.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-border-subtle shadow-sm p-card-padding">
-        <h2 className="text-section-header font-section-header mb-4">
+      <div className="bg-surface rounded-2xl border border-border-subtle shadow-sm p-card-padding text-text-primary">
+        <h2 className="text-section-header font-sans font-bold uppercase tracking-wider mb-4">
           Blast Radius Map
         </h2>
-        <div className="border-2 border-dashed border-border-subtle rounded-lg p-6 flex flex-col items-center justify-center text-center">
+        <div className="border-2 border-dashed border-border-subtle rounded-2xl p-6 flex flex-col items-center justify-center text-center">
           <span className="material-symbols-outlined text-text-muted text-4xl mb-2">
             account_tree
           </span>
@@ -95,27 +108,27 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
   const selectedChain = chains.find((c) => c.id === selectedChainId) || chains[0];
 
   return (
-    <div className={`transition-all duration-300 ease-in-out ${isFullscreen ? "fixed inset-0 z-[100] bg-surface-container-lowest p-6 md:p-8 overflow-y-auto m-0 rounded-none border-0" : "bg-white rounded-xl border border-[#93c5fd] shadow-[0_4px_24px_rgba(31,111,235,0.08)] p-card-padding overflow-hidden relative"}`}>
-      {!isFullscreen && <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-error"></div>}
+    <div className={`transition-all duration-300 ease-in-out ${isFullscreen ? "fixed inset-0 z-[100] bg-background p-6 md:p-8 overflow-y-auto m-0 rounded-none border-0" : "bg-surface rounded-2xl border border-border-subtle shadow-[0_4px_30px_rgba(0,0,0,0.4)] p-card-padding overflow-hidden relative"}`}>
+      {!isFullscreen && <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-primary to-severity-critical"></div>}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <div className="flex items-center">
-            <h2 className="text-section-header font-section-header">
+          <div className="flex items-center gap-1.5">
+            <h2 className="text-section-header font-sans font-bold uppercase tracking-wider text-text-primary">
               Interactive Blast Radius Map
             </h2>
             <InfoTooltip text="Interactive graph showing how a vulnerable package can reach your sensitive business logic. Use mouse to pan and zoom." />
           </div>
-          <p className="text-body-sm text-text-muted mt-1">
+          <p className="text-body-sm text-text-secondary mt-1">
             Visualizes the path from a vulnerable dependency through your code to exposed endpoints.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-2.5 py-1 bg-surface-container-low border border-border-subtle rounded-md text-body-xs font-semibold hidden sm:block">
+          <div className="px-2.5 py-1 bg-surface-container border border-border-subtle rounded-md text-body-xs font-semibold text-text-secondary hidden sm:block">
             {chains.length} chains detected
           </div>
           <button 
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-1.5 hover:bg-surface-container rounded-md text-text-secondary hover:text-text-primary transition-colors border border-border-subtle bg-white shadow-sm flex items-center justify-center"
+            className="p-1.5 hover:bg-surface-container-high rounded-md text-text-secondary hover:text-text-primary transition-colors border border-border-subtle bg-surface-dim shadow-sm flex items-center justify-center cursor-pointer"
             title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
           >
             <span className="material-symbols-outlined text-[20px]">
@@ -130,7 +143,7 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
         <div className="xl:w-[280px] shrink-0">
           <div className="flex items-center mb-3">
             <span className="material-symbols-outlined text-text-muted text-[18px] mr-2">list_alt</span>
-            <div className="text-body-xs font-bold tracking-wider uppercase text-text-secondary">
+            <div className="text-body-xs font-bold tracking-widest uppercase text-text-muted">
               Detected Exposure Paths
             </div>
             <InfoTooltip text="List of all unique paths found connecting vulnerabilities to sensitive code. Select one to view its graph." />
@@ -141,30 +154,35 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
 
               let severityBg = "bg-surface-container-high";
               let severityColor = "text-text-primary";
+              let severityBorder = "border-border-subtle";
               const severityLabel = chain.severity.toLowerCase();
 
               if (severityLabel === "critical") {
-                severityBg = "bg-severity-critical";
-                severityColor = "text-white";
+                severityBg = "bg-severity-critical/20";
+                severityColor = "text-severity-critical";
+                severityBorder = "border-severity-critical/30";
               } else if (severityLabel === "high") {
-                severityBg = "bg-severity-high-bg border-[#fca5a5]";
+                severityBg = "bg-severity-high-bg";
                 severityColor = "text-severity-high";
+                severityBorder = "border-severity-high/30";
               } else if (severityLabel === "medium") {
-                severityBg = "bg-severity-medium-bg border-[#fcd34d]";
+                severityBg = "bg-severity-medium-bg";
                 severityColor = "text-severity-medium";
+                severityBorder = "border-severity-medium/30";
               } else {
-                severityBg = "bg-severity-low-bg border-[#86efac]";
+                severityBg = "bg-severity-low-bg";
                 severityColor = "text-severity-low";
+                severityBorder = "border-severity-low/30";
               }
 
               return (
                 <div
                   key={chain.id}
                   onClick={() => setSelectedChainId(chain.id)}
-                  className={`relative p-3.5 rounded-xl border cursor-pointer transition-all duration-200 overflow-hidden group ${
+                  className={`relative p-3.5 rounded-2xl border cursor-pointer transition-all duration-200 overflow-hidden group ${
                     isSelected
-                      ? "border-[#93c5fd] bg-[#eff6ff] shadow-[0_2px_8px_rgba(31,111,235,0.08)]"
-                      : "border-border-divider bg-surface-container-lowest hover:border-border-subtle hover:bg-white hover:shadow-sm"
+                      ? "border-primary/50 bg-primary/10 shadow-[0_2px_12px_rgba(31,111,235,0.15)]"
+                      : "border-border-subtle bg-surface-dim hover:border-primary/30 hover:bg-surface-container hover:shadow-sm"
                   }`}
                 >
                   {isSelected && (
@@ -176,7 +194,7 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
                       {chain.dependency_name}
                     </div>
                     <div
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${severityBg} ${severityColor} border ${severityLabel === 'critical' ? 'border-transparent' : ''}`}
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${severityBg} ${severityColor} border ${severityBorder}`}
                     >
                       {chain.severity}
                     </div>
@@ -186,7 +204,7 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
                     {chain.sensitive_contexts.slice(0, 2).map((ctx, i) => (
                       <span
                         key={i}
-                        className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border ${isSelected ? 'bg-white border-[#bfdbfe] text-primary' : 'bg-surface-container-low border-border-subtle text-text-secondary'}`}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border ${isSelected ? 'bg-primary/20 border-primary/30 text-primary' : 'bg-surface-container border-border-subtle text-text-secondary'}`}
                       >
                         {ctx}
                       </span>
@@ -205,7 +223,7 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
 
         {/* Graph Area */}
         <div className="flex-1 min-w-0 flex flex-col gap-6">
-          <InteractiveTraceGraph trace={selectedChain.trace || []} fix={selectedChain.fix} isFullscreen={isFullscreen} />
+          <InteractiveTraceGraph key={selectedChain.id} trace={selectedChain.trace || []} fix={selectedChain.fix} isFullscreen={isFullscreen} />
         </div>
       </div>
     </div>
@@ -213,6 +231,7 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
 }
 
 function InteractiveTraceGraph({ trace, fix, isFullscreen }: { trace: NonNullable<RiskChain["trace"]>, fix?: RiskChain["fix"], isFullscreen?: boolean }) {
+  const { resolvedTheme } = useTheme();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [selectedStepIdx, setSelectedStepIdx] = useState<number>(0);
@@ -263,10 +282,7 @@ function InteractiveTraceGraph({ trace, fix, isFullscreen }: { trace: NonNullabl
     );
   }, [selectedStepIdx, setNodes]);
 
-  // Reset selected step when trace changes
-  useEffect(() => {
-    setSelectedStepIdx(0);
-  }, [trace]);
+
 
   if (trace.length === 0) return null;
 
@@ -278,8 +294,8 @@ function InteractiveTraceGraph({ trace, fix, isFullscreen }: { trace: NonNullabl
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full">
-      <div className={`w-full border border-border-subtle rounded-xl bg-[#fafafa] shadow-inner relative overflow-hidden transition-all duration-300 ${isFullscreen ? "h-[50vh]" : "h-[350px]"}`}>
+    <div className="flex flex-col gap-4 w-full h-full text-text-primary">
+      <div className={`w-full border border-border-subtle rounded-2xl bg-surface-dim shadow-inner relative overflow-hidden transition-all duration-300 ${isFullscreen ? "h-[50vh]" : "h-[350px]"}`}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -293,31 +309,31 @@ function InteractiveTraceGraph({ trace, fix, isFullscreen }: { trace: NonNullabl
           maxZoom={2}
           attributionPosition="bottom-right"
         >
-          <Background color="#cbd5e1" gap={20} />
+          <Background color={resolvedTheme === "dark" ? "#1e293b" : "#cbd5e1"} gap={20} />
           <Controls showInteractive={false} />
         </ReactFlow>
-        <div className="absolute top-2 left-2 bg-white/90 backdrop-blur border border-border-subtle px-3 py-1.5 rounded-lg text-[10px] font-bold text-text-secondary uppercase tracking-wider shadow-sm z-10 flex items-center gap-2">
+        <div className="absolute top-2 left-2 bg-surface/90 backdrop-blur border border-border-subtle px-3 py-1.5 rounded-2xl text-[10px] font-bold text-text-secondary uppercase tracking-widest shadow-sm z-10 flex items-center gap-2">
           <span className="material-symbols-outlined text-[14px]">mouse</span>
           Interactive Graph
         </div>
       </div>
 
       {/* Selected Details Panel */}
-      <div className="bg-white border border-[#bfdbfe] rounded-xl p-5 shadow-[0_4px_24px_rgba(31,111,235,0.06)] relative overflow-hidden transition-all">
+      <div className="bg-surface border border-primary/20 rounded-2xl p-5 shadow-[0_4px_24px_rgba(31,111,235,0.1)] relative overflow-hidden transition-all">
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
         <div className="flex items-start justify-between mb-4 pl-2">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="bg-surface-container-high text-text-secondary text-[11px] font-bold px-2 py-0.5 rounded-md border border-border-subtle">
+              <span className="bg-surface-container text-text-secondary text-[11px] font-bold px-2 py-0.5 rounded-md border border-border-subtle">
                 Step {selectedStep?.step}
               </span>
               <span className="text-body-md font-bold text-text-primary">{selectedStep?.label}</span>
             </div>
             {selectedStep?.file_path && (
-              <div className="text-body-xs font-code-sm text-text-secondary flex items-center gap-1 mt-2 bg-surface-container-lowest px-2 py-1 rounded border border-border-subtle w-fit">
+              <div className="text-body-xs font-code-sm text-text-secondary flex items-center gap-1 mt-2 bg-surface-dim px-2 py-1 rounded border border-border-subtle w-fit">
                 <span className="material-symbols-outlined text-[14px]">folder</span>
                 {selectedStep?.file_path}
-                {selectedStep?.line_number ? <span className="text-primary-container font-bold">:{selectedStep?.line_number}</span> : ""}
+                {selectedStep?.line_number ? <span className="text-primary font-bold">:{selectedStep?.line_number}</span> : ""}
               </div>
             )}
           </div>
@@ -329,8 +345,8 @@ function InteractiveTraceGraph({ trace, fix, isFullscreen }: { trace: NonNullabl
         </div>
 
         {selectedStep?.code && (
-          <div className="bg-[#0f172a] text-[#d1d5db] font-code-sm text-[13px] leading-relaxed p-4 rounded-lg overflow-x-auto whitespace-pre border border-[#334155] shadow-inner mb-4 relative ml-2">
-            <div className="absolute top-2 right-2 text-[#475569] text-[10px] uppercase tracking-widest font-bold select-none pointer-events-none">Source Snippet</div>
+          <div className="bg-terminal-bg text-[#d1d5db] font-code-sm text-[13px] leading-relaxed p-4 rounded-2xl overflow-x-auto whitespace-pre border border-terminal-border shadow-inner mb-4 relative ml-2">
+            <div className="absolute top-2 right-2 text-text-muted text-[10px] uppercase tracking-widest font-bold select-none pointer-events-none">Source Snippet</div>
             {selectedStep?.code}
           </div>
         )}
@@ -338,8 +354,8 @@ function InteractiveTraceGraph({ trace, fix, isFullscreen }: { trace: NonNullabl
         {selectedStep?.details && selectedStep?.details.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2 ml-2">
             {selectedStep?.details.map((det, i) => (
-              <span key={i} className="text-[11px] bg-surface-container-lowest border border-border-subtle text-text-secondary px-2.5 py-1 rounded-md shadow-sm flex items-center gap-1.5 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              <span key={i} className="text-[11px] bg-surface-dim border border-border-subtle text-text-secondary px-2.5 py-1 rounded-md shadow-sm flex items-center gap-1.5 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
                 {det}
               </span>
             ))}
@@ -349,30 +365,30 @@ function InteractiveTraceGraph({ trace, fix, isFullscreen }: { trace: NonNullabl
 
       {/* Fix Panel */}
       {fix && (
-        <div className="border border-[#b7e4c7] rounded-xl p-5 bg-[#effaf3] shadow-[0_4px_24px_rgba(22,101,52,0.06)] relative overflow-hidden mt-2">
-          <div className="absolute top-0 left-0 w-1 h-full bg-[#176b3a]"></div>
+        <div className="border border-severity-low/20 rounded-2xl p-5 bg-severity-low-bg shadow-[0_4px_24px_rgba(16,185,129,0.06)] relative overflow-hidden mt-2">
+          <div className="absolute top-0 left-0 w-1 h-full bg-severity-low"></div>
           <div className="flex justify-between items-start mb-3 pl-2">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#176b3a] text-xl">build</span>
-              <div className="text-body-sm font-bold text-[#176b3a]">
+              <span className="material-symbols-outlined text-severity-low text-xl">build</span>
+              <div className="text-body-sm font-bold text-severity-low">
                 {fix.title}
               </div>
             </div>
             {fix.auto_remediable ? (
-              <span className="px-2 py-1 bg-white text-[#176b3a] border border-[#b7e4c7] text-[10px] font-bold rounded uppercase tracking-wider shadow-sm">
+              <span className="px-2 py-1 bg-surface text-severity-low border border-severity-low/20 text-[10px] font-bold rounded uppercase tracking-wider shadow-sm">
                 Auto fix ready
               </span>
             ) : (
-              <span className="px-2 py-1 bg-white text-text-secondary border border-border-subtle text-[10px] font-bold rounded uppercase tracking-wider shadow-sm">
+              <span className="px-2 py-1 bg-surface text-text-secondary border border-border-subtle text-[10px] font-bold rounded uppercase tracking-wider shadow-sm">
                 Manual review
               </span>
             )}
           </div>
-          <p className="text-body-sm text-[#176b3a] mb-4 opacity-90 pl-2">
+          <p className="text-body-sm text-severity-low mb-4 opacity-90 pl-2">
             {fix.description}
           </p>
           {fix.command && (
-            <div className="bg-[#0f172a] text-[#86efac] font-code-sm text-[13px] p-3 rounded-md overflow-x-auto whitespace-pre border border-[#176b3a] shadow-inner flex items-center gap-3 ml-2">
+            <div className="bg-terminal-bg text-severity-low font-code-sm text-[13px] p-3 rounded-md overflow-x-auto whitespace-pre border border-severity-low/30 shadow-inner flex items-center gap-3 ml-2">
               <span className="material-symbols-outlined text-[#475569] text-[16px] select-none">terminal</span>
               {fix.command}
             </div>
