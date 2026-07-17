@@ -132,12 +132,15 @@ export function SecretInteractiveGraph({ graphData }: SecretInteractiveGraphProp
       animated: true,
       label: e.label,
       type: 'smoothstep',
-      style: { stroke: '#ef4444', strokeWidth: 2 },
+      style: { 
+        stroke: resolvedTheme === 'dark' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(239, 68, 68, 0.7)', 
+        strokeWidth: 1.5 
+      },
     }));
 
     setNodes(initialNodes);
     setEdges(initialEdges);
-  }, [graphData, setNodes, setEdges]);
+  }, [graphData, setNodes, setEdges, resolvedTheme]);
 
   if (!graphData || !graphData.nodes || graphData.nodes.length === 0) {
     return null;
@@ -183,6 +186,7 @@ export function SecretInteractiveGraph({ graphData }: SecretInteractiveGraphProp
           fitView
           fitViewOptions={{ padding: 0.2 }}
           minZoom={0.2}
+          colorMode={resolvedTheme === 'dark' ? 'dark' : 'light'}
         >
           <Background color={resolvedTheme === "dark" ? "#1e293b" : "#cbd5e1"} gap={16} />
           <Controls />

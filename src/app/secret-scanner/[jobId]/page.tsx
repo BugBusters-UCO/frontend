@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { LogEntry, ScanJob } from "@/shared/api/types";
-import { fetchSecretJobStatus, getSecretScanLogsUrl } from "@/shared/api/client";
+import { fetchSecretJobStatus, getSecretScanLogsUrl, requestSecretRotation, approveSecretRotation } from "@/shared/api/client";
 import { LiveExecutionLog } from "@/widgets/LiveExecutionLog";
 import { SkeletonJobRow, SkeletonMetricsRow, SkeletonPanel } from "@/widgets/Skeleton";
 import { ArrowLeftCircle } from "lucide-react";
@@ -63,6 +63,49 @@ export default function SecretScannerJobPage() {
   const [isScanning, setIsScanning] = useState(true);
   const [activeTab, setActiveTab] = useState<"executive" | "technical">("executive");
   const [isExposureSidebarOpen, setIsExposureSidebarOpen] = useState(false);
+
+  // Rotation State
+  const [rotatingFindingId, setRotatingFindingId] = useState<string | null>(null);
+  const [isRotating, setIsRotating] = useState(false);
+  const [rotationActionId, setRotationActionId] = useState<string | null>(null);
+  const [rotationResult, setRotationResult] = useState<any>(null);
+
+  const handleRequestRotation = async (findingId: string) => {
+    try {
+      setRotatingFindingId(findingId);
+      setIsRotating(true);
+      setRotationResult(null);
+      const res = await requestSecretRotation(jobId, findingId);
+      setRotationActionId(res.action_id || "action-" + Date.now()); 
+    } catch (err) {
+      console.error("Failed to request rotation", err);
+      setRotatingFindingId(null);
+    } finally {
+      setIsRotating(false);
+    }
+  };
+
+  const handleApproveRotation = async () => {
+    if (!rotationActionId) return;
+    try {
+      setIsRotating(true);
+      const res = await approveSecretRotation(jobId, rotationActionId);
+      setRotationResult(res);
+      setRotationActionId(null);
+      setRotatingFindingId(null);
+      queryClient.invalidateQueries({ queryKey: ["secret-job", jobId] });
+    } catch (err) {
+      console.error("Failed to approve rotation", err);
+    } finally {
+      setIsRotating(false);
+    }
+  };
+
+  const handleCancelRotation = () => {
+    setRotatingFindingId(null);
+    setRotationActionId(null);
+    setRotationResult(null);
+  };
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -483,6 +526,17 @@ export default function SecretScannerJobPage() {
                                 <div className="text-xs text-text-muted mt-2">
                                   {finding.remediation?.title}: {finding.remediation?.description}
                                 </div>
+                                {finding.remediation?.rotation_required && (
+                                  <div className="mt-2">
+                                    <button 
+                                      onClick={() => handleRequestRotation(finding.id)}
+                                      disabled={isRotating && rotatingFindingId === finding.id}
+                                      className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                                    >
+                                      {(isRotating && rotatingFindingId === finding.id) ? "Requesting..." : "Rotate Secret"}
+                                    </button>
+                                  </div>
+                                )}
                               </td>
                               <td className="py-3 pr-4">
                                 <span className="font-semibold">{Math.round((finding.confidence || 0) * 100)}%</span>
@@ -500,6 +554,57 @@ export default function SecretScannerJobPage() {
           </div>
         )}
       </div>
+
+      {/* Rotation Approval Modal */}
+      {rotationActionId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-surface rounded-2xl max-w-md w-full p-6 shadow-xl">
+            <h3 className="text-xl font-bold mb-4">Approve Secret Rotation</h3>
+            <p className="text-text-secondary mb-6 text-sm">
+              The rotation request has been prepared. This will automatically invalidate the compromised secret and rotate it across configured integrations.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={handleCancelRotation}
+                disabled={isRotating}
+                className="px-4 py-2 text-text-secondary hover:bg-surface-container rounded-lg font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleApproveRotation}
+                disabled={isRotating}
+                className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              >
+                {isRotating ? "Approving..." : "Approve Rotation"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rotation Result Modal */}
+      {rotationResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-surface rounded-2xl max-w-md w-full p-6 shadow-xl">
+            <h3 className="text-xl font-bold mb-4">Rotation Completed</h3>
+            <p className="text-text-secondary mb-4 text-sm">
+              The secret was successfully rotated.
+            </p>
+            <div className="bg-surface-container-lowest p-3 rounded-lg text-xs font-mono text-text-muted break-all mb-6">
+              {JSON.stringify(rotationResult, null, 2)}
+            </div>
+            <div className="flex justify-end">
+              <button 
+                onClick={handleCancelRotation}
+                className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

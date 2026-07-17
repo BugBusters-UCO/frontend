@@ -220,7 +220,7 @@ export async function startConfigGithubScan(
   repoFullName: string,
   repoCloneUrl: string,
   githubSession?: string,
-  options?: { email?: string; includeLow?: boolean; failOn?: string }
+  options?: { email?: string; includeLow?: boolean; failOn?: string; runtimeSnapshotPath?: string; policyPath?: string }
 ): Promise<any> {
   const response = await apiFetch(`${API_BASE_URL}/api/config-scans/github`, {
     method: "POST",
@@ -240,13 +240,15 @@ export async function startConfigGithubScan(
 
 export async function uploadConfigZipScan(
   file: File,
-  options?: { email?: string; includeLow?: boolean; failOn?: string }
+  options?: { email?: string; includeLow?: boolean; failOn?: string; runtimeSnapshotPath?: string; policyPath?: string }
 ): Promise<any> {
   const formData = new FormData();
   formData.append("repoZip", file);
   if (options?.email) formData.append("email", options.email);
   if (options?.includeLow !== undefined) formData.append("includeLow", String(options.includeLow));
   if (options?.failOn) formData.append("failOn", options.failOn);
+  if (options?.runtimeSnapshotPath) formData.append("runtimeSnapshotPath", options.runtimeSnapshotPath);
+  if (options?.policyPath) formData.append("policyPath", options.policyPath);
 
   const response = await apiFetch(`${API_BASE_URL}/api/config-scans/zip`, {
     method: "POST",
@@ -270,6 +272,18 @@ export async function fetchConfigJobStatus(jobId: string, forceRefresh = false):
     headers: getAuthHeaders(),
   });
   if (!response.ok) throw new Error("Failed to fetch config job status");
+  return response.json();
+}
+
+export async function cancelConfigScan(jobId: string): Promise<any> {
+  const response = await apiFetch(`${API_BASE_URL}/api/config-scans/${jobId}/cancel`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to cancel config scan");
+  }
   return response.json();
 }
 
@@ -344,6 +358,30 @@ export function getSecretScanLogsUrl(jobId: string): string {
   return `${API_BASE_URL}/api/secret-scans/${jobId}/logs?authToken=${token || ""}`;
 }
 
+export async function requestSecretRotation(jobId: string, findingId: string): Promise<any> {
+  const response = await apiFetch(`${API_BASE_URL}/api/secret-scans/${jobId}/findings/${findingId}/rotation`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to request secret rotation");
+  }
+  return response.json();
+}
+
+export async function approveSecretRotation(jobId: string, actionId: string): Promise<any> {
+  const response = await apiFetch(`${API_BASE_URL}/api/secret-scans/${jobId}/rotation/${actionId}/approve`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to approve secret rotation");
+  }
+  return response.json();
+}
+
 // ------------------------------------------------------------------
 // Pre-Deployment Cipher Scanner
 // ------------------------------------------------------------------
@@ -409,6 +447,18 @@ export async function fetchCipherJobStatus(jobId: string, forceRefresh = false):
 export function getCipherScanLogsUrl(jobId: string): string {
   const token = getCookie("auth_token");
   return `${API_BASE_URL}/api/cipher-scans/${jobId}/logs?authToken=${token || ""}`;
+}
+
+export async function notifyCipherScan(jobId: string): Promise<any> {
+  const response = await apiFetch(`${API_BASE_URL}/api/cipher-scans/${jobId}/notify`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to notify cipher scan");
+  }
+  return response.json();
 }
 
 // ------------------------------------------------------------------
@@ -518,6 +568,17 @@ export async function fetchImportedGithubRepos(): Promise<any> {
 // ------------------------------------------------------------------
 // Unified Risk Engine
 // ------------------------------------------------------------------
+
+export async function fetchRiskBusinessInputs(): Promise<any> {
+  const response = await apiFetch(`${API_BASE_URL}/api/risk/business-inputs`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || "Failed to fetch risk business inputs");
+  }
+  return response.json();
+}
 
 export async function fetchRiskOverview(data: {
   sourceLabel?: string | null;

@@ -20,45 +20,47 @@ const PolicyNode = ({ data, selected }: NodeProps) => {
   const isHotspot = data.isHotspot as boolean;
   const kind = data.kind as string;
 
-  let bgClass = "bg-surface transition-colors duration-300";
-  let borderClass = "border-border-subtle";
-  let iconClass = "text-slate-400";
+  let accentColor = "bg-slate-400";
+  let iconClass = "text-slate-500 dark:text-slate-400";
   let icon = "dns";
 
   if (kind === "endpoint") {
-    borderClass = "border-blue-300 dark:border-blue-800";
-    bgClass = "bg-blue-50 dark:bg-blue-950/40";
-    iconClass = "text-blue-500 dark:text-blue-400";
+    accentColor = "bg-blue-500";
+    iconClass = "text-blue-600 dark:text-blue-400";
     icon = "router";
   } else if (kind === "policy") {
-    borderClass = "border-purple-300 dark:border-purple-800";
-    bgClass = "bg-purple-50 dark:bg-purple-950/40";
-    iconClass = "text-purple-500 dark:text-purple-400";
+    accentColor = "bg-purple-500";
+    iconClass = "text-purple-600 dark:text-purple-400";
     icon = "policy";
   }
 
   if (isHotspot) {
-    borderClass = "border-red-400 dark:border-red-800";
-    bgClass = "bg-red-50 dark:bg-red-950/40";
-    iconClass = "text-red-500 dark:text-red-400";
+    accentColor = "bg-red-500";
+    iconClass = "text-red-600 dark:text-red-400";
     icon = "local_fire_department";
   }
 
   return (
-    <div className={`relative flex items-center gap-3 min-w-[200px] max-w-[280px] p-3 rounded-2xl border-2 ${bgClass} ${borderClass} transition-all duration-300 ${selected ? 'shadow-lg ring-2 ring-red-400 ring-offset-2 z-10 scale-[1.02]' : 'shadow-sm hover:shadow-md'}`}>
-      <Handle type="target" position={Position.Top} className="w-2 h-2 bg-slate-400 border-none" />
+    <div className={`relative flex items-center gap-3 w-64 p-3 rounded-xl bg-surface/95 border border-border-subtle backdrop-blur-md transition-all duration-300 ${
+      selected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-[0_0_20px_rgba(31,111,235,0.25)] scale-[1.02] z-10' : 'hover:border-primary/50 shadow-sm'
+    }`}>
+      <Handle type="target" position={Position.Top} className="w-2 h-2 !bg-primary border-none opacity-0" />
       
-      <span className={`material-symbols-outlined ${iconClass} text-[24px]`}>{icon}</span>
-      <div className="flex flex-col min-w-0 flex-1">
-        <div className="text-[12px] font-bold text-text-primary break-words mb-1">
-          {data.label as string}
-        </div>
-        <div className="text-[10px] uppercase tracking-widest font-semibold text-text-muted">
-          {kind}
-        </div>
+      {/* Visual Accent Bar */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl ${accentColor}`} />
+      
+      {/* Node Icon Container */}
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-surface-container-high shrink-0`}>
+        <span className={`material-symbols-outlined ${iconClass} text-[20px]`}>{icon}</span>
       </div>
       
-      <Handle type="source" position={Position.Bottom} className="w-2 h-2 bg-slate-400 border-none" />
+      {/* Text Details */}
+      <div className="flex-1 min-w-0 flex flex-col justify-center">
+        <p className="text-[10px] uppercase font-bold tracking-wider text-text-muted mb-0.5 leading-none">{kind}</p>
+        <p className="text-xs font-semibold truncate text-text-primary leading-tight">{data.label as string}</p>
+      </div>
+      
+      <Handle type="source" position={Position.Bottom} className="w-2 h-2 !bg-primary border-none opacity-0" />
     </div>
   );
 };
@@ -115,18 +117,25 @@ export function CipherInteractiveGraph({ graphData }: CipherInteractiveGraphProp
       };
     });
 
-    const newEdges = graphData.edges.map((edge, idx) => ({
-      id: `e-${idx}-${edge.source}-${edge.target}`,
-      source: edge.source,
-      target: edge.target,
-      label: edge.label || edge.relation,
-      animated: hotspots.has(edge.source) || hotspots.has(edge.target),
-      style: { stroke: hotspots.has(edge.source) || hotspots.has(edge.target) ? '#ef4444' : '#94a3b8', strokeWidth: 2 },
-    }));
+    const newEdges = graphData.edges.map((edge, idx) => {
+      const isHotspotEdge = hotspots.has(edge.source) || hotspots.has(edge.target);
+      return {
+        id: `e-${idx}-${edge.source}-${edge.target}`,
+        source: edge.source,
+        target: edge.target,
+        label: edge.label || edge.relation,
+        type: 'smoothstep',
+        animated: true,
+        style: { 
+          stroke: isHotspotEdge ? '#ef4444' : (resolvedTheme === 'dark' ? 'rgba(59, 130, 246, 0.4)' : 'rgba(59, 130, 246, 0.7)'), 
+          strokeWidth: isHotspotEdge ? 2 : 1.5 
+        },
+      };
+    });
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [graphData, setNodes, setEdges]);
+  }, [graphData, setNodes, setEdges, resolvedTheme]);
 
   if (!graphData || !graphData.nodes || graphData.nodes.length === 0) {
     return null;
@@ -172,6 +181,7 @@ export function CipherInteractiveGraph({ graphData }: CipherInteractiveGraphProp
           fitView
           fitViewOptions={{ padding: 0.2 }}
           minZoom={0.2}
+          colorMode={resolvedTheme === 'dark' ? 'dark' : 'light'}
         >
           <Background color={resolvedTheme === "dark" ? "#1e293b" : "#cbd5e1"} gap={16} />
           <Controls />

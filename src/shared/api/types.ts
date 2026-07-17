@@ -413,6 +413,21 @@ export type DependencyScanResult = {
       auto_remediable: boolean;
     };
   }>;
+  static_malware_findings?: Array<any>;
+  static_malware_status?: any;
+  behavior_findings?: Array<any>;
+  behavior_status?: any;
+  package_intelligence_findings?: Array<any>;
+  package_intelligence_status?: any;
+  artifact?: any;
+  sandbox?: any;
+  advisory_status?: string;
+  data_isolation?: {
+    offlineMode: boolean;
+    externalAdvisoryLookup: boolean;
+    publicRegistryMetadata: boolean;
+    sourceUpload: boolean;
+  };
 };
 
 export type ConfigScanResult = {
@@ -465,6 +480,17 @@ export type ConfigScanResult = {
       details: string[];
     }>;
   }>;
+  files?: Array<any>;
+  suppression_metadata?: any;
+  facts?: Array<any>;
+  graph?: any;
+  environment_drifts_details?: Array<any>;
+  runtime_snapshot_drift?: any;
+  remediation_plan?: any;
+  policy_decision?: any;
+  compliance_mappings?: Array<any>;
+  evidence_bundle?: any;
+  sarif_output?: any;
 };
 
 export type SecretScanResult = {

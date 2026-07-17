@@ -23,6 +23,8 @@ interface ScanConfigProps {
     runConfig: boolean;
     runSecret: boolean;
     runCipher: boolean;
+    runtimeSnapshotPath?: string;
+    policyPath?: string;
   };
   setScanOptions: (options: any) => void;
 }
@@ -227,7 +229,36 @@ export function ScanConfig({
           </div>
         </div>
 
-        {/* Settings Area */}
+        {scanOptions.runConfig && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px] text-text-muted">settings</span>
+              <h3 className="text-sm font-semibold text-text-primary uppercase tracking-wider">Config Scanner Options</h3>
+            </div>
+            <div className="bg-surface-container-lowest border border-border-subtle rounded-2xl p-4 shadow-sm space-y-3">
+              <div>
+                <label className="block text-body-sm font-medium text-text-primary mb-1">Runtime Snapshot Path (Optional)</label>
+                <input 
+                  type="text" 
+                  className="w-full bg-surface border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                  placeholder="e.g. runtime-export.json"
+                  value={scanOptions.runtimeSnapshotPath || ""}
+                  onChange={(e) => setScanOptions({ ...scanOptions, runtimeSnapshotPath: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-body-sm font-medium text-text-primary mb-1">Policy Path (Optional)</label>
+                <input 
+                  type="text" 
+                  className="w-full bg-surface border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                  placeholder="e.g. bank-production-policy.json"
+                  value={scanOptions.policyPath || ""}
+                  onChange={(e) => setScanOptions({ ...scanOptions, policyPath: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+        )}
         {/* <div className="space-y-4">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px] text-text-muted">tune</span>

@@ -28,12 +28,6 @@ const MODULES = [
   { id: "cipher", label: "Pre Cipher Suite", icon: "encrypted" },
 ] as const;
 
-const SCOPES = [
-  { id: "selected", label: "Selected directories", description: "Scan only checked app/config paths." },
-  { id: "application", label: "Application only", description: "Prefer deployed app folders." },
-  { id: "full-os", label: "Full OS scan", description: "Agent scans recommended OS-level locations." },
-  { id: "root", label: "Root level", description: "Starts from / with agent-side deny rules." },
-] as const;
 
 const DEFAULT_BUSINESS_CONTEXT: BusinessRiskContext = {
   assetCriticality: 5,
@@ -75,13 +69,13 @@ export default function VmAgentsPage() {
   const [selectedReportId, setSelectedReportId] = useState("");
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
   const [selectedModules, setSelectedModules] = useState<Array<"dependency" | "config" | "secret" | "cipher">>(["dependency", "config", "secret", "cipher"]);
-  const [scope, setScope] = useState<"full-os" | "root" | "selected" | "application">("selected");
+
   const [projectName, setProjectName] = useState("payment-service");
   const [businessContext, setBusinessContext] = useState<BusinessRiskContext>(DEFAULT_BUSINESS_CONTEXT);
   const [starting, setStarting] = useState(false);
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  
+
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [agentToken, setAgentToken] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
@@ -113,10 +107,10 @@ export default function VmAgentsPage() {
   const hasAgents = agents.length > 0;
   const isAgentOnline = selectedAgent?.status === "online";
   const ownerEmail = user?.email || "your-login-email@example.com";
-  
+
   const windowsCommand = `powershell -NoProfile -ExecutionPolicy Bypass -File .\\vm-agent\\bugbusters-agent.ps1 -Mode loop -OwnerEmail ${ownerEmail} -AgentToken dev-agent-token`;
   const linuxCommand = `export BUGBUSTERS_OWNER_EMAIL="${ownerEmail}"\nexport BUGBUSTERS_AGENT_TOKEN="dev-agent-token"\nbash ./vm-agent/bugbusters-agent.sh loop`;
-  
+
   const activeReports = reports.filter((job) => ["queued", "running", "stopping"].includes(job.status));
   const metrics = useMemo(() => {
     const total = reports.length;
@@ -152,15 +146,14 @@ export default function VmAgentsPage() {
 
   const handleStart = async () => {
     if (!selectedAgentId) return;
-    if (scope === "selected" && selectedPaths.length === 0) return;
     if (selectedModules.length === 0) return;
 
     setStarting(true);
     try {
       const job = await startAgentScan(selectedAgentId, {
         projectName,
-        scope,
-        paths: scope === "selected" ? selectedPaths : [],
+        scope: selectedPaths.length > 0 ? "selected" : "full-os",
+        paths: selectedPaths,
         modules: selectedModules,
       });
       await createRiskAssessment({
@@ -245,7 +238,7 @@ export default function VmAgentsPage() {
               ) : (
                 <span className="material-symbols-outlined text-[18px]">power_settings_new</span>
               )}
-              {isDisconnecting ? "Disconnecting..." : "Disconnect Agent"}
+              {isDisconnecting ? "Disconnecting" : "Disconnect Agent"}
             </button>
           ) : (
             <button onClick={() => setIsConnectModalOpen(true)} className="px-4 py-2 rounded-2xl bg-primary-container text-white hover:bg-primary-hover transition-colors shadow-sm flex items-center gap-2 font-medium">
@@ -265,27 +258,27 @@ export default function VmAgentsPage() {
           <div className="bg-surface transition-colors duration-300 rounded-2xl shadow-xl w-full max-w-md border border-border-subtle p-6">
             <h3 className="font-headline-sm text-headline-sm text-text-primary mb-2">Connect VM Agent</h3>
             <p className="text-body-sm text-text-secondary mb-4">Enter your agent token to start the VM Agent process remotely on this machine.</p>
-            <input 
-              type="text" 
-              placeholder="e.g. dev-agent-token" 
-              value={agentToken} 
+            <input
+              type="text"
+              placeholder="e.g. dev-agent-token"
+              value={agentToken}
               onChange={e => setAgentToken(e.target.value)}
               className="w-full px-3 py-2 border border-border-divider rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-container mb-4"
             />
             <div className="flex justify-end gap-3">
-              <button 
-                onClick={() => setIsConnectModalOpen(false)} 
+              <button
+                onClick={() => setIsConnectModalOpen(false)}
                 className="px-4 py-2 text-text-secondary hover:bg-surface-container rounded-2xl transition-colors"
                 disabled={isConnecting}
               >
                 Cancel
               </button>
-              <button 
-                onClick={handleConnect} 
+              <button
+                onClick={handleConnect}
                 className="px-4 py-2 bg-primary-container text-white rounded-2xl hover:bg-primary-hover transition-colors disabled:opacity-50"
                 disabled={isConnecting}
               >
-                {isConnecting ? "Connecting..." : "Connect"}
+                {isConnecting ? "Connecting" : "Connect"}
               </button>
             </div>
           </div>
@@ -310,7 +303,7 @@ export default function VmAgentsPage() {
                 Connected VM Agents
               </h2>
             </div>
-            
+
             {/* <div className="mb-4 p-3 rounded-2xl bg-blue-50 border border-blue-100 text-xs text-blue-800">
               <p className="font-bold mb-1">How to connect / disconnect:</p>
               <p className="mb-2">Run the agent script on your VM using the commands below. To disconnect, simply stop the script (Ctrl+C) on your server.</p>
@@ -514,7 +507,7 @@ export default function VmAgentsPage() {
           </div>
 
           <div className="relative z-10 mb-6 border border-border-divider rounded-2xl overflow-hidden bg-surface-container-lowest">
-            <button 
+            <button
               onClick={() => setShowAdvanced(!showAdvanced)}
               className="w-full flex items-center justify-between p-4 bg-surface-container-lowest hover:bg-surface-container transition-colors text-sm font-semibold text-text-primary"
             >
@@ -524,35 +517,21 @@ export default function VmAgentsPage() {
               </div>
               <span className={`material-symbols-outlined transition-transform duration-300 ${showAdvanced ? "rotate-180" : ""}`}>expand_more</span>
             </button>
-            
+
             <div className={`transition-all duration-500 ease-in-out ${showAdvanced ? "max-h-[800px] opacity-100 border-t border-border-divider" : "max-h-0 opacity-0"}`}>
               <div className="p-4 md:p-5">
-                <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-3">Scan Scope</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                  {SCOPES.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setScope(item.id)}
-                      disabled={!isAgentOnline}
-                      className={`text-left rounded-2xl border p-3 transition-colors ${scope === item.id ? "border-primary bg-primary-container/5 ring-1 ring-primary/30" : "border-border-divider hover:bg-surface-container"} ${!isAgentOnline ? "opacity-50 cursor-not-allowed" : ""}`}
-                    >
-                      <p className="font-semibold text-sm">{item.label}</p>
-                      <p className="text-[11px] text-text-muted mt-1 leading-relaxed">{item.description}</p>
-                    </button>
-                  ))}
-                </div>
 
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-bold text-text-secondary uppercase tracking-wider flex items-center gap-1">
                     Directories <InfoTooltip text="Browse remote file system to select scan targets." />
                   </span>
                 </div>
-                
-                <RemoteFileExplorer 
-                  agentId={selectedAgentId} 
-                  selectedPaths={selectedPaths} 
-                  togglePath={togglePath} 
-                  hasAgents={hasAgents} 
+
+                <RemoteFileExplorer
+                  agentId={selectedAgentId}
+                  selectedPaths={selectedPaths}
+                  togglePath={togglePath}
+                  hasAgents={hasAgents}
                 />
 
               </div>
@@ -595,11 +574,11 @@ function useLiveLogs(reportId: string | null, active: boolean) {
     }
 
     setLogs([]);
-    
+
     // Connect to SSE stream
     const url = getAgentScanLogsUrl(reportId);
     const evtSource = new EventSource(url);
-    
+
     evtSource.onmessage = (event) => {
       try {
         const newLog = JSON.parse(event.data);
@@ -609,7 +588,7 @@ function useLiveLogs(reportId: string | null, active: boolean) {
         console.error("Failed to parse log", e);
       }
     };
-    
+
     evtSource.onerror = (err) => {
       // EventSource automatically attempts to reconnect on error.
       // If the job is not active, we can close it safely.
@@ -646,13 +625,46 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
 
   const isActive = ["queued", "running", "stopping"].includes(report.status);
   const { logs, scrollRef } = useLiveLogs(report.id, isActive);
-  
+
   const summary = report.result?.summary || {};
   const statusText = getStatusExplanation(report);
 
   // Animated pipeline visualization data
   const pipelineModules = report.modules || [];
-  const completedModules = report.result?.reports?.map((r: any) => r.module) || [];
+
+  const completedModules = useMemo(() => {
+    const completed = new Set<string>();
+
+    // 1. Only include modules explicitly marked as completed or success by the backend
+    if (report.result?.reports) {
+      report.result.reports.forEach((r: any) => {
+        if (r.status === "completed" || r.status === "success") {
+          completed.add(r.module);
+        }
+      });
+    }
+
+    if (!isActive) return Array.from(completed);
+
+    // 2. Enhance with live logs for real-time progress
+    logs.forEach(log => {
+      const msg = log.message.toLowerCase();
+      pipelineModules.forEach((mod, idx) => {
+        // If we see a log indicating a module is starting, all previous modules must be complete
+        if (msg.includes(`starting ${mod}`) || msg.includes(`running ${mod}`) || msg.includes(`executing ${mod}`) || log.meta?.module === mod) {
+          for (let i = 0; i < idx; i++) {
+            completed.add(pipelineModules[i]);
+          }
+        }
+        // If we see a log indicating a module has finished, mark it as complete
+        if (msg.includes(`${mod} scan complete`) || msg.includes(`finished ${mod}`) || msg.includes(`completed ${mod}`) || msg.includes(`successfully scanned ${mod}`)) {
+          completed.add(mod);
+        }
+      });
+    });
+
+    return Array.from(completed);
+  }, [isActive, report.result, logs, pipelineModules]);
 
   return (
     <section className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -685,11 +697,10 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
 
         <div className="mt-6 flex flex-col sm:flex-row gap-4">
           <div className="flex-1 rounded-2xl border border-border-divider bg-surface transition-colors duration-300 p-4 shadow-sm flex items-start gap-4">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-              report.status === 'completed' ? 'bg-green-100 text-green-700' :
-              report.status === 'failed' ? 'bg-red-100 text-red-700' :
-              'bg-blue-100 text-blue-700 animate-pulse'
-            }`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${report.status === 'completed' ? 'bg-green-100 text-green-700' :
+                report.status === 'failed' ? 'bg-red-100 text-red-700' :
+                  'bg-blue-100 text-blue-700 animate-pulse'
+              }`}>
               <span className="material-symbols-outlined">
                 {report.status === 'completed' ? 'check_circle' : (report.status === 'failed' ? 'error' : 'sync')}
               </span>
@@ -699,7 +710,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
               <p className="mt-1 text-sm text-text-secondary leading-relaxed">{statusText.description}</p>
             </div>
           </div>
-          
+
           <div className="flex gap-4">
             <div className="rounded-2xl border border-border-divider bg-surface transition-colors duration-300 p-4 shadow-sm min-w-[120px] flex flex-col items-center justify-center">
               <p className="text-xs font-bold uppercase text-text-muted mb-1">Findings</p>
@@ -716,19 +727,27 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
           <span className="material-symbols-outlined text-[18px]">account_tree</span>
           Execution Pipeline
         </p>
-        
+
         {/* Pipeline Visualization */}
-        <div className="relative mb-8">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-surface-container -translate-y-1/2 rounded-full overflow-hidden">
-            <div className="h-full bg-primary-container transition-all duration-1000 ease-out" 
-                 style={{ width: `${pipelineModules.length === 0 ? 0 : (completedModules.length / pipelineModules.length) * 100}%` }}></div>
+        <div className="relative mb-8 pt-2">
+          {/* Progress Line */}
+          <div className="absolute top-[28px] left-0 w-full h-1 -translate-y-1/2 pointer-events-none px-2 sm:px-10">
+            <div className="relative w-full h-full flex">
+               <div style={{ width: `${pipelineModules.length > 0 ? 100 / (pipelineModules.length * 2) : 0}%` }} />
+               <div className="relative h-full bg-surface-container rounded-full overflow-hidden" 
+                    style={{ width: `${pipelineModules.length > 0 ? 100 - (100 / pipelineModules.length) : 0}%` }}>
+                 <div className="h-full bg-primary transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+                      style={{ width: `${Math.min(100, pipelineModules.length <= 1 ? 100 : (completedModules.length / (pipelineModules.length - 1)) * 100)}%` }}></div>
+               </div>
+            </div>
           </div>
-          <div className="relative flex justify-between items-center z-10 px-2 sm:px-10">
+
+          <div className="relative flex bg-transparent items-start z-10 px-2 sm:px-10">
             {pipelineModules.map((moduleName, index) => {
               const isCompleted = completedModules.includes(moduleName);
               const isCurrent = isActive && !isCompleted && (index === 0 || completedModules.includes(pipelineModules[index - 1]));
               const modInfo = MODULES.find(m => m.id === moduleName);
-              
+
               let moduleIcon = <span className="material-symbols-outlined text-[20px]">{modInfo?.icon || 'extension'}</span>;
               if (isCompleted) {
                 moduleIcon = <span className="material-symbols-outlined text-[20px]">check</span>;
@@ -737,30 +756,28 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
               }
 
               const innerContent = (
-                <>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 shadow-sm ${
-                    isCompleted ? 'bg-primary-container border-primary-container text-white scale-100 hover:scale-110' :
-                    isCurrent ? 'bg-surface transition-colors duration-300 border-primary text-primary scale-110 ring-4 ring-primary/20' :
-                    'bg-surface-container-lowest border-border-divider text-text-muted scale-90'
-                  }`}>
+                <div className="flex flex-col items-center gap-2">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 shadow-sm relative z-10 ${isCompleted ? 'bg-primary border-primary text-white scale-100 shadow-lg shadow-primary/30' :
+                      isCurrent ? 'bg-surface transition-colors duration-300 border-primary text-primary scale-110 ring-4 ring-primary/20 shadow-md shadow-primary/20' :
+                        'bg-surface-container-lowest border-border-divider text-text-muted scale-90'
+                    }`}>
                     {moduleIcon}
                   </div>
-                  <span className={`text-[11px] font-bold uppercase tracking-wider hidden sm:block ${
-                    isCompleted || isCurrent ? 'text-text-primary' : 'text-text-muted'
-                  }`}>{moduleName}</span>
-                </>
+                  <span className={`text-[11px] font-bold uppercase tracking-wider hidden sm:block ${isCompleted || isCurrent ? 'text-text-primary' : 'text-text-muted'
+                    }`}>{moduleName}</span>
+                </div>
               );
 
               return isCompleted ? (
                 <a
                   key={moduleName}
                   href={`/vm-agents/${report.id}?tab=${moduleName}`}
-                  className="flex flex-col items-center gap-2 bg-surface transition-colors duration-300 px-2 cursor-pointer group"
+                  className="flex-1 bg-transparent transition-transform hover:scale-105 duration-300 cursor-pointer group flex flex-col items-center"
                 >
                   {innerContent}
                 </a>
               ) : (
-                <div key={moduleName} className="flex flex-col items-center gap-2 bg-surface transition-colors duration-300 px-2">
+                <div key={moduleName} className="flex-1 bg-transparent transition-colors duration-300 flex flex-col items-center">
                   {innerContent}
                 </div>
               );
@@ -772,7 +789,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
           <span className="material-symbols-outlined text-[18px]">terminal</span>
           Real-Time Execution Logs
         </p>
-        
+
         <div className="rounded-2xl bg-[#0d1117] border border-[#30363d] overflow-hidden shadow-inner">
           <div className="flex items-center gap-2 px-4 py-2 bg-[#161b22] border-b border-[#30363d]">
             <div className="flex gap-1.5">
@@ -788,7 +805,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
               </span>}
             </span>
           </div>
-          <div 
+          <div
             ref={scrollRef}
             className="p-4 h-[350px] overflow-y-auto font-mono text-[13px] leading-relaxed scroll-smooth"
           >
@@ -796,17 +813,16 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
               const isError = entry.level?.toLowerCase() === 'error';
               const isWarn = entry.level?.toLowerCase() === 'warn';
               const isInfo = entry.level?.toLowerCase() === 'info';
-              
+
               return (
                 <div key={`${entry.timestamp}-${index}`} className="flex items-start gap-4 hover:bg-[#161b22] px-2 py-0.5 rounded transition-colors group">
                   <span className="text-[#484f58] shrink-0 tabular-nums">
-                    {new Date(entry.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second:'2-digit' })}
+                    {new Date(entry.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                   <div className="flex-1 break-words">
                     {entry.level && (
-                      <span className={`inline-block w-12 text-[10px] font-bold uppercase tracking-wider mr-2 ${
-                        isError ? 'text-[#ff7b72]' : isWarn ? 'text-[#d2a8ff]' : 'text-[#79c0ff]'
-                      }`}>
+                      <span className={`inline-block w-12 text-[10px] font-bold uppercase tracking-wider mr-2 ${isError ? 'text-[#ff7b72]' : isWarn ? 'text-[#d2a8ff]' : 'text-[#79c0ff]'
+                        }`}>
                         [{entry.level}]
                       </span>
                     )}
@@ -917,7 +933,7 @@ function Metric({ label, value, tone, icon, spinning = false }: { label: string;
   const color = tone === "danger" ? "text-severity-critical" : tone === "warning" ? "text-orange-600" : "text-text-primary";
   const bg = tone === "danger" ? "bg-red-50" : tone === "warning" ? "bg-orange-50" : "bg-surface-container-lowest";
   const border = tone === "danger" ? "border-red-200" : tone === "warning" ? "border-orange-200" : "border-border-divider";
-  
+
   return (
     <div className={`${bg} p-5 rounded-2xl border ${border} shadow-sm flex items-center justify-between group hover:shadow-md transition-shadow`}>
       <div className="flex flex-col gap-1">
@@ -941,9 +957,8 @@ function CommandHeader({ title, copied, onCopy }: { title: string; copied: boole
       <button
         type="button"
         onClick={onCopy}
-        className={`inline-flex items-center gap-1 rounded border px-2 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-          copied ? 'bg-green-100 border-green-200 text-green-700' : 'bg-surface transition-colors duration-300 border-border-divider text-text-secondary hover:bg-surface-container hover:text-text-primary'
-        }`}
+        className={`inline-flex items-center gap-1 rounded border px-2 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${copied ? 'bg-green-100 border-green-200 text-green-700' : 'bg-surface transition-colors duration-300 border-border-divider text-text-secondary hover:bg-surface-container hover:text-text-primary'
+          }`}
       >
         <span className="material-symbols-outlined text-[14px]">{copied ? "check" : "content_copy"}</span>
         {copied ? "Copied" : "Copy Command"}
@@ -958,13 +973,12 @@ function StatusBadge({ status, large = false }: { status: AgentScanJob["status"]
     : status === "failed" || status === "stopped"
       ? "bg-red-100 text-red-800 border-red-200"
       : "bg-blue-100 text-blue-800 border-blue-200";
-      
+
   const icon = status === "completed" ? "check_circle" : status === "failed" || status === "stopped" ? "cancel" : "sync";
-  
+
   return (
-    <span className={`inline-flex items-center gap-1.5 border rounded-full font-bold ${
-      large ? 'px-3 py-1.5 text-xs' : 'px-2 py-1 text-[10px]'
-    } uppercase tracking-wider ${className}`}>
+    <span className={`inline-flex items-center gap-1.5 border rounded-full font-bold ${large ? 'px-3 py-1.5 text-xs' : 'px-2 py-1 text-[10px]'
+      } uppercase tracking-wider ${className}`}>
       <span className={`material-symbols-outlined ${large ? 'text-[16px]' : 'text-[14px]'} ${status !== 'completed' && status !== 'failed' && status !== 'stopped' ? 'animate-spin' : ''}`}>
         {icon}
       </span>

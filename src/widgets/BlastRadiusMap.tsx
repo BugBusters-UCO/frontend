@@ -260,17 +260,20 @@ function InteractiveTraceGraph({ trace, fix, isFullscreen }: { trace: NonNullabl
         target: `node-${i + 1}`,
         animated: true,
         type: 'smoothstep',
-        style: { stroke: '#3b82f6', strokeWidth: 2 },
+        style: { 
+          stroke: resolvedTheme === 'dark' ? 'rgba(59, 130, 246, 0.4)' : 'rgba(59, 130, 246, 0.7)', 
+          strokeWidth: 1.5 
+        },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: '#3b82f6',
+          color: resolvedTheme === 'dark' ? 'rgba(59, 130, 246, 0.4)' : 'rgba(59, 130, 246, 0.7)',
         },
       });
     }
 
     setNodes(initialNodes);
     setEdges(initialEdges);
-  }, [trace, setNodes, setEdges]);
+  }, [trace, setNodes, setEdges, resolvedTheme]);
 
   // Update selected state of nodes based on selectedStepIdx
   useEffect(() => {
@@ -308,6 +311,7 @@ function InteractiveTraceGraph({ trace, fix, isFullscreen }: { trace: NonNullabl
           minZoom={0.5}
           maxZoom={2}
           attributionPosition="bottom-right"
+          colorMode={resolvedTheme === 'dark' ? 'dark' : 'light'}
         >
           <Background color={resolvedTheme === "dark" ? "#1e293b" : "#cbd5e1"} gap={20} />
           <Controls showInteractive={false} />

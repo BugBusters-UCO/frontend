@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CipherScanResult, LogEntry, ScanJob } from "@/shared/api/types";
-import { fetchCipherJobStatus, getCipherScanLogsUrl } from "@/shared/api/client";
+import { fetchCipherJobStatus, getCipherScanLogsUrl, notifyCipherScan } from "@/shared/api/client";
 import { LiveExecutionLog } from "@/widgets/LiveExecutionLog";
 import { SkeletonJobRow, SkeletonMetricsRow, SkeletonPanel } from "@/widgets/Skeleton";
 import { ArrowLeftCircle } from "lucide-react";
@@ -83,6 +83,22 @@ export default function CipherScannerJobPage() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isScanning, setIsScanning] = useState(true);
   const [activeTab, setActiveTab] = useState<"executive" | "technical">("executive");
+
+  const [isNotifying, setIsNotifying] = useState(false);
+  const [notifySuccess, setNotifySuccess] = useState(false);
+
+  const handleNotify = async () => {
+    try {
+      setIsNotifying(true);
+      await notifyCipherScan(jobId);
+      setNotifySuccess(true);
+      setTimeout(() => setNotifySuccess(false), 3000);
+    } catch (error) {
+      console.error("Failed to notify team", error);
+    } finally {
+      setIsNotifying(false);
+    }
+  };
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -199,12 +215,21 @@ export default function CipherScannerJobPage() {
         >
           <span className="material-symbols-outlined hover:cursor-pointer"><ArrowLeftCircle size={36} /></span>
         </button>
-        <div>
+        <div className="flex-1">
           <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">
             Cipher Scan: {job.sourceLabel || jobId}
           </h1>
           <p className="font-body-sm text-body-sm text-text-secondary">Status: {job.status || "Loading..."}</p>
         </div>
+        {!isScanning && job.status === "completed" && (
+          <button
+            onClick={handleNotify}
+            disabled={isNotifying || notifySuccess}
+            className={`px-4 py-2 text-white rounded-lg font-medium transition-colors ${notifySuccess ? "bg-green-600" : "bg-primary hover:bg-primary/90"} disabled:opacity-50`}
+          >
+            {isNotifying ? "Notifying..." : notifySuccess ? "Notification Sent!" : "Notify Team"}
+          </button>
+        )}
       </div>
 
       <div className="flex flex-col gap-element-gap">

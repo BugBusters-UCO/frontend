@@ -18,7 +18,7 @@ export function Sidebar() {
   const isCipher = pathname.startsWith("/cipher-scanner");
   const isAgentsHistory = pathname.startsWith("/vm-agents/history") || (pathname.startsWith("/vm-agents/") && pathname !== "/vm-agents/history" && pathname !== "/vm-agents");
   const isAgents = pathname === "/vm-agents";
-  const isVCDashboard = pathname === "/vc-dashboard";
+  // const isVCDashboard = pathname === "/vc-dashboard";
 
   const handleLogout = () => {
     logout();
@@ -84,6 +84,7 @@ export function Sidebar() {
           </span>
           <span>VM Dashboard</span>
         </Link>
+        {/*
         <Link
           href="/vc-dashboard"
           className={getLinkClass(isVCDashboard)}
@@ -94,10 +95,12 @@ export function Sidebar() {
           </span>
           <span>VC Dashboard</span>
         </Link>
+        */}
 
         <p className="text-xs font-bold text-text-muted uppercase tracking-widest mb-2 px-2 mt-4">
           History
         </p>
+        {/*
         <Link
           href="/dependency-scanner"
           className={getLinkClass(isDependency)}
@@ -138,6 +141,7 @@ export function Sidebar() {
           </span>
           <span>Cipher</span>
         </Link>
+        */}
         <Link
           href="/vm-agents/history"
           className={getLinkClass(isAgentsHistory)}

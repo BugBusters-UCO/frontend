@@ -70,10 +70,12 @@ export default function DashboardPage() {
           <p className="font-body-sm text-body-sm text-text-secondary">Comprehensive security insights and scanning metrics.</p>
         </div>
         <div className="flex items-center gap-3">
+          {/*
           <Link href="/vc-dashboard" className="px-4 py-2 bg-primary text-white rounded-2xl font-medium text-sm hover:bg-primary/90 shadow-[0_0_15px_rgba(31,111,235,0.35)] transition-all duration-200 flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px]">add</span>
             New Scan
           </Link>
+          */}
           <Link href="/schedule-scans" className="px-4 py-2 bg-surface border border-border-subtle text-text-primary rounded-2xl font-medium text-sm hover:bg-surface-dim transition-colors flex items-center gap-2 shadow-sm">
             <span className="material-symbols-outlined text-[18px]">calendar_clock</span>
             Schedule
@@ -289,6 +291,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          {/*
           <div className="bg-surface p-5 rounded-2xl border border-border-subtle shadow-sm flex items-center justify-between group hover:border-border-divider transition-colors">
             <div className="flex flex-col gap-1">
               <p className="font-body-sm text-sm text-text-muted font-medium">Version Control</p>
@@ -310,6 +313,7 @@ export default function DashboardPage() {
               <span className="material-symbols-outlined text-[28px]">code_blocks</span>
             </div>
           </div>
+          */}
         </div>
       </motion.div>
 

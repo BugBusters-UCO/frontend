@@ -98,7 +98,10 @@ export function ConfigInteractiveGraph({ attackPaths }: ConfigInteractiveGraphPr
           target: stepId,
           animated: true,
           type: 'smoothstep',
-          style: { stroke: '#ef4444', strokeWidth: 2 },
+          style: { 
+            stroke: resolvedTheme === 'dark' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(239, 68, 68, 0.7)', 
+            strokeWidth: 1.5 
+          },
         });
         
         prevId = stepId;
@@ -107,7 +110,7 @@ export function ConfigInteractiveGraph({ attackPaths }: ConfigInteractiveGraphPr
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [attackPaths, setNodes, setEdges]);
+  }, [attackPaths, setNodes, setEdges, resolvedTheme]);
 
   if (!attackPaths || attackPaths.length === 0) {
     return null;
@@ -153,6 +156,7 @@ export function ConfigInteractiveGraph({ attackPaths }: ConfigInteractiveGraphPr
           fitView
           fitViewOptions={{ padding: 0.2 }}
           minZoom={0.2}
+          colorMode={resolvedTheme === 'dark' ? 'dark' : 'light'}
         >
           <Background color={resolvedTheme === "dark" ? "#1e293b" : "#cbd5e1"} gap={16} />
           <Controls />

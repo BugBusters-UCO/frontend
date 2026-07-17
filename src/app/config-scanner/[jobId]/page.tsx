@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { LogEntry, ScanJob } from "@/shared/api/types";
-import { fetchConfigJobStatus, getConfigScanLogsUrl } from "@/shared/api/client";
+import { fetchConfigJobStatus, getConfigScanLogsUrl, cancelConfigScan } from "@/shared/api/client";
 import { LiveExecutionLog } from "@/widgets/LiveExecutionLog";
 import { SkeletonJobRow, SkeletonMetricsRow, SkeletonPanel } from "@/widgets/Skeleton";
 import { ArrowLeftCircle } from "lucide-react";
@@ -22,7 +22,19 @@ export default function ConfigScannerJobPage() {
 
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isScanning, setIsScanning] = useState(true);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [activeTab, setActiveTab] = useState<"executive" | "technical">("executive");
+
+  const handleCancel = async () => {
+    try {
+      setIsCancelling(true);
+      await cancelConfigScan(jobId);
+    } catch (err) {
+      console.error("Failed to cancel scan", err);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -122,7 +134,7 @@ export default function ConfigScannerJobPage() {
         >
           <span className="material-symbols-outlined hover:cursor-pointer"><ArrowLeftCircle size={36} /></span>
         </button>
-        <div>
+        <div className="flex-1">
           <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">
             Config Scan: {job?.sourceLabel || jobId}
           </h1>
@@ -130,6 +142,15 @@ export default function ConfigScannerJobPage() {
             Status: {job?.status || "Loading..."}
           </p>
         </div>
+        {isScanning && (
+          <button
+            onClick={handleCancel}
+            disabled={isCancelling}
+            className="px-4 py-2 bg-error text-white rounded-lg font-medium hover:bg-error/90 disabled:opacity-50 transition-colors"
+          >
+            {isCancelling ? "Cancelling..." : "Cancel Scan"}
+          </button>
+        )}
       </div>
 
       <div className="flex flex-col gap-element-gap">
