@@ -9,6 +9,7 @@ import { BusinessImpactPanel } from "@/widgets/BusinessImpactPanel";
 import { BlastRadiusMap } from "@/widgets/BlastRadiusMap";
 import { LiveExecutionLog } from "@/widgets/LiveExecutionLog";
 import { FindingsTable } from "@/widgets/FindingsTable";
+import { AdvancedDependencyInsights } from "@/widgets/AdvancedDependencyInsights";
 import { SkeletonJobRow, SkeletonMetricsRow, SkeletonPanel } from "@/widgets/Skeleton";
 import { ArrowLeftCircle } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -170,9 +171,10 @@ export default function ScannerJobPage() {
                   <FindingsTable findings={result.findings} />
                 ) : (
                   <div className="bg-surface-container text-text-secondary p-8 rounded-2xl text-center font-bold">
-                    No technical findings available.
+                    No traditional vulnerability findings available.
                   </div>
                 )}
+                {result && <AdvancedDependencyInsights result={result as any} />}
               </>
             )}
           </>

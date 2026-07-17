@@ -11,6 +11,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SecretMetricsRow } from "@/widgets/secret/SecretMetricsRow";
 import { SecretBusinessImpactPanel } from "@/widgets/secret/SecretBusinessImpactPanel";
 import { SecretInteractiveGraph } from "@/widgets/secret/SecretInteractiveGraph";
+import { AdvancedSecretInsights } from "@/widgets/secret/AdvancedSecretInsights";
+import { SecretFindingsTable } from "@/widgets/secret/SecretFindingsTable";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 
 function severityClass(severity?: string) {
@@ -363,191 +365,14 @@ export default function SecretScannerJobPage() {
 
             {activeTab === "technical" && (
               <div className="flex flex-col gap-6">
-                {policyDecision && (
-                  <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
-                    <div className="flex items-center mb-2">
-                      <h3 className="text-xl font-bold">Policy Decision</h3>
-                      <InfoTooltip text="Detailed rationale of why the scan should pass, block, or require manual review." />
-                    </div>
-                    <div className="flex flex-wrap gap-3 mb-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${policyDecision.status === "failed" ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}>
-                        {policyDecision.status}
-                      </span>
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-text-secondary">{policyDecision.gate}</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs uppercase font-semibold text-text-muted mb-2">Reasons</p>
-                        <ul className="space-y-1 text-sm text-text-secondary">
-                          {(policyDecision.reasons || []).map((reason: string) => <li key={reason}>- {reason}</li>)}
-                        </ul>
-                      </div>
-                      <div>
-                        <p className="text-xs uppercase font-semibold text-text-muted mb-2">Required Actions</p>
-                        <ul className="space-y-1 text-sm text-text-secondary">
-                          {(policyDecision.required_actions || []).map((action: string) => <li key={action}>- {action}</li>)}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {(sensitiveDataFindings.length > 0 || usagePaths.length > 0 || historicalExposures.length > 0 || compromisedMatches.length > 0) && (
-                  <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
-                    <div className="flex items-center mb-2">
-                      <h3 className="text-xl font-bold">Advanced Secret Intelligence</h3>
-                      <InfoTooltip text="Offline checks for sensitive financial data, usage sinks, Git history exposure, and known compromised fingerprints." />
-                    </div>
-
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-4">
-                      {usagePaths.length > 0 && (
-                        <div className="border border-border-divider rounded-2xl p-4">
-                          <h4 className="font-bold mb-3 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[20px] text-primary-container">schema</span>
-                            Data-flow Usage Paths
-                          </h4>
-                          <div className="space-y-3 max-h-[320px] overflow-y-auto">
-                            {usagePaths.slice(0, 8).map((usage: any) => (
-                              <div key={usage.id} className="bg-surface-container-low rounded p-3">
-                                <div className="flex items-center justify-between gap-3">
-                                  <span className="font-mono text-xs">{usage.variable_hint}</span>
-                                  <span className="px-2 py-1 rounded text-xs bg-orange-100 text-orange-800 font-semibold">{usage.sink_type}</span>
-                                </div>
-                                <p className="text-xs text-text-muted mt-1">{usage.usage_file}:{usage.line_number || "-"}</p>
-                                <p className="text-sm text-text-secondary mt-2">{usage.impact}</p>
-                                <code className="block mt-2 text-xs whitespace-pre-wrap break-words">{usage.evidence}</code>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {sensitiveDataFindings.length > 0 && (
-                        <div className="border border-border-divider rounded-2xl p-4">
-                          <h4 className="font-bold mb-3 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[20px] text-primary-container">privacy_tip</span>
-                            Sensitive Banking Data
-                          </h4>
-                          <div className="space-y-3 max-h-[320px] overflow-y-auto">
-                            {sensitiveDataFindings.slice(0, 8).map((item: any) => (
-                              <div key={item.id} className="bg-surface-container-low rounded p-3">
-                                <div className="flex items-center justify-between gap-3">
-                                  <span className="font-semibold">{item.data_type}</span>
-                                  <span className={`px-2 py-1 rounded text-xs font-semibold ${severityClass(item.severity)}`}>{item.severity}</span>
-                                </div>
-                                <p className="text-xs text-text-muted mt-1">{item.file_path}:{item.line_number || "-"}</p>
-                                <code className="block mt-2 text-xs whitespace-pre-wrap break-words">{item.evidence}</code>
-                                <p className="text-xs text-text-secondary mt-2">{item.remediation}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {historicalExposures.length > 0 && (
-                        <div className="border border-border-divider rounded-2xl p-4">
-                          <h4 className="font-bold mb-3 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[20px] text-primary-container">history</span>
-                            Git History Exposures
-                          </h4>
-                          <div className="space-y-3 max-h-[320px] overflow-y-auto">
-                            {historicalExposures.slice(0, 8).map((item: any) => (
-                              <div key={item.id} className="bg-red-50 border border-red-100 rounded p-3">
-                                <div className="flex items-center justify-between gap-3">
-                                  <span className="font-mono text-xs">{item.commit?.slice(0, 10)}</span>
-                                  <span className={`px-2 py-1 rounded text-xs font-semibold ${severityClass(item.severity)}`}>{item.secret_type}</span>
-                                </div>
-                                <p className="text-xs text-red-900 mt-1">{item.file_path || "unknown file"} {item.date ? `- ${item.date}` : ""}</p>
-                                <code className="block mt-2 text-xs whitespace-pre-wrap break-words">{item.evidence}</code>
-                                <p className="text-xs text-red-900 mt-2">{item.remediation}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {compromisedMatches.length > 0 && (
-                        <div className="border border-red-200 bg-red-50 rounded-2xl p-4">
-                          <h4 className="font-bold mb-3 flex items-center gap-2 text-red-900">
-                            <span className="material-symbols-outlined text-[20px]">report</span>
-                            Offline Compromised Matches
-                          </h4>
-                          <div className="space-y-3">
-                            {compromisedMatches.slice(0, 8).map((item: any) => (
-                              <div key={item.id} className="bg-surface transition-colors duration-300 border border-red-100 rounded p-3">
-                                <p className="font-mono text-xs">{item.secret_fingerprint}</p>
-                                <p className="text-xs text-red-900 mt-1">Source: {item.match_source}</p>
-                                <p className="text-sm text-red-950 mt-2">{item.action}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
+                {result && <AdvancedSecretInsights result={result as any} />}
                 {findings.length > 0 && (
-                  <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
-                    <div className="flex items-center mb-4">
-                      <h3 className="text-xl font-bold">Secrets and Remediation</h3>
-                      <InfoTooltip text="Raw list of all detected secrets, their location, extracted evidence, and remediation steps." />
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="border-b border-border-divider text-text-secondary text-sm">
-                            <th className="pb-2 font-medium">Severity</th>
-                            <th className="pb-2 font-medium">Secret Type</th>
-                            <th className="pb-2 font-medium">Location</th>
-                            <th className="pb-2 font-medium">Evidence</th>
-                            <th className="pb-2 font-medium">Confidence</th>
-                          </tr>
-                        </thead>
-                        <tbody className="text-sm">
-                          {findings.map((finding: any) => (
-                            <tr key={finding.id} className="border-b border-border-divider last:border-none align-top">
-                              <td className="py-3 pr-4">
-                                <span className={`px-2 py-1 rounded text-xs font-semibold ${severityClass(finding.severity)}`}>
-                                  {finding.severity.toUpperCase()}
-                                </span>
-                              </td>
-                              <td className="py-3 pr-4">
-                                <div className="font-medium">{finding.title}</div>
-                                <div className="text-xs text-text-muted font-mono mt-1">{finding.secret_type}</div>
-                              </td>
-                              <td className="py-3 pr-4 font-mono text-xs">
-                                {finding.file_path}:{finding.line_number || "-"}
-                              </td>
-                              <td className="py-3 pr-4">
-                                <code className="block max-w-[420px] whitespace-pre-wrap break-words bg-surface-container-low px-2 py-1 rounded text-xs">
-                                  {finding.evidence}
-                                </code>
-                                <div className="text-xs text-text-muted mt-2">
-                                  {finding.remediation?.title}: {finding.remediation?.description}
-                                </div>
-                                {finding.remediation?.rotation_required && (
-                                  <div className="mt-2">
-                                    <button 
-                                      onClick={() => handleRequestRotation(finding.id)}
-                                      disabled={isRotating && rotatingFindingId === finding.id}
-                                      className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                                    >
-                                      {(isRotating && rotatingFindingId === finding.id) ? "Requesting..." : "Rotate Secret"}
-                                    </button>
-                                  </div>
-                                )}
-                              </td>
-                              <td className="py-3 pr-4">
-                                <span className="font-semibold">{Math.round((finding.confidence || 0) * 100)}%</span>
-                                <div className="text-xs text-text-muted mt-1">{finding.validation_status}</div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                  <SecretFindingsTable 
+                    findings={findings} 
+                    onRequestRotation={handleRequestRotation} 
+                    isRotating={isRotating} 
+                    rotatingFindingId={rotatingFindingId} 
+                  />
                 )}
               </div>
             )}

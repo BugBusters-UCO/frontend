@@ -12,6 +12,8 @@ import { ConfigMetricsRow } from "@/widgets/config/ConfigMetricsRow";
 import { ConfigBusinessImpactPanel } from "@/widgets/config/ConfigBusinessImpactPanel";
 import { ConfigInteractiveGraph } from "@/widgets/config/ConfigInteractiveGraph";
 import { ConfigAttackPathsList } from "@/widgets/config/ConfigAttackPathsList";
+import { AdvancedConfigInsights } from "@/widgets/config/AdvancedConfigInsights";
+import { ConfigFindingsTable } from "@/widgets/config/ConfigFindingsTable";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 
 export default function ConfigScannerJobPage() {
@@ -206,39 +208,9 @@ export default function ConfigScannerJobPage() {
             {activeTab === "technical" && (
               <div className="flex flex-col gap-6">
                 {findings.length > 0 && (
-                  <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
-                    <div className="flex items-center mb-4">
-                      <h3 className="text-xl font-bold">Misconfigurations</h3>
-                      <InfoTooltip text="Raw list of all detected infrastructure misconfigurations." />
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="border-b border-border-divider text-text-secondary text-sm">
-                            <th className="pb-2 font-medium">Severity</th>
-                            <th className="pb-2 font-medium">File</th>
-                            <th className="pb-2 font-medium">Title</th>
-                            <th className="pb-2 font-medium">Category</th>
-                          </tr>
-                        </thead>
-                        <tbody className="text-sm">
-                          {findings.map((finding: any, idx: number) => (
-                            <tr key={idx} className="border-b border-border-divider last:border-none">
-                              <td className="py-3 pr-4">
-                                <span className={`px-2 py-1 rounded text-xs font-semibold ${finding.severity === "critical" ? "bg-red-100 text-red-800" : finding.severity === "high" ? "bg-orange-100 text-orange-800" : finding.severity === "medium" ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}>
-                                  {finding.severity.toUpperCase()}
-                                </span>
-                              </td>
-                              <td className="py-3 pr-4 font-mono text-xs">{finding.file_path}:{finding.line_number}</td>
-                              <td className="py-3 pr-4 font-medium">{finding.title}</td>
-                              <td className="py-3 pr-4 text-text-secondary">{finding.category}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                  <ConfigFindingsTable findings={findings} />
                 )}
+                {result && <AdvancedConfigInsights result={result as any} />}
               </div>
             )}
           </div>

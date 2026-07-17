@@ -413,14 +413,68 @@ export type DependencyScanResult = {
       auto_remediable: boolean;
     };
   }>;
-  static_malware_findings?: Array<any>;
-  static_malware_status?: any;
-  behavior_findings?: Array<any>;
-  behavior_status?: any;
-  package_intelligence_findings?: Array<any>;
-  package_intelligence_status?: any;
-  artifact?: any;
-  sandbox?: any;
+  static_malware_findings?: Array<{
+    id: string;
+    rule_id: string;
+    severity: string;
+    title: string;
+    description: string;
+    file_path: string;
+    line_number?: number | null;
+    evidence?: string | null;
+    source: string;
+    confidence: number;
+    fix: {
+      title: string;
+      description: string;
+      command?: string;
+      auto_remediable: boolean;
+    };
+  }>;
+  static_malware_status?: Record<string, unknown>;
+  behavior_findings?: Array<{
+    id: string;
+    rule_id: string;
+    severity: string;
+    title: string;
+    description: string;
+    evidence: Record<string, unknown>;
+    confidence: number;
+    fix: {
+      title: string;
+      description: string;
+      command?: string;
+      auto_remediable: boolean;
+    };
+  }>;
+  behavior_status?: Record<string, unknown>;
+  package_intelligence_findings?: Array<{
+    id: string;
+    rule_id: string;
+    package_name: string;
+    version?: string | null;
+    ecosystem: string;
+    severity: string;
+    title: string;
+    description: string;
+    manifest_path: string;
+    evidence: Record<string, unknown>;
+    fix: {
+      title: string;
+      description: string;
+      command?: string;
+      auto_remediable: boolean;
+    };
+  }>;
+  package_intelligence_status?: Record<string, unknown>;
+  artifact?: {
+    artifact_sha256: string;
+    git_revision?: string | null;
+    manifest_count: number;
+    manifests: Array<Record<string, unknown>>;
+    integrity: string;
+  };
+  sandbox?: Record<string, unknown>;
   advisory_status?: string;
   data_isolation?: {
     offlineMode: boolean;
@@ -431,6 +485,8 @@ export type DependencyScanResult = {
 };
 
 export type ConfigScanResult = {
+  scan_id?: string;
+  project_path?: string;
   summary: {
     total_files_seen?: number;
     supported_files_scanned?: number;
@@ -450,7 +506,7 @@ export type ConfigScanResult = {
     severity: string;
     category: string;
     file_path: string;
-    line_number: number;
+    line_number?: number | null;
     description: string;
     remediation: {
       title: string;
@@ -459,8 +515,8 @@ export type ConfigScanResult = {
       auto_remediable: boolean;
     };
     confidence: number;
-    evidence: string;
-    cwe?: string;
+    evidence?: string | null;
+    cwe?: string | null;
     references?: string[];
   }>;
   attack_paths?: Array<{
@@ -474,26 +530,120 @@ export type ConfigScanResult = {
       step: number;
       stage: string;
       title: string;
-      file_path: string;
-      line_number: number;
-      evidence: string;
+      file_path?: string | null;
+      line_number?: number | null;
+      evidence?: string | null;
       details: string[];
     }>;
   }>;
-  files?: Array<any>;
-  suppression_metadata?: any;
-  facts?: Array<any>;
-  graph?: any;
-  environment_drifts_details?: Array<any>;
-  runtime_snapshot_drift?: any;
-  remediation_plan?: any;
-  policy_decision?: any;
-  compliance_mappings?: Array<any>;
-  evidence_bundle?: any;
-  sarif_output?: any;
+  files?: Array<{
+    path: string;
+    type: string;
+    finding_count: number;
+  }>;
+  normalized_config_facts?: Array<{
+    id: string;
+    file_path: string;
+    line_number?: number | null;
+    key: string;
+    value_preview?: string | null;
+    value_type: string;
+    parser: string;
+    environment: string;
+    category: string;
+    sensitive: boolean;
+    confidence: number;
+  }>;
+  config_graph?: {
+    nodes: Array<any>;
+    edges: Array<any>;
+    public_entry_nodes: string[];
+    sensitive_asset_nodes: string[];
+    shortest_public_to_sensitive_paths: string[][];
+    top_central_nodes: string[];
+  };
+  environment_drifts?: Array<{
+    id: string;
+    key: string;
+    severity: string;
+    title: string;
+    description: string;
+    environments: string[];
+    files: string[];
+    evidence: string[];
+    remediation: {
+      title: string;
+      description: string;
+      example?: string | null;
+      auto_remediable: boolean;
+    };
+  }>;
+  runtime_drifts?: Array<{
+    id: string;
+    key: string;
+    severity: string;
+    title: string;
+    description: string;
+    environments: string[];
+    files: string[];
+    evidence: string[];
+    remediation: {
+      title: string;
+      description: string;
+      example?: string | null;
+      auto_remediable: boolean;
+    };
+  }>;
+  remediation_plan?: Array<{
+    id: string;
+    title: string;
+    priority: number;
+    auto_remediable: boolean;
+    safe_when?: string | null;
+    unsafe_when?: string | null;
+    patch_strategy: string;
+    rollback: string;
+    affected_findings: string[];
+  }>;
+  policy_decision?: {
+    status: "passed" | "failed";
+    reasons: string[];
+    fail_on: string;
+    attack_path_threshold: number;
+    max_finding_severity?: string | null;
+    waiver_required: boolean;
+    policy_name?: string | null;
+    policy_violations: string[];
+    runtime_snapshot_loaded: boolean;
+    policy_signature_verified: boolean;
+    runtime_snapshot_age_seconds?: number | null;
+  } | null;
+  compliance_mapping?: Array<{
+    standard: string;
+    version: string;
+    control: string;
+    requirement?: string | null;
+    finding_ids: string[];
+    status: "gap" | "covered";
+  }>;
+  evidence_bundle?: {
+    files_scanned: number;
+    facts_extracted: number;
+    parsers_used: string[];
+    confidence_average: number;
+    notes: string[];
+    generated_at?: string | null;
+    manifest_hash?: string | null;
+    policy_hash?: string | null;
+    runtime_snapshot_hash?: string | null;
+    integrity_method: string;
+  } | null;
+  sarif?: Record<string, unknown>;
 };
 
 export type SecretScanResult = {
+  scan_id?: string;
+  project_path?: string;
   summary: {
     total_files_seen?: number;
     files_scanned?: number;
@@ -637,6 +787,8 @@ export type SecretScanResult = {
 };
 
 export type CipherScanResult = {
+  scan_id?: string;
+  project_path?: string;
   summary: {
     total_files_seen?: number;
     supported_files_scanned?: number;
@@ -660,6 +812,12 @@ export type CipherScanResult = {
     ci_status?: "passed" | "failed";
     fail_on?: string;
     banking_profile?: string;
+    cache_enabled?: boolean;
+    cache_hits?: number;
+    cache_misses?: number;
+    suppressed_findings?: number;
+    technical_risk_score?: number;
+    business_adjusted_risk_score?: number;
   };
   findings?: Array<{
     id: string;
@@ -854,6 +1012,15 @@ export type CipherScanResult = {
     status: string;
     finding_ids: string[];
   }>;
+  policy_pack?: {
+    name: string;
+    version: string;
+    minimum_protocol: string;
+    preferred_protocols: string[];
+    forbidden_protocols: string[];
+    forbidden_cipher_tokens: string[];
+    control_families: string[];
+  };
 };
 
 export type ScanResult = DependencyScanResult & ConfigScanResult & SecretScanResult & CipherScanResult;

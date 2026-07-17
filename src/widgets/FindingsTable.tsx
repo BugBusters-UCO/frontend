@@ -1,21 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import { ScanResult } from "@/shared/api/types";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface FindingsTableProps {
   findings: ScanResult["findings"];
 }
 
 export function FindingsTable({ findings }: FindingsTableProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   if (!findings || findings.length === 0) return null;
 
   return (
     <div className="bg-surface rounded-2xl border border-border-subtle shadow-sm overflow-hidden mt-8 transition-colors duration-300">
-      <div className="px-6 py-5 border-b border-border-divider flex justify-between items-center bg-surface-container">
+      <button 
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full px-6 py-5 border-b border-border-divider flex justify-between items-center bg-surface-container hover:bg-surface-container-high transition-colors"
+      >
         <h2 className="text-section-header font-section-header text-text-primary tracking-tight">
           Vulnerabilities & Fixes
         </h2>
-      </div>
-      <div className="max-h-[500px] overflow-auto">
+        <span className="text-text-primary">
+          {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </span>
+      </button>
+      
+      {isExpanded && (
+        <div className="max-h-[500px] overflow-auto animate-in slide-in-from-top-2 fade-in duration-200">
         <table className="w-full text-left border-collapse min-w-[800px]">
           <thead className="sticky top-0 z-10 bg-surface-container/90 backdrop-blur-sm shadow-[0_1px_0_var(--color-border-divider)]">
             <tr>
@@ -100,6 +111,7 @@ export function FindingsTable({ findings }: FindingsTableProps) {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }
