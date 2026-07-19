@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
+import { AiExplanation } from "@/shared/ui/AiExplanation";
 import { CipherScanResult } from "@/shared/api/types";
 
 interface AdvancedCipherInsightsProps {
+  jobId: string;
   result: CipherScanResult;
 }
 
-type TabKey = "posture" | "banking" | "domains" | "probes" | "endpoints" | "attack_paths" | "policy" | "facts";
+type TabKey = "posture" | "banking" | "domains" | "probes" | "endpoints" | "attack_paths" | "facts";
 
 function severityClass(severity?: string) {
   if (severity === "critical") return "bg-red-100 text-red-800";
@@ -56,7 +58,7 @@ function ciPolicyExplanation(summary: CipherScanResult["summary"] | undefined, p
   };
 }
 
-export function AdvancedCipherInsights({ result }: AdvancedCipherInsightsProps) {
+export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsightsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const summary = result.summary;
@@ -95,7 +97,6 @@ export function AdvancedCipherInsights({ result }: AdvancedCipherInsightsProps) 
     { key: "probes" as TabKey, label: "Live Probes", count: liveTlsProbes.length, icon: "network_check" },
     { key: "endpoints" as TabKey, label: "Endpoints", count: endpointPolicies.length, icon: "settings_ethernet" },
     { key: "attack_paths" as TabKey, label: "Attack Paths", count: attackPaths.length, icon: "timeline" },
-    { key: "policy" as TabKey, label: "Policy", count: (policyDecision ? 1 : 0) + remediationPlan.length + complianceMapping.length, icon: "gavel" },
     { key: "facts" as TabKey, label: "Facts", count: tlsFacts.length, icon: "fact_check" }
   ].filter(t => t.count > 0);
 
@@ -174,6 +175,14 @@ export function AdvancedCipherInsights({ result }: AdvancedCipherInsightsProps) 
                     <p className="text-xs uppercase text-text-muted font-semibold mb-2">Remediation Actions</p>
                     <p className="text-3xl font-bold">{summary?.remediation_actions || 0}</p>
                   </div>
+                </div>
+                <div className="mt-6">
+                  <AiExplanation 
+                    jobId={jobId} 
+                    sectionId="posture" 
+                    data={{ summary, ciPolicy }}
+                    title="What this means"
+                  />
                 </div>
               </div>
             )}
@@ -299,6 +308,14 @@ export function AdvancedCipherInsights({ result }: AdvancedCipherInsightsProps) 
                       </div>
                     </div>
                   )}
+                </div>
+                <div className="mt-6">
+                  <AiExplanation 
+                    jobId={jobId} 
+                    sectionId="banking-intel" 
+                    data={{ environmentDrifts, agilityRisks, deploymentReadiness }}
+                    title="What this means"
+                  />
                 </div>
               </div>
             )}
@@ -494,59 +511,13 @@ export function AdvancedCipherInsights({ result }: AdvancedCipherInsightsProps) 
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {activeTab === "policy" && (
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                {policyDecision && (
-                  <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
-                    <h3 className="text-xl font-bold mb-2">Policy Decision</h3>
-                    <p className="text-sm text-text-secondary mb-4">Why pre-deployment TLS checks pass or block release.</p>
-                    <div className="flex flex-wrap gap-3 mb-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${policyDecision.status === "failed" ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}>
-                        {policyDecision.status}
-                      </span>
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-text-secondary">{policyDecision.profile}</span>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-xs uppercase font-semibold text-text-muted mb-2">Reasons</p>
-                        <ul className="space-y-1 text-sm text-text-secondary">
-                          {(policyDecision.reasons || []).map(reason => <li key={reason}>- {reason}</li>)}
-                        </ul>
-                      </div>
-                      <div>
-                        <p className="text-xs uppercase font-semibold text-text-muted mb-2">Required Actions</p>
-                        <ul className="space-y-1 text-sm text-text-secondary">
-                          {(policyDecision.required_actions || []).map(action => <li key={action}>- {action}</li>)}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6">
-                  <h3 className="text-xl font-bold mb-2">Remediation and Compliance</h3>
-                  <p className="text-sm text-text-secondary mb-4">Release-ready changes and mapped control gaps.</p>
-                  <div className="space-y-3 max-h-[420px] overflow-y-auto">
-                    {remediationPlan.map(item => (
-                      <div key={item.id} className="border border-border-divider rounded-2xl p-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <p className="font-semibold">{item.title}</p>
-                          <span className="px-2 py-1 rounded text-xs bg-surface-container text-text-secondary">P{item.priority}</span>
-                        </div>
-                        <p className="text-sm text-text-secondary mt-2">{item.patch_strategy}</p>
-                        <code className="block mt-2 text-xs whitespace-pre-wrap break-words bg-surface-container-low px-2 py-1 rounded">{item.secure_baseline}</code>
-                      </div>
-                    ))}
-                    {complianceMapping.map((gap: any) => (
-                      <div key={`${gap.standard}-${gap.control}`} className="border border-yellow-200 bg-yellow-50 rounded-2xl p-3">
-                        <p className="font-semibold text-yellow-900">{gap.standard}</p>
-                        <p className="text-sm text-yellow-950 mt-1">{gap.control}</p>
-                        <p className="text-xs text-yellow-800 mt-2">{gap.finding_ids?.length || 0} linked finding(s)</p>
-                      </div>
-                    ))}
-                  </div>
+                <div className="mt-6">
+                  <AiExplanation 
+                    jobId={jobId} 
+                    sectionId="attack-paths" 
+                    data={{ attackPaths }}
+                    title="What this means"
+                  />
                 </div>
               </div>
             )}

@@ -1,13 +1,15 @@
 import React from "react";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
+import { AiExplanation } from "@/shared/ui/AiExplanation";
 
 interface SecretBusinessImpactPanelProps {
+  jobId: string;
   summary: any;
   risk: any;
   ciPolicy: any;
 }
 
-export function SecretBusinessImpactPanel({ summary, risk, ciPolicy }: SecretBusinessImpactPanelProps) {
+export function SecretBusinessImpactPanel({ jobId, summary, risk, ciPolicy }: SecretBusinessImpactPanelProps) {
   if (!risk) return null;
 
   const getRiskColor = (score: number) => {
@@ -41,6 +43,19 @@ export function SecretBusinessImpactPanel({ summary, risk, ciPolicy }: SecretBus
     ...(risk.reasons || [])
   ].filter(Boolean);
 
+  // Prepare data payload for AI
+  const businessRiskData = {
+    riskTitle,
+    riskScore: score,
+    ciPolicyStatus: ciPolicy.label,
+    rotationRequired: risk.rotation_required
+  };
+
+  const keyRiskFactorsData = {
+    reasons,
+    exposedSecretTypes: risk.exposed_secret_types
+  };
+
   return (
     <div className={`bg-surface transition-colors duration-300 rounded-2xl border-2 ${bgRisk} shadow-sm p-6`}>
       <div className="flex flex-col md:flex-row gap-8">
@@ -54,9 +69,17 @@ export function SecretBusinessImpactPanel({ summary, risk, ciPolicy }: SecretBus
           <div className={`text-headline-lg font-headline-lg font-bold ${riskColor} mb-2`}>
             {riskTitle}
           </div>
-          <p className="text-body-sm text-text-secondary">
+          <p className="text-body-sm text-text-secondary mb-4">
             Based on blast radius and exposed credential types.
           </p>
+          
+          <AiExplanation 
+            jobId={jobId} 
+            sectionId="secret-business-risk" 
+            data={businessRiskData}
+            title="What this means"
+            className="mt-2"
+          />
         </div>
         
         <div className="md:w-2/3 flex flex-col gap-4 justify-center">
@@ -78,6 +101,15 @@ export function SecretBusinessImpactPanel({ summary, risk, ciPolicy }: SecretBus
                 <li className="text-body-sm text-text-muted italic">No major risk factors detected.</li>
               )}
             </ul>
+            
+            {reasons.length > 0 && (
+              <AiExplanation 
+                jobId={jobId} 
+                sectionId="secret-key-risk-factors" 
+                data={keyRiskFactorsData}
+                title="Why these matter"
+              />
+            )}
           </div>
           
           <div className="mt-4 pt-4 border-t border-border-divider">

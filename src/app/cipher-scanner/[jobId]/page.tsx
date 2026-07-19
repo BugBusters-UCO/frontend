@@ -272,7 +272,7 @@ export default function CipherScannerJobPage() {
             {activeTab === "executive" && (
               <div className="flex flex-col gap-6">
                 <CipherMetricsRow summary={summary} ciPolicy={ciPolicy} />
-                <CipherBusinessImpactPanel summary={summary} ciPolicy={ciPolicy} attackPaths={attackPaths} />
+                <CipherBusinessImpactPanel jobId={jobId} summary={summary} ciPolicy={ciPolicy} attackPaths={attackPaths} />
 
                 {policyGraph && (
                   <CipherInteractiveGraph graphData={policyGraph} />
@@ -282,8 +282,8 @@ export default function CipherScannerJobPage() {
 
             {activeTab === "technical" && (
               <div className="flex flex-col gap-6">
-                {result && <AdvancedCipherInsights result={result as any} />}
-                {findings.length > 0 && <CipherFindingsTable findings={findings} />}
+                <CipherFindingsTable findings={findings} endpointPolicies={endpointPolicies} />
+                <AdvancedCipherInsights jobId={jobId} result={result as any} />
               </div>
             )}
           </div>
