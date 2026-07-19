@@ -77,7 +77,7 @@ export default function VmAgentsPage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
-  const [agentToken, setAgentToken] = useState("");
+  const [mfaCode, setMfaCode] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [connectStep, setConnectStep] = useState(0);
@@ -128,8 +128,8 @@ export default function VmAgentsPage() {
   const isAgentOnline = selectedAgent?.status === "online";
   const ownerEmail = user?.email || "your-login-email@example.com";
 
-  const windowsCommand = `powershell -NoProfile -ExecutionPolicy Bypass -File .\\vm-agent\\bugbusters-agent.ps1 -Mode loop -OwnerEmail ${ownerEmail} -AgentToken dev-agent-token`;
-  const linuxCommand = `export BUGBUSTERS_OWNER_EMAIL="${ownerEmail}"\nexport BUGBUSTERS_AGENT_TOKEN="dev-agent-token"\nbash ./vm-agent/bugbusters-agent.sh loop`;
+  const windowsCommand = `powershell -NoProfile -ExecutionPolicy Bypass -File .\\vm-agent\\bugbusters-agent.ps1 -Mode loop -OwnerEmail ${ownerEmail} -MfaCode <your-6-digit-code>`;
+  const linuxCommand = `export BUGBUSTERS_OWNER_EMAIL="${ownerEmail}"\nexport BUGBUSTERS_MFA_CODE="<your-6-digit-code>"\nbash ./vm-agent/bugbusters-agent.sh loop`;
 
   const activeReports = reports.filter((job) => ["queued", "running", "stopping"].includes(job.status));
   const metrics = useMemo(() => {
@@ -203,8 +203,8 @@ export default function VmAgentsPage() {
   const handleConnect = async () => {
     setIsConnecting(true);
     try {
-      await connectVmAgent(agentToken || "dev-agent-token");
-      setAgentToken("");
+      await connectVmAgent(mfaCode.replace(/\s/g, ""));
+      setMfaCode("");
       // Wait for 10s to allow agent to start up and send heartbeat
       setTimeout(() => {
         refreshAll();
@@ -312,17 +312,18 @@ export default function VmAgentsPage() {
                 </div>
                 
                 <p className="text-sm text-text-secondary mb-6 leading-relaxed">
-                  Enter your agent token to establish a secure tunnel and start the VM Agent process remotely on this machine.
+                  Enter your 6-digit Authenticator Code to establish a secure tunnel and start the VM Agent process.
                 </p>
-                
+
                 <div className="space-y-2 mb-8">
-                  <label className="text-xs font-bold uppercase tracking-wider text-text-secondary ml-1">Agent Token</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-text-secondary ml-1">Authenticator Code (6-digit)</label>
                   <input
                     type="text"
-                    placeholder="e.g. dev-agent-token"
-                    value={agentToken}
-                    onChange={e => setAgentToken(e.target.value)}
-                    className="w-full px-4 py-3 border border-border-divider bg-surface-container-lowest text-text-primary rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-inner font-mono text-sm"
+                    placeholder="123456"
+                    maxLength={7}
+                    value={mfaCode}
+                    onChange={e => setMfaCode(e.target.value)}
+                    className="w-full px-4 py-3 border border-border-divider bg-surface-container-lowest text-text-primary rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-inner font-mono text-sm tracking-widest text-center"
                   />
                 </div>
                 
@@ -335,7 +336,7 @@ export default function VmAgentsPage() {
                   </button>
                   <button
                     onClick={handleConnect}
-                    disabled={!agentToken.trim()}
+                    disabled={mfaCode.replace(/\s/g, "").length !== 6}
                     className="px-5 py-2.5 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed font-bold text-sm flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined text-[18px]">vpn_key</span>

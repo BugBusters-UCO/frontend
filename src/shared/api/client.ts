@@ -665,11 +665,11 @@ export async function fetchRiskAssessment(assessmentId: string): Promise<RiskAss
   return response.json();
 }
 
-export async function connectVmAgent(token: string): Promise<any> {
+export async function connectVmAgent(mfaCode: string): Promise<any> {
   const response = await apiFetch(`${API_BASE_URL}/api/agents/connect`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-    body: JSON.stringify({ token }),
+    body: JSON.stringify({ mfaCode }),
   });
   if (!response.ok) {
     const errData = await response.json().catch(() => ({}));
