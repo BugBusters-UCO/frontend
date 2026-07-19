@@ -762,3 +762,13 @@ export async function runScheduledScanNow(scheduleId: string): Promise<Scheduled
   if (!response.ok) throw new Error("Failed to run scheduled scan");
   return response.json();
 }
+
+export async function fetchCipherExplanation(jobId: string, sectionId: string, data: any): Promise<{ explanation: string; cached: boolean }> {
+  const response = await apiFetch(`${API_BASE_URL}/api/explain/cipher`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify({ jobId, sectionId, data })
+  });
+  if (!response.ok) throw new Error("Failed to fetch AI explanation");
+  return response.json();
+}

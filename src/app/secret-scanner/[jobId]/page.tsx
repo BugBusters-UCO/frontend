@@ -255,7 +255,7 @@ export default function SecretScannerJobPage() {
               <div className="flex flex-col gap-6">
                 <SecretMetricsRow summary={summary} risk={risk} ciPolicy={ciPolicy} />
                 
-                <SecretBusinessImpactPanel summary={summary} risk={risk} ciPolicy={ciPolicy} />
+                <SecretBusinessImpactPanel jobId={jobId} summary={summary} risk={risk} ciPolicy={ciPolicy} />
 
             {(exposurePaths.length > 0 || rotationPlaybooks.length > 0 || secretGraph) && (
               <div className={`grid grid-cols-1 ${isExposureSidebarOpen && exposurePaths.length > 0 ? 'xl:grid-cols-[1fr_1.5fr]' : 'xl:grid-cols-1'} gap-6`}>

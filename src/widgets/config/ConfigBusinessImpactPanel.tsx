@@ -1,12 +1,14 @@
 import React from "react";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
+import { AiExplanation } from "@/shared/ui/AiExplanation";
 
 interface ConfigBusinessImpactPanelProps {
+  jobId: string;
   summary: any;
   attackPaths: any[];
 }
 
-export function ConfigBusinessImpactPanel({ summary, attackPaths }: ConfigBusinessImpactPanelProps) {
+export function ConfigBusinessImpactPanel({ jobId, summary, attackPaths }: ConfigBusinessImpactPanelProps) {
   if (!summary) return null;
 
   const getRiskColor = (score: number) => {
@@ -43,6 +45,20 @@ export function ConfigBusinessImpactPanel({ summary, attackPaths }: ConfigBusine
   if (highFindings > 0) reasons.push(`${highFindings} High severity misconfigurations detected.`);
   if (attackPaths?.length > 0) reasons.push(`${attackPaths.length} viable attack paths discovered from exposed configurations.`);
 
+  // Prepare data payload for AI
+  const businessRiskData = {
+    riskTitle,
+    riskScore: score,
+    totalFindings: summary.total_findings || (criticalFindings + highFindings),
+    criticalFindings,
+    highFindings
+  };
+
+  const keyRiskFactorsData = {
+    reasons,
+    attackPathCount: attackPaths?.length || 0
+  };
+
   return (
     <div className={`bg-surface transition-colors duration-300 rounded-2xl border-2 ${bgRisk} shadow-sm p-6`}>
       <div className="flex flex-col md:flex-row gap-8">
@@ -56,9 +72,17 @@ export function ConfigBusinessImpactPanel({ summary, attackPaths }: ConfigBusine
           <div className={`text-headline-lg font-headline-lg font-bold ${riskColor} mb-2`}>
             {riskTitle}
           </div>
-          <p className="text-body-sm text-text-secondary">
+          <p className="text-body-sm text-text-secondary mb-4">
             Based on severity of findings and potential attack paths.
           </p>
+          
+          <AiExplanation 
+            jobId={jobId} 
+            sectionId="config-business-risk" 
+            data={businessRiskData}
+            title="What this means"
+            className="mt-2"
+          />
         </div>
         
         <div className="md:w-2/3 flex flex-col gap-4 justify-center">
@@ -80,6 +104,15 @@ export function ConfigBusinessImpactPanel({ summary, attackPaths }: ConfigBusine
                 <li className="text-body-sm text-text-muted italic">No major risk factors detected.</li>
               )}
             </ul>
+            
+            {reasons.length > 0 && (
+              <AiExplanation 
+                jobId={jobId} 
+                sectionId="config-key-risk-factors" 
+                data={keyRiskFactorsData}
+                title="Why these matter"
+              />
+            )}
           </div>
         </div>
       </div>

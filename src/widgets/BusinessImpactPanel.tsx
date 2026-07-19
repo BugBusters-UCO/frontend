@@ -1,14 +1,17 @@
 import React from "react";
 import { ScanResult, RiskChain } from "@/shared/api/types";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
+import { AiExplanation } from "@/shared/ui/AiExplanation";
 
 interface BusinessImpactPanelProps {
+  jobId: string;
   summary?: ScanResult["summary"];
   chains: RiskChain[];
   capabilities: NonNullable<ScanResult["capability_findings"]>;
 }
 
 export function BusinessImpactPanel({
+  jobId,
   summary,
   chains,
   capabilities,
@@ -49,6 +52,19 @@ export function BusinessImpactPanel({
       : "No direct exposure detected for critical paths."
   ];
 
+  // Prepare data payload for AI
+  const businessRiskData = {
+    riskTitle,
+    riskScore: exposureScore,
+    bankingAction: summary?.banking_action,
+    topExposure: topExposure?.score
+  };
+
+  const keyRiskFactorsData = {
+    reasons,
+    capabilitiesCount: capabilities?.length || 0
+  };
+
   const groupedCapabilities = React.useMemo(() => {
     if (!capabilities) return {};
     return capabilities.reduce((acc, cap) => {
@@ -76,9 +92,17 @@ export function BusinessImpactPanel({
           <div className={`text-headline-lg font-headline-lg font-bold ${riskColor} mb-2`}>
             {riskTitle}
           </div>
-          <p className="text-body-sm text-text-secondary">
+          <p className="text-body-sm text-text-secondary mb-4">
             {riskSubtitle}
           </p>
+          
+          <AiExplanation 
+            jobId={jobId} 
+            sectionId="dependency-business-risk" 
+            data={businessRiskData}
+            title="What this means"
+            className="mt-2"
+          />
         </div>
         
         <div className="md:w-2/3 flex flex-col gap-4 justify-center">
@@ -97,6 +121,15 @@ export function BusinessImpactPanel({
                 </li>
               ))}
             </ul>
+            
+            {reasons.length > 0 && (
+              <AiExplanation 
+                jobId={jobId} 
+                sectionId="dependency-key-risk-factors" 
+                data={keyRiskFactorsData}
+                title="Why these matter"
+              />
+            )}
           </div>
           
           {capabilities && capabilities.length > 0 && (

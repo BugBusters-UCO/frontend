@@ -1,13 +1,15 @@
 import React from "react";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
+import { AiExplanation } from "@/shared/ui/AiExplanation";
 
 interface CipherBusinessImpactPanelProps {
+  jobId: string;
   summary: any;
   ciPolicy: any;
   attackPaths: any[];
 }
 
-export function CipherBusinessImpactPanel({ summary, ciPolicy, attackPaths }: CipherBusinessImpactPanelProps) {
+export function CipherBusinessImpactPanel({ jobId, summary, ciPolicy, attackPaths }: CipherBusinessImpactPanelProps) {
   if (!summary) return null;
 
   const getRiskColor = (score: number) => {
@@ -41,6 +43,19 @@ export function CipherBusinessImpactPanel({ summary, ciPolicy, attackPaths }: Ci
   if (attackPaths?.length > 0) reasons.push(`${attackPaths.length} attack paths found exposing banking traffic.`);
   if (summary.total_findings > 0) reasons.push(`${summary.total_findings} weak cryptographic findings detected.`);
 
+  // Prepare data payload for AI
+  const businessRiskData = {
+    riskTitle,
+    riskScore: score,
+    ciPolicyStatus: ciPolicy.label,
+    totalFindings: summary.total_findings
+  };
+
+  const keyRiskFactorsData = {
+    reasons,
+    attackPathCount: attackPaths?.length || 0
+  };
+
   return (
     <div className={`bg-surface transition-colors duration-300 rounded-2xl border-2 ${bgRisk} shadow-sm p-6`}>
       <div className="flex flex-col md:flex-row gap-8">
@@ -54,9 +69,17 @@ export function CipherBusinessImpactPanel({ summary, ciPolicy, attackPaths }: Ci
           <div className={`text-headline-lg font-headline-lg font-bold ${riskColor} mb-2`}>
             {riskTitle}
           </div>
-          <p className="text-body-sm text-text-secondary">
+          <p className="text-body-sm text-text-secondary mb-4">
             Based on detected TLS posture and compliance mapping.
           </p>
+          
+          <AiExplanation 
+            jobId={jobId} 
+            sectionId="cipher-business-risk" 
+            data={businessRiskData}
+            title="What this means"
+            className="mt-2"
+          />
         </div>
         
         <div className="md:w-2/3 flex flex-col gap-4 justify-center">
@@ -65,7 +88,7 @@ export function CipherBusinessImpactPanel({ summary, ciPolicy, attackPaths }: Ci
               <h3 className="text-body-md font-bold text-text-primary">Key Risk Factors</h3>
               <InfoTooltip text="Primary reasons contributing to the TLS/cipher risk posture." />
             </div>
-            <ul className="space-y-3">
+            <ul className="space-y-3 mb-4">
               {reasons.map((reason, idx) => (
                 <li key={idx} className="flex items-start gap-3 text-body-sm text-text-secondary">
                   <span className={`material-symbols-outlined text-[18px] mt-0.5 ${(idx === 0 && ciPolicy.label === "Blocked") ? 'text-severity-critical' : 'text-severity-high'}`}>
@@ -78,6 +101,15 @@ export function CipherBusinessImpactPanel({ summary, ciPolicy, attackPaths }: Ci
                 <li className="text-body-sm text-text-muted italic">No major TLS risk factors detected.</li>
               )}
             </ul>
+            
+            {reasons.length > 0 && (
+              <AiExplanation 
+                jobId={jobId} 
+                sectionId="cipher-key-risk-factors" 
+                data={keyRiskFactorsData}
+                title="Why these matter"
+              />
+            )}
           </div>
         </div>
       </div>

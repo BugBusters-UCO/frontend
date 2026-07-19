@@ -159,6 +159,7 @@ export default function ScannerJobPage() {
               <>
                 <MetricsRow summary={result?.summary} />
                 <BusinessImpactPanel
+                  jobId={jobId}
                   summary={result?.summary}
                   chains={result?.risk_chains || []}
                   capabilities={result?.capability_findings || []}

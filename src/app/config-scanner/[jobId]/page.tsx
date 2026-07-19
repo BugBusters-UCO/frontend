@@ -194,7 +194,7 @@ export default function ConfigScannerJobPage() {
             {activeTab === "executive" && (
               <div className="flex flex-col gap-6">
                 <ConfigMetricsRow summary={summary} />
-                <ConfigBusinessImpactPanel summary={summary} attackPaths={attackPaths} />
+                <ConfigBusinessImpactPanel jobId={jobId} summary={summary} attackPaths={attackPaths} />
 
                 {attackPaths.length > 0 && (
                   <>
