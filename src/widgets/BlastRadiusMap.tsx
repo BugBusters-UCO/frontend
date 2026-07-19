@@ -42,9 +42,6 @@ const CustomNode = ({ data, selected }: NodeProps) => {
         : `border-border-subtle shadow-sm hover:border-primary/50`
     }`}>
       
-      {/* Left accent color bar inside node */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${config.accent}`}></div>
-
       <Handle 
         type="target" 
         position={Position.Left} 
@@ -185,9 +182,6 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
                       : "border-border-subtle bg-surface-dim hover:border-primary/30 hover:bg-surface-container hover:shadow-sm"
                   }`}
                 >
-                  {isSelected && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary rounded-l-xl"></div>
-                  )}
                   
                   <div className="flex justify-between items-start mb-1.5">
                     <div className={`text-body-sm font-bold truncate pr-2 transition-colors ${isSelected ? "text-primary" : "text-text-primary group-hover:text-primary"}`}>
@@ -324,7 +318,6 @@ function InteractiveTraceGraph({ trace, fix, isFullscreen }: { trace: NonNullabl
 
       {/* Selected Details Panel */}
       <div className="bg-surface border border-primary/20 rounded-2xl p-5 shadow-[0_4px_24px_rgba(31,111,235,0.1)] relative overflow-hidden transition-all">
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
         <div className="flex items-start justify-between mb-4 pl-2">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -370,7 +363,6 @@ function InteractiveTraceGraph({ trace, fix, isFullscreen }: { trace: NonNullabl
       {/* Fix Panel */}
       {fix && (
         <div className="border border-severity-low/20 rounded-2xl p-5 bg-severity-low-bg shadow-[0_4px_24px_rgba(16,185,129,0.06)] relative overflow-hidden mt-2">
-          <div className="absolute top-0 left-0 w-1 h-full bg-severity-low"></div>
           <div className="flex justify-between items-start mb-3 pl-2">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-severity-low text-xl">build</span>

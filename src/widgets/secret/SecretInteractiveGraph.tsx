@@ -34,7 +34,6 @@ const CustomNode = ({ data, selected }: NodeProps) => {
         ? `border-primary shadow-[0_0_20px_rgba(31,111,235,0.3)] ring-1 ring-primary/50 z-10 scale-[1.02]` 
         : `border-border-subtle shadow-sm hover:border-primary/50`
     }`}>
-      <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${config.accent}`}></div>
       <Handle 
         type="target" 
         position={Position.Top} 

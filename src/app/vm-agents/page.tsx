@@ -80,6 +80,26 @@ export default function VmAgentsPage() {
   const [agentToken, setAgentToken] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [connectStep, setConnectStep] = useState(0);
+
+  const connectionSteps = useMemo(() => [
+    "Authenticating token...",
+    "Establishing secure tunnel...",
+    "Waiting for agent heartbeat...",
+    "Finalizing connection..."
+  ], []);
+
+  useEffect(() => {
+    if (isConnecting) {
+      let step = 0;
+      setConnectStep(0);
+      const interval = setInterval(() => {
+        step = Math.min(step + 1, connectionSteps.length - 1);
+        setConnectStep(step);
+      }, 2500); // 10s total, 4 steps
+      return () => clearInterval(interval);
+    }
+  }, [isConnecting, connectionSteps]);
 
   const { data: inventoryData } = useQuery({
     queryKey: ["agent-inventory", selectedAgentId],
@@ -254,33 +274,76 @@ export default function VmAgentsPage() {
       </div>
 
       {isConnectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-surface transition-colors duration-300 rounded-2xl shadow-xl w-full max-w-md border border-border-subtle p-6">
-            <h3 className="font-headline-sm text-headline-sm text-text-primary mb-2">Connect VM Agent</h3>
-            <p className="text-body-sm text-text-secondary mb-4">Enter your agent token to start the VM Agent process remotely on this machine.</p>
-            <input
-              type="text"
-              placeholder="e.g. dev-agent-token"
-              value={agentToken}
-              onChange={e => setAgentToken(e.target.value)}
-              className="w-full px-3 py-2 border border-border-divider rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-container mb-4"
-            />
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setIsConnectModalOpen(false)}
-                className="px-4 py-2 text-text-secondary hover:bg-surface-container rounded-2xl transition-colors"
-                disabled={isConnecting}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConnect}
-                className="px-4 py-2 bg-primary-container text-white rounded-2xl hover:bg-primary-hover transition-colors disabled:opacity-50"
-                disabled={isConnecting}
-              >
-                {isConnecting ? "Connecting" : "Connect"}
-              </button>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="bg-surface transition-colors duration-300 rounded-2xl shadow-2xl w-full max-w-md border border-border-subtle p-6 overflow-hidden relative">
+            
+            {isConnecting ? (
+              <div className="flex flex-col items-center justify-center py-6 animate-in zoom-in-95 duration-300">
+                <div className="relative w-20 h-20 mb-8">
+                  {/* Outer spinning ring */}
+                  <div className="absolute inset-0 border-4 border-surface-container rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(31,111,235,0.5)]"></div>
+                  {/* Inner pulsing icon */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-surface rounded-full m-1 z-10">
+                    <span className="material-symbols-outlined text-primary text-3xl animate-pulse">cable</span>
+                  </div>
+                </div>
+                
+                <h3 className="font-headline-sm text-headline-sm text-text-primary mb-2">Connecting to Agent</h3>
+                
+                <div className="h-6 overflow-hidden relative w-full flex justify-center mt-1">
+                   <p key={connectStep} className="text-sm font-medium text-primary animate-in slide-in-from-bottom-4 fade-in duration-300 absolute">
+                     {connectionSteps[connectStep]}
+                   </p>
+                </div>
+                
+                {/* Minimal Progress Bar */}
+                <div className="w-full h-1.5 bg-surface-container rounded-full mt-8 overflow-hidden">
+                   <div className="h-full bg-primary transition-all duration-[2500ms] ease-linear" style={{ width: `${((connectStep + 1) / connectionSteps.length) * 100}%` }}></div>
+                </div>
+              </div>
+            ) : (
+              <div className="animate-in fade-in duration-300">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-primary-container/10 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-primary-container">cable</span>
+                  </div>
+                  <h3 className="font-headline-sm text-headline-sm text-text-primary">Connect VM Agent</h3>
+                </div>
+                
+                <p className="text-sm text-text-secondary mb-6 leading-relaxed">
+                  Enter your agent token to establish a secure tunnel and start the VM Agent process remotely on this machine.
+                </p>
+                
+                <div className="space-y-2 mb-8">
+                  <label className="text-xs font-bold uppercase tracking-wider text-text-secondary ml-1">Agent Token</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. dev-agent-token"
+                    value={agentToken}
+                    onChange={e => setAgentToken(e.target.value)}
+                    className="w-full px-4 py-3 border border-border-divider bg-surface-container-lowest text-text-primary rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-inner font-mono text-sm"
+                  />
+                </div>
+                
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    onClick={() => setIsConnectModalOpen(false)}
+                    className="px-5 py-2.5 text-text-secondary hover:bg-surface-container hover:text-text-primary rounded-xl transition-colors font-bold text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConnect}
+                    disabled={!agentToken.trim()}
+                    className="px-5 py-2.5 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed font-bold text-sm flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">vpn_key</span>
+                    Connect Now
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import {
   createScheduledScan,
   deleteScheduledScan,
-  fetchImportedGithubRepos,
   fetchScheduledScans,
   fetchAgents,
   runScheduledScanNow,
@@ -13,6 +13,7 @@ import {
 } from "@/shared/api/client";
 import type { BusinessRiskContext, ScheduledScan, ScannerModule, VmAgent } from "@/shared/api/types";
 import { RemoteFileExplorer } from "@/shared/ui/RemoteFileExplorer";
+import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 
 const SCANNERS: Array<{ id: ScannerModule; label: string; icon: string }> = [
   { id: "dependency", label: "Dependency", icon: "inventory_2" },
@@ -39,28 +40,9 @@ const DEFAULT_BUSINESS: BusinessRiskContext = {
   exploitWindow: 5
 };
 
-type Repo = {
-  id: string;
-  fullName: string;
-  name: string;
-  cloneUrl: string;
-  language?: string | null;
-  private?: boolean;
-};
-
-type ImportedRepoPayload = {
-  id: string;
-  fullName: string;
-  name: string;
-  cloneUrl: string;
-  language?: string | null;
-  private?: boolean;
-};
-
 type ScheduleFrequency = "daily" | "weekly" | "monthly";
 
 export default function ScheduleScansPage() {
-  const [repos, setRepos] = useState<Repo[]>([]);
   const [agents, setAgents] = useState<VmAgent[]>([]);
   const [schedules, setSchedules] = useState<ScheduledScan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,8 +50,6 @@ export default function ScheduleScansPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  const [sourceType, setSourceType] = useState<"github" | "vm-agent">("github");
-  const [selectedRepoId, setSelectedRepoId] = useState("");
   const [selectedAgentId, setSelectedAgentId] = useState("");
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
   
@@ -83,29 +63,16 @@ export default function ScheduleScansPage() {
   const [reportEmail, setReportEmail] = useState("");
   const [businessContext, setBusinessContext] = useState<BusinessRiskContext>(DEFAULT_BUSINESS);
 
-  const selectedRepo = useMemo(() => repos.find((repo) => repo.id === selectedRepoId), [repos, selectedRepoId]);
-
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [repoPayload, schedulePayload, agentsPayload] = await Promise.all([
-        fetchImportedGithubRepos(),
+      const [schedulePayload, agentsPayload] = await Promise.all([
         fetchScheduledScans(),
         fetchAgents()
       ]);
-      const nextRepos = ((repoPayload.repositories || []) as ImportedRepoPayload[]).map((repo) => ({
-        id: repo.id,
-        fullName: repo.fullName,
-        name: repo.name,
-        cloneUrl: repo.cloneUrl,
-        language: repo.language,
-        private: repo.private
-      }));
-      setRepos(nextRepos);
       setSchedules(schedulePayload);
       setAgents(agentsPayload);
-      setSelectedRepoId((current) => current || nextRepos[0]?.id || "");
       setSelectedAgentId((current) => current || agentsPayload[0]?.id || "");
     } catch (err: unknown) {
       setError(errorMessage(err, "Failed to load schedules"));
@@ -122,16 +89,12 @@ export default function ScheduleScansPage() {
   }, [refresh]);
 
   async function submitSchedule() {
-    if (sourceType === "github" && !selectedRepo) {
-      setError("Import a GitHub repository before creating a schedule.");
-      return;
-    }
-    if (sourceType === "vm-agent" && !selectedAgentId) {
+    if (!selectedAgentId) {
       setError("Connect a VM Agent before creating a schedule.");
       return;
     }
-    if (sourceType === "vm-agent" && selectedPaths.length === 0) {
-      setError("Select at least one path to scan for VM Agent.");
+    if (selectedPaths.length === 0) {
+      setError("Select at least one path to scan on the VM.");
       return;
     }
     if (!selectedScanners.length) {
@@ -144,11 +107,10 @@ export default function ScheduleScansPage() {
     try {
       await createScheduledScan({
         name,
-        sourceType,
-        importedRepositoryId: sourceType === "github" ? selectedRepo?.id : undefined,
-        agentId: sourceType === "vm-agent" ? selectedAgentId : undefined,
-        selectedPaths: sourceType === "vm-agent" ? selectedPaths : undefined,
-        scope: sourceType === "vm-agent" ? "selected" : undefined,
+        sourceType: "vm-agent",
+        agentId: selectedAgentId,
+        selectedPaths: selectedPaths,
+        scope: "selected",
         scanners: selectedScanners,
         frequency,
         timeOfDay,
@@ -183,193 +145,277 @@ export default function ScheduleScansPage() {
     setBusinessContext((current) => ({ ...current, [key]: value }));
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap animate-in fade-in duration-500 pb-12">
-      <section className="mx-auto w-full px-8 py-8">
-        <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-inner">
-              <span className="material-symbols-outlined text-[24px] text-white">schedule</span>
-            </div>
-            <div>
-              <h1 className="text-headline-lg font-headline-lg text-text-primary mb-1">Schedule Scans</h1>
-              <p className="text-body-sm text-text-secondary">Run dependency, config, secret, and cipher scans automatically for repositories and agents.</p>
-            </div>
-          </div>
-          <button onClick={refresh} className="rounded-md border border-border-divider bg-surface transition-colors duration-300 px-4 py-2 text-body-sm font-bold text-text-primary hover:bg-surface-container transition shadow-sm">
-            <span className="material-symbols-outlined text-[16px] mr-2 align-text-bottom">refresh</span>
+    <motion.div 
+      initial="hidden" 
+      animate="show" 
+      variants={containerVariants}
+      className="max-w-[1280px] mx-auto flex flex-col gap-8 py-8 px-4 sm:px-6 lg:px-8 pb-12"
+    >
+      <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="font-sans font-bold text-headline-lg text-text-primary mb-1 uppercase tracking-wider">Schedule Scans</h1>
+          <p className="font-body-sm text-body-sm text-text-secondary">Automate security assessments for your VM infrastructure.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={refresh}
+            disabled={loading}
+            className="px-4 py-2 bg-surface border border-border-subtle text-text-primary rounded-xl font-medium text-sm hover:bg-surface-dim transition-colors flex items-center gap-2 disabled:opacity-50"
+          >
+            <span className={`material-symbols-outlined text-[18px] ${loading ? 'animate-spin' : ''}`}>refresh</span>
             Refresh
           </button>
         </div>
+      </motion.div>
 
-        {(error || message) && (
-          <div className={`mb-5 rounded-md border px-4 py-3 text-body-sm ${error ? "border-red-200 bg-red-50 text-red-700" : "border-green-200 bg-green-50 text-green-700"}`}>
-            {error || message}
-          </div>
-        )}
+      {(error || message) && (
+        <motion.div variants={itemVariants} className={`rounded-xl border px-4 py-3 text-sm flex items-center gap-2 ${error ? "border-red-500/20 bg-red-500/10 text-red-400" : "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"}`}>
+          <span className="material-symbols-outlined text-[20px]">{error ? "error" : "check_circle"}</span>
+          {error || message}
+        </motion.div>
+      )}
 
-        <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <section className="rounded-2xl border border-border-divider bg-surface-container-lowest p-5 shadow-sm">
-            <h2 className="text-title-md font-title-md text-text-primary">Create Schedule</h2>
-            
-            <div className="mb-5 mt-4 flex border-b border-border-divider">
-              <button
-                type="button"
-                className={`flex-1 py-3 text-body-sm font-bold transition-colors ${sourceType === "github" ? "border-b-2 border-primary text-primary" : "text-text-secondary hover:bg-surface-container/50"}`}
-                onClick={() => setSourceType("github")}
-              >
-                GitHub Repository
-              </button>
-              <button
-                type="button"
-                className={`flex-1 py-3 text-body-sm font-bold transition-colors ${sourceType === "vm-agent" ? "border-b-2 border-primary text-primary" : "text-text-secondary hover:bg-surface-container/50"}`}
-                onClick={() => setSourceType("vm-agent")}
-              >
-                VM Agent
-              </button>
+      <div className="grid gap-8 lg:grid-cols-12 items-start">
+        {/* Left Side: Create Form */}
+        <motion.div variants={itemVariants} className="lg:col-span-7 flex flex-col gap-6">
+          <div className="rounded-2xl border border-border-subtle bg-surface p-6 overflow-hidden">
+            <div className="flex items-center gap-2 mb-6">
+              <span className="material-symbols-outlined text-primary text-[24px]">calendar_add_on</span>
+              <h2 className="text-section-header font-bold font-sans uppercase tracking-wider text-text-primary">Create Schedule</h2>
             </div>
-
-            <div className="mt-5 grid gap-4 lg:grid-cols-2">
-              <label className="space-y-2">
-                <span className="text-body-sm font-medium text-text-secondary">Schedule name</span>
-                <input value={name} onChange={(event) => setName(event.target.value)} className="w-full rounded-md border border-border-divider px-3 py-2 text-body-sm outline-none focus:border-primary" />
-              </label>
-              
-              {sourceType === "github" ? (
-                <label className="space-y-2">
-                  <span className="text-body-sm font-medium text-text-secondary">Repository</span>
-                  <select value={selectedRepoId} onChange={(event) => setSelectedRepoId(event.target.value)} className="w-full rounded-md border border-border-divider px-3 py-2 text-body-sm outline-none focus:border-primary">
-                    {repos.map((repo) => (
-                      <option key={repo.id} value={repo.id}>{repo.fullName}</option>
-                    ))}
-                  </select>
+            
+            <div className="flex flex-col gap-6">
+              {/* Basic Info */}
+              <div className="flex flex-col gap-4">
+                <label className="space-y-1.5">
+                  <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Schedule Name</span>
+                  <input 
+                    value={name} 
+                    onChange={(e) => setName(e.target.value)} 
+                    className="w-full rounded-xl bg-surface-container-highest border border-border-subtle px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-primary transition-all"
+                    placeholder="E.g., Production Core API Daily Scan"
+                  />
                 </label>
-              ) : (
-                <label className="space-y-2">
-                  <span className="text-body-sm font-medium text-text-secondary">VM Agent</span>
-                  <select value={selectedAgentId} onChange={(event) => setSelectedAgentId(event.target.value)} className="w-full rounded-md border border-border-divider px-3 py-2 text-body-sm outline-none focus:border-primary">
+
+                <label className="space-y-1.5">
+                  <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Target VM Agent</span>
+                  <select 
+                    value={selectedAgentId} 
+                    onChange={(e) => setSelectedAgentId(e.target.value)} 
+                    className="w-full rounded-xl bg-surface-container-highest border border-border-subtle px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-primary transition-all"
+                  >
+                    <option value="" disabled>Select an agent...</option>
                     {agents.map((agent) => (
                       <option key={agent.id} value={agent.id}>{agent.name} ({agent.hostname})</option>
                     ))}
                   </select>
                 </label>
+              </div>
+
+              {/* Path Selection */}
+              <div className="flex flex-col gap-1.5 pt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Paths to scan</span>
+                  <InfoTooltip text="Select specific directories on the VM to isolate scanning scope." />
+                </div>
+                <div className="rounded-xl border border-border-subtle bg-surface-container overflow-hidden min-h-[200px]">
+                  <RemoteFileExplorer
+                    agentId={selectedAgentId}
+                    hasAgents={agents.length > 0}
+                    selectedPaths={selectedPaths}
+                    togglePath={(path) => setSelectedPaths((current) => current.includes(path) ? current.filter((item) => item !== path) : [...current, path])}
+                  />
+                </div>
+              </div>
+
+              {/* Scanners */}
+              <div className="flex flex-col gap-1.5 pt-2">
+                <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Active Modules</span>
+                <div className="grid gap-3 grid-cols-2 sm:grid-cols-4 mt-1">
+                  {SCANNERS.map((scanner) => {
+                    const selected = selectedScanners.includes(scanner.id);
+                    return (
+                      <button 
+                        key={scanner.id} 
+                        type="button" 
+                        onClick={() => toggleScanner(scanner.id)} 
+                        className={`rounded-xl border p-3 flex flex-col items-center justify-center gap-2 transition-all duration-200 ${selected ? "border-primary bg-primary-container/10 ring-1 ring-primary/50" : "border-border-subtle bg-surface-container hover:border-primary/50 hover:bg-surface-container-highest"}`}
+                      >
+                        <span className={`material-symbols-outlined text-[24px] ${selected ? "text-primary" : "text-text-muted"}`}>{scanner.icon}</span>
+                        <span className={`text-xs font-bold tracking-wide ${selected ? "text-primary" : "text-text-secondary"}`}>{scanner.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Frequency Settings */}
+              <div className="flex flex-col gap-1.5 pt-2">
+                <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Timing & Frequency</span>
+                <div className="grid gap-4 sm:grid-cols-3 mt-1 p-4 rounded-xl border border-border-subtle bg-surface-container">
+                  <label className="space-y-1.5">
+                    <span className="text-xs font-semibold text-text-muted">Type</span>
+                    <select 
+                      value={frequency} 
+                      onChange={(e) => setFrequency(e.target.value as ScheduleFrequency)} 
+                      className="w-full rounded-lg bg-surface-dim border border-border-subtle px-3 py-2 text-sm outline-none focus:border-primary text-text-primary"
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </label>
+                  <label className="space-y-1.5">
+                    <span className="text-xs font-semibold text-text-muted">Start Time</span>
+                    <input 
+                      type="time" 
+                      value={timeOfDay} 
+                      onChange={(e) => setTimeOfDay(e.target.value)} 
+                      className="w-full rounded-lg bg-surface-dim border border-border-subtle px-3 py-2 text-sm outline-none focus:border-primary text-text-primary" 
+                    />
+                  </label>
+                  <label className="space-y-1.5">
+                    <span className="text-xs font-semibold text-text-muted">Runs / Day</span>
+                    <input 
+                      type="number" 
+                      min={1} 
+                      max={8} 
+                      value={timesPerDay} 
+                      onChange={(e) => setTimesPerDay(Number(e.target.value))} 
+                      className="w-full rounded-lg bg-surface-dim border border-border-subtle px-3 py-2 text-sm outline-none focus:border-primary text-text-primary" 
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {frequency === "weekly" && (
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-semibold text-text-muted">Days of Week</span>
+                  <div className="flex flex-wrap gap-2">
+                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((label, index) => (
+                      <button 
+                        key={label} 
+                        type="button" 
+                        onClick={() => toggleWeekday(index)} 
+                        className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ${weekdays.includes(index) ? "border-primary bg-primary text-white" : "border-border-subtle bg-surface-container text-text-secondary hover:bg-surface-container-highest"}`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
-            </div>
 
-            {sourceType === "vm-agent" && (
-              <div className="mt-5">
-                <p className="text-body-sm font-medium text-text-secondary mb-2">Paths to scan</p>
-                <RemoteFileExplorer
-                  agentId={selectedAgentId}
-                  hasAgents={agents.length > 0}
-                  selectedPaths={selectedPaths}
-                  togglePath={(path) => setSelectedPaths((current) => current.includes(path) ? current.filter((item) => item !== path) : [...current, path])}
-                />
+              {frequency === "monthly" && (
+                <label className="space-y-1.5">
+                  <span className="text-xs font-semibold text-text-muted">Days of Month (comma separated)</span>
+                  <input 
+                    value={monthDays.join(",")} 
+                    onChange={(e) => setMonthDays(e.target.value.split(",").map((item) => Number(item.trim())).filter(Boolean))} 
+                    placeholder="1,15,28" 
+                    className="w-full rounded-lg bg-surface-container-highest border border-border-subtle px-3 py-2 text-sm outline-none focus:border-primary text-text-primary" 
+                  />
+                </label>
+              )}
+
+              {/* Reporting & Context */}
+              <div className="flex flex-col gap-4 pt-2">
+                <label className="space-y-1.5">
+                  <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Reporting Email</span>
+                  <input 
+                    type="email" 
+                    value={reportEmail} 
+                    onChange={(e) => setReportEmail(e.target.value)} 
+                    placeholder="security-team@bank.com" 
+                    className="w-full rounded-xl bg-surface-container-highest border border-border-subtle px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-text-primary transition-all" 
+                  />
+                </label>
               </div>
-            )}
 
-            <div className="mt-5">
-              <p className="text-body-sm font-medium text-text-secondary">Scanner modules</p>
-              <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {SCANNERS.map((scanner) => {
-                  const selected = selectedScanners.includes(scanner.id);
-                  return (
-                    <button key={scanner.id} type="button" onClick={() => toggleScanner(scanner.id)} className={`rounded-md border p-3 text-left transition ${selected ? "border-primary bg-primary-container/10" : "border-border-divider hover:border-primary/50"}`}>
-                      <span className="material-symbols-outlined text-[20px] text-primary">{scanner.icon}</span>
-                      <span className="mt-2 block text-body-sm font-semibold text-text-primary">{scanner.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mt-5 grid gap-4 lg:grid-cols-3">
-              <label className="space-y-2">
-                <span className="text-body-sm font-medium text-text-secondary">Frequency</span>
-                <select value={frequency} onChange={(event) => setFrequency(event.target.value as ScheduleFrequency)} className="w-full rounded-md border border-border-divider px-3 py-2 text-body-sm outline-none focus:border-primary">
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                </select>
-              </label>
-              <label className="space-y-2">
-                <span className="text-body-sm font-medium text-text-secondary">First run time</span>
-                <input type="time" value={timeOfDay} onChange={(event) => setTimeOfDay(event.target.value)} className="w-full rounded-md border border-border-divider px-3 py-2 text-body-sm outline-none focus:border-primary" />
-              </label>
-              <label className="space-y-2">
-                <span className="text-body-sm font-medium text-text-secondary">Runs per day</span>
-                <input type="number" min={1} max={8} value={timesPerDay} onChange={(event) => setTimesPerDay(Number(event.target.value))} className="w-full rounded-md border border-border-divider px-3 py-2 text-body-sm outline-none focus:border-primary" />
-              </label>
-            </div>
-
-            {frequency === "weekly" && (
-              <div className="mt-5">
-                <p className="text-body-sm font-medium text-text-secondary">Weekly days</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((label, index) => (
-                    <button key={label} type="button" onClick={() => toggleWeekday(index)} className={`rounded-md border px-3 py-2 text-body-sm ${weekdays.includes(index) ? "border-primary bg-primary-container/10 text-primary" : "border-border-divider text-text-secondary"}`}>
-                      {label}
-                    </button>
+              {/* Business Context */}
+              <div className="flex flex-col gap-3 pt-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Business Risk Context</span>
+                  <InfoTooltip text="These parameters weight the final risk score in the unified reports." />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 p-4 rounded-xl border border-border-subtle bg-surface-container">
+                  {BUSINESS_FIELDS.map((field) => (
+                    <label key={field.key} className="flex flex-col gap-1.5 p-2" title={field.help}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-text-primary">{field.label}</span>
+                        <span className="rounded bg-surface-dim px-1.5 py-0.5 text-[10px] font-mono text-text-secondary border border-border-subtle">{businessContext[field.key]}/10</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min={0} 
+                        max={10} 
+                        value={businessContext[field.key]} 
+                        onChange={(e) => setBusinessValue(field.key, Number(e.target.value))} 
+                        className="w-full accent-primary h-1.5 bg-surface-dim rounded-lg appearance-none cursor-pointer" 
+                      />
+                    </label>
                   ))}
                 </div>
               </div>
-            )}
 
-            {frequency === "monthly" && (
-              <label className="mt-5 block space-y-2">
-                <span className="text-body-sm font-medium text-text-secondary">Month days</span>
-                <input value={monthDays.join(",")} onChange={(event) => setMonthDays(event.target.value.split(",").map((item) => Number(item.trim())).filter(Boolean))} placeholder="1,15,28" className="w-full rounded-md border border-border-divider px-3 py-2 text-body-sm outline-none focus:border-primary" />
-              </label>
-            )}
-
-            <label className="mt-5 block space-y-2">
-              <span className="text-body-sm font-medium text-text-secondary">Mail report to</span>
-              <input type="email" value={reportEmail} onChange={(event) => setReportEmail(event.target.value)} placeholder="security-team@bank.com" className="w-full rounded-md border border-border-divider px-3 py-2 text-body-sm outline-none focus:border-primary" />
-            </label>
-
-            <div className="mt-5">
-              <p className="text-body-sm font-semibold text-text-primary">Business risk inputs</p>
-              <div className="mt-3 grid gap-3 lg:grid-cols-2">
-                {BUSINESS_FIELDS.map((field) => (
-                  <label key={field.key} className="rounded-md border border-border-divider p-3" title={field.help}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-body-sm font-medium text-text-primary">{field.label}</span>
-                      <span className="rounded bg-surface-container px-2 py-1 text-label-sm text-text-secondary">{businessContext[field.key]}/10</span>
-                    </div>
-                    <input type="range" min={0} max={10} value={businessContext[field.key]} onChange={(event) => setBusinessValue(field.key, Number(event.target.value))} className="mt-3 w-full" />
-                  </label>
-                ))}
-              </div>
+              <button 
+                disabled={saving || loading || !agents.length} 
+                onClick={submitSchedule} 
+                className="mt-2 w-full rounded-xl bg-primary px-4 py-3.5 text-sm font-bold text-white hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[20px]">send</span>
+                {saving ? "Creating Schedule..." : "Activate Scheduled Scan"}
+              </button>
             </div>
+          </div>
+        </motion.div>
 
-            <button disabled={saving || loading || !repos.length} onClick={submitSchedule} className="mt-6 w-full rounded-md bg-primary px-4 py-3 text-body-sm font-semibold text-on-primary shadow-sm disabled:cursor-not-allowed disabled:opacity-60">
-              {saving ? "Creating schedule..." : "Create Scheduled Scan"}
-            </button>
-          </section>
+        {/* Right Side: Active Schedules */}
+        <motion.div variants={itemVariants} className="lg:col-span-5 flex flex-col gap-4">
+          <div className="flex items-center gap-2 mb-2 px-1">
+            <span className="material-symbols-outlined text-text-secondary text-[20px]">list_alt</span>
+            <h2 className="text-sm font-bold font-sans uppercase tracking-wider text-text-secondary">Active Configurations</h2>
+          </div>
 
-          <section className="space-y-4">
-            <div className="rounded-2xl border border-border-divider bg-surface-container-lowest p-5 shadow-sm">
-              <h2 className="text-title-md font-title-md text-text-primary">Active Schedules</h2>
-              <p className="mt-1 text-body-sm text-text-secondary">
-                Scheduler runs in the backend every minute. Each run creates scanner jobs and a risk report.
-              </p>
-            </div>
-
+          <div className="flex flex-col gap-4">
             {loading ? (
-              <div className="rounded-2xl border border-border-divider bg-surface-container-lowest p-6 text-body-sm text-text-secondary">Loading schedules...</div>
+              <div className="rounded-2xl border border-border-subtle bg-surface p-8 text-center animate-pulse flex flex-col items-center gap-3">
+                <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+                <p className="text-sm text-text-muted font-medium">Loading schedules...</p>
+              </div>
             ) : schedules.length ? (
               schedules.map((schedule) => (
                 <ScheduleCard key={schedule.id} schedule={schedule} onRefresh={refresh} />
               ))
             ) : (
-              <div className="rounded-2xl border border-border-divider bg-surface-container-lowest p-6 text-center text-body-sm text-text-secondary">
-                No schedules yet. Create one for a GitHub repository or VM Agent.
+              <div className="rounded-2xl border border-border-subtle bg-surface p-10 text-center flex flex-col items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center">
+                  <span className="material-symbols-outlined text-text-muted text-3xl">inbox</span>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-text-primary mb-1">No Active Schedules</p>
+                  <p className="text-xs text-text-secondary">Configure a new automated VM scan to see it here.</p>
+                </div>
               </div>
             )}
-          </section>
-        </div>
-      </section>
-    </div>
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -387,44 +433,93 @@ function ScheduleCard({ schedule, onRefresh }: { schedule: ScheduledScan; onRefr
   }
 
   return (
-    <article className="rounded-2xl border border-border-divider bg-surface-container-lowest p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h3 className="text-title-sm font-title-sm text-text-primary">{schedule.name}</h3>
-          <p className="mt-1 text-body-sm text-text-secondary">{schedule.sourceLabel}</p>
+    <article className="rounded-2xl border border-border-subtle bg-surface p-5 transition-shadow relative overflow-hidden flex flex-col gap-4">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 border-b border-border-divider pb-3">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-sm font-bold text-text-primary leading-tight">{schedule.name}</h3>
+          <div className="flex items-center gap-1.5 text-xs text-text-secondary font-mono">
+            <span className="material-symbols-outlined text-[14px]">dns</span>
+            {schedule.sourceLabel}
+          </div>
         </div>
-        <span className={`rounded px-2 py-1 text-label-sm font-semibold ${schedule.enabled ? "bg-green-50 text-green-700" : "bg-surface-container text-text-secondary"}`}>
-          {schedule.enabled ? "enabled" : "disabled"}
+        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${schedule.enabled ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-surface-container text-text-muted border-border-subtle"}`}>
+          {schedule.enabled ? "Active" : "Disabled"}
         </span>
       </div>
-      <div className="mt-4 grid gap-3 text-body-sm text-text-secondary sm:grid-cols-2">
-        <p><span className="font-semibold text-text-primary">Next:</span> {formatDate(schedule.nextRunAt)}</p>
-        <p><span className="font-semibold text-text-primary">Last:</span> {formatDate(schedule.lastRunAt)}</p>
-        <p><span className="font-semibold text-text-primary">Frequency:</span> {schedule.frequency}, {schedule.timesPerDay}x/day</p>
-        <p><span className="font-semibold text-text-primary">Status:</span> {schedule.running ? "running" : schedule.lastStatus || "not run"}</p>
+
+      {/* Details Grid */}
+      <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-xs">
+        <div className="flex flex-col">
+          <span className="text-text-muted font-semibold uppercase tracking-wider text-[10px] mb-0.5">Next Run</span>
+          <span className="text-text-primary font-mono bg-surface-container-highest px-1.5 py-0.5 rounded border border-border-subtle w-fit">{formatDate(schedule.nextRunAt)}</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-text-muted font-semibold uppercase tracking-wider text-[10px] mb-0.5">Last Run</span>
+          <span className="text-text-primary font-mono bg-surface-container-highest px-1.5 py-0.5 rounded border border-border-subtle w-fit">{formatDate(schedule.lastRunAt)}</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-text-muted font-semibold uppercase tracking-wider text-[10px] mb-0.5">Pattern</span>
+          <span className="text-text-primary capitalize">{schedule.frequency} ({schedule.timesPerDay}x/day)</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-text-muted font-semibold uppercase tracking-wider text-[10px] mb-0.5">Status</span>
+          <span className={`flex items-center gap-1 font-semibold ${schedule.running ? 'text-primary' : 'text-text-secondary'}`}>
+            {schedule.running && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>}
+            {schedule.running ? "Running..." : schedule.lastStatus || "Pending"}
+          </span>
+        </div>
       </div>
-      <div className="mt-3 flex flex-wrap gap-2">
+
+      {/* Scanners Badges */}
+      <div className="flex flex-wrap gap-1.5">
         {schedule.scanners.map((scanner) => (
-          <span key={scanner} className="rounded bg-surface-container px-2 py-1 text-label-sm text-text-secondary">{scanner}</span>
+          <span key={scanner} className="rounded bg-surface-container border border-border-subtle px-1.5 py-0.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-text-muted"></span>
+            {scanner}
+          </span>
         ))}
       </div>
+
+      {/* Errors / Links */}
       {schedule.lastError && (
-        <p className="mt-3 rounded-md bg-red-50 px-3 py-2 text-body-sm text-red-700">{schedule.lastError}</p>
+        <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-2 text-xs text-red-400 flex items-start gap-2">
+          <span className="material-symbols-outlined text-[16px] shrink-0">error</span>
+          <span>{schedule.lastError}</span>
+        </div>
       )}
       {schedule.lastRiskAssessmentId && (
-        <Link href={`/risk-reports/${schedule.lastRiskAssessmentId}`} className="mt-3 inline-flex text-body-sm font-semibold text-primary">
-          Open latest risk report
+        <Link href={`/risk-reports/${schedule.lastRiskAssessmentId}`} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline group w-fit">
+          <span className="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">article</span>
+          View latest risk report
         </Link>
       )}
-      <div className="mt-4 grid gap-2 sm:grid-cols-3">
-        <button disabled={busy || schedule.running} onClick={() => action(() => runScheduledScanNow(schedule.id))} className="rounded-md border border-primary px-3 py-2 text-body-sm font-semibold text-primary disabled:opacity-60">
-          Run now
+
+      {/* Actions */}
+      <div className="flex items-center gap-2 pt-2 border-t border-border-divider mt-1">
+        <button 
+          disabled={busy || schedule.running} 
+          onClick={() => action(() => runScheduledScanNow(schedule.id))} 
+          className="flex-1 rounded-lg border border-primary/50 bg-primary/10 px-2 py-1.5 text-xs font-bold text-primary hover:bg-primary/20 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+        >
+          <span className="material-symbols-outlined text-[14px]">play_arrow</span>
+          Run
         </button>
-        <button disabled={busy} onClick={() => action(() => updateScheduledScan(schedule.id, { enabled: !schedule.enabled }))} className="rounded-md border border-border-divider px-3 py-2 text-body-sm font-semibold text-text-primary disabled:opacity-60">
-          {schedule.enabled ? "Disable" : "Enable"}
+        <button 
+          disabled={busy} 
+          onClick={() => action(() => updateScheduledScan(schedule.id, { enabled: !schedule.enabled }))} 
+          className="flex-1 rounded-lg border border-border-subtle bg-surface-container px-2 py-1.5 text-xs font-bold text-text-primary hover:bg-surface-container-highest transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+        >
+          <span className="material-symbols-outlined text-[14px]">{schedule.enabled ? "pause" : "play_circle"}</span>
+          {schedule.enabled ? "Pause" : "Enable"}
         </button>
-        <button disabled={busy || schedule.running} onClick={() => action(() => deleteScheduledScan(schedule.id))} className="rounded-md border border-red-200 px-3 py-2 text-body-sm font-semibold text-red-700 disabled:opacity-60">
-          Delete
+        <button 
+          disabled={busy || schedule.running} 
+          onClick={() => action(() => deleteScheduledScan(schedule.id))} 
+          className="rounded-lg border border-red-500/30 bg-red-500/10 px-2 py-1.5 text-xs font-bold text-red-500 hover:bg-red-500/20 transition-colors disabled:opacity-50 flex items-center justify-center"
+          title="Delete Schedule"
+        >
+          <span className="material-symbols-outlined text-[16px]">delete</span>
         </button>
       </div>
     </article>
@@ -432,8 +527,9 @@ function ScheduleCard({ schedule, onRefresh }: { schedule: ScheduledScan; onRefr
 }
 
 function formatDate(value?: string | null) {
-  if (!value) return "-";
-  return new Date(value).toLocaleString();
+  if (!value) return "—";
+  const d = new Date(value);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 function errorMessage(error: unknown, fallback: string) {

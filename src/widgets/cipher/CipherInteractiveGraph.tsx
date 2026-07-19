@@ -46,9 +46,6 @@ const PolicyNode = ({ data, selected }: NodeProps) => {
     }`}>
       <Handle type="target" position={Position.Top} className="w-2 h-2 !bg-primary border-none opacity-0" />
       
-      {/* Visual Accent Bar */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl ${accentColor}`} />
-      
       {/* Node Icon Container */}
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-surface-container-high shrink-0`}>
         <span className={`material-symbols-outlined ${iconClass} text-[20px]`}>{icon}</span>

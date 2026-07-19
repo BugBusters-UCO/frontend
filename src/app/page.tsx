@@ -96,7 +96,6 @@ export default function DashboardPage() {
       {/* Top Metrics Row - Monochromatic with minimal accents */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-element-gap">
         <div className="bg-surface p-6 rounded-2xl border border-border-subtle shadow-sm flex flex-col gap-3 group hover:border-primary/50 hover:shadow-md transition-all duration-300 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 group-hover:bg-primary transition-colors"></div>
           <div className="flex items-center justify-between ml-1">
             <p className="font-body-sm text-body-sm text-text-muted font-medium flex items-center gap-1.5">
               Total Scans
@@ -108,7 +107,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="bg-surface p-6 rounded-2xl border border-border-subtle shadow-sm flex flex-col gap-3 group hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/20 group-hover:bg-emerald-500 transition-colors"></div>
           <div className="flex items-center justify-between ml-1">
             <p className="font-body-sm text-body-sm text-text-muted font-medium flex items-center gap-1.5">
               Health Score
@@ -120,7 +118,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="bg-surface p-6 rounded-2xl border border-border-subtle shadow-sm flex flex-col gap-3 group hover:border-orange-500/50 hover:shadow-md transition-all duration-300 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-orange-500/20 group-hover:bg-orange-500 transition-colors"></div>
           <div className="flex items-center justify-between ml-1">
             <p className="font-body-sm text-body-sm text-text-muted font-medium flex items-center gap-1.5">
               Total Findings
@@ -132,7 +129,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="bg-surface p-6 rounded-2xl border border-border-subtle shadow-sm flex flex-col gap-3 group hover:border-red-500/50 hover:shadow-md transition-all duration-300 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-red-500/20 group-hover:bg-red-500 transition-colors"></div>
           <div className="flex items-center justify-between ml-1">
             <p className="font-body-sm text-body-sm text-text-muted font-medium flex items-center gap-1.5">
               Critical Issues

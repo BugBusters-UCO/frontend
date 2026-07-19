@@ -19,17 +19,17 @@ export function ConfigMetricsRow({ summary }: ConfigMetricsRowProps) {
   };
 
   const getRiskColor = (score: number) => {
-    if (score >= 75) return "text-severity-critical border-l-severity-critical";
-    if (score >= 50) return "text-severity-high border-l-severity-high";
-    if (score >= 25) return "text-severity-medium border-l-severity-medium";
-    return "text-severity-low border-l-severity-low";
+    if (score >= 75) return "text-severity-critical";
+    if (score >= 50) return "text-severity-high";
+    if (score >= 25) return "text-severity-medium";
+    return "text-severity-low";
   };
 
   const getAction = () => {
-    if (criticalFindings > 0) return { label: "Remediate Criticals", color: "text-severity-critical border-l-severity-critical" };
-    if (attackPaths > 0) return { label: "Review Attack Paths", color: "text-severity-high border-l-severity-high" };
-    if (totalFindings > 0) return { label: "Fix Configs", color: "text-severity-medium border-l-severity-medium" };
-    return { label: "Monitor", color: "text-severity-low border-l-severity-low" };
+    if (criticalFindings > 0) return { label: "Remediate Criticals", color: "text-severity-critical" };
+    if (attackPaths > 0) return { label: "Review Attack Paths", color: "text-severity-high" };
+    if (totalFindings > 0) return { label: "Fix Configs", color: "text-severity-medium" };
+    return { label: "Monitor", color: "text-severity-low" };
   };
 
   const action = getAction();
@@ -46,7 +46,7 @@ export function ConfigMetricsRow({ summary }: ConfigMetricsRowProps) {
         <p className="text-xs text-text-muted mt-1">{criticalFindings} critical priority</p>
       </div>
 
-      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 border-l-4 ${attackPaths > 0 ? 'border-l-severity-high text-severity-high' : 'border-l-severity-low text-severity-low'}`}>
+      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 ${attackPaths > 0 ? 'text-severity-high' : 'text-severity-low'}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Attack Paths
           <InfoTooltip text="Chains of misconfigurations leading to potential asset compromise." />
@@ -55,7 +55,7 @@ export function ConfigMetricsRow({ summary }: ConfigMetricsRowProps) {
         <p className="text-xs text-text-muted mt-1">exposed routes</p>
       </div>
 
-      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 border-l-4 ${riskTone}`}>
+      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 ${riskTone}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Infrastructure Risk
           <InfoTooltip text="Overall severity based on the types of misconfigurations and their exposure." />
@@ -65,7 +65,7 @@ export function ConfigMetricsRow({ summary }: ConfigMetricsRowProps) {
         </div>
       </div>
 
-      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 border-l-4 ${action.color}`}>
+      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 ${action.color}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Action Required
           <InfoTooltip text="Recommended action based on the identified misconfigurations." />

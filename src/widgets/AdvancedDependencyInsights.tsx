@@ -7,11 +7,12 @@ interface AdvancedDependencyInsightsProps {
   result: DependencyScanResult;
 }
 
-type TabKey = "malware" | "behavior" | "intelligence" | "namespace" | "dependency";
+type TabKey = "capabilities" | "malware" | "behavior" | "intelligence" | "namespace" | "dependency";
 
 export function AdvancedDependencyInsights({ result }: AdvancedDependencyInsightsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey | null>(() => {
+    if (result.capability_findings?.length) return "capabilities";
     if (result.static_malware_findings?.length) return "malware";
     if (result.behavior_findings?.length) return "behavior";
     if (result.package_intelligence_findings?.length) return "intelligence";
@@ -23,6 +24,7 @@ export function AdvancedDependencyInsights({ result }: AdvancedDependencyInsight
   if (!activeTab) return null;
 
   const tabs = [
+    { key: "capabilities" as TabKey, label: "Capabilities", count: result.capability_findings?.length || 0, icon: "policy" },
     { key: "malware" as TabKey, label: "Malware", count: result.static_malware_findings?.length || 0, icon: "pest_control" },
     { key: "behavior" as TabKey, label: "Behavior", count: result.behavior_findings?.length || 0, icon: "psychology" },
     { key: "intelligence" as TabKey, label: "Intelligence", count: result.package_intelligence_findings?.length || 0, icon: "query_stats" },
@@ -99,6 +101,43 @@ export function AdvancedDependencyInsights({ result }: AdvancedDependencyInsight
           </thead>
           <tbody className="divide-y divide-border-divider">
             
+            {activeTab === "capabilities" && result.capability_findings?.map((finding, idx) => (
+              <tr key={finding.id || idx} className="hover:bg-surface-container-lowest transition-colors">
+                <td className="py-4 px-4 align-top">
+                  <span className={`inline-flex items-center px-2 py-1 rounded text-body-xs font-semibold uppercase ${
+                    finding.severity === 'critical' ? 'bg-severity-critical-bg text-severity-critical border border-severity-critical/20' :
+                    finding.severity === 'high' ? 'bg-severity-high-bg text-severity-high border border-severity-high/20' :
+                    finding.severity === 'medium' ? 'bg-severity-medium-bg text-severity-medium border border-severity-medium/20' :
+                    'bg-severity-low-bg text-severity-low border border-severity-low/20'
+                  }`}>
+                    {finding.severity}
+                  </span>
+                </td>
+                <td className="py-4 px-4 align-top">
+                  <div className="text-body-sm font-bold text-text-primary capitalize">{finding.capability.replace(/-/g, ' ')}</div>
+                  {finding.dependency_name && (
+                    <div className="text-body-xs text-text-primary font-mono mt-1 bg-surface-container px-1 py-0.5 rounded inline-block">via {finding.dependency_name}</div>
+                  )}
+                </td>
+                <td className="py-4 px-4 align-top">
+                  <div className="text-body-sm text-text-secondary">{finding.description}</div>
+                  {finding.file_path && (
+                    <div className="mt-2 text-body-xs font-mono text-text-muted break-all">
+                      {finding.file_path}{finding.line_number ? `:${finding.line_number}` : ''}
+                    </div>
+                  )}
+                  {finding.code && (
+                    <div className="mt-1 text-body-xs font-code-sm bg-terminal-bg text-slate-300 p-2 rounded border border-terminal-border overflow-x-auto">
+                      <pre>{finding.code}</pre>
+                    </div>
+                  )}
+                </td>
+                <td className="py-4 px-4 text-right align-top">
+                  <span className="text-body-xs text-text-primary font-semibold">{finding.fix?.title || 'Review manually'}</span>
+                </td>
+              </tr>
+            ))}
+
             {activeTab === "malware" && result.static_malware_findings?.map((finding, idx) => (
               <tr key={finding.id || idx} className="hover:bg-surface-container-lowest transition-colors">
                 <td className="py-4 px-4">

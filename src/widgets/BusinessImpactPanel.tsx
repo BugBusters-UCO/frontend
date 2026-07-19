@@ -49,6 +49,20 @@ export function BusinessImpactPanel({
       : "No direct exposure detected for critical paths."
   ];
 
+  const groupedCapabilities = React.useMemo(() => {
+    if (!capabilities) return {};
+    return capabilities.reduce((acc, cap) => {
+      if (!acc[cap.capability]) {
+        acc[cap.capability] = { count: 0, deps: new Set<string>() };
+      }
+      acc[cap.capability].count += 1;
+      if (cap.dependency_name && cap.dependency_name !== 'unknown') {
+        acc[cap.capability].deps.add(cap.dependency_name);
+      }
+      return acc;
+    }, {} as Record<string, { count: number, deps: Set<string> }>);
+  }, [capabilities]);
+
   return (
     <div className={`bg-surface transition-colors duration-300 rounded-2xl border-2 ${bgRisk} shadow-sm p-6`}>
       <div className="flex flex-col md:flex-row gap-8">
@@ -87,16 +101,29 @@ export function BusinessImpactPanel({
           
           {capabilities && capabilities.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border-divider">
-              <div className="flex items-center mb-2">
+              <div className="flex items-center mb-3">
                 <h3 className="text-body-sm font-bold text-text-primary">Suspicious Package Behaviors Detected</h3>
                 <InfoTooltip text="Capabilities like network access or filesystem modifications requested by the dependency that could be malicious." />
               </div>
-              <div className="flex flex-wrap gap-2">
-                {capabilities.map((cap) => (
-                  <span key={cap.id} className="px-2.5 py-1 bg-surface-container-high text-text-secondary rounded text-body-xs font-semibold border border-border-subtle">
-                    {cap.capability} (via {cap.dependency_name || 'unknown'})
-                  </span>
-                ))}
+              <div className="flex flex-col gap-2">
+                {Object.entries(groupedCapabilities).map(([capKey, data]) => {
+                  const depsArray = Array.from(data.deps);
+                  const depsText = depsArray.length > 0
+                    ? `via ${depsArray.slice(0, 3).join(", ")}${depsArray.length > 3 ? ' and others' : ''}`
+                    : '';
+                    
+                  return (
+                    <div key={capKey} className="flex justify-between items-center bg-surface-container-lowest rounded-lg p-3 border border-border-subtle">
+                      <div className="flex flex-col">
+                        <span className="text-body-sm font-semibold text-text-primary capitalize">{capKey.replace(/-/g, ' ')}</span>
+                        {depsText && <span className="text-xs text-text-muted mt-0.5">{depsText}</span>}
+                      </div>
+                      <span className="bg-severity-high/10 text-severity-high px-2 py-1 rounded text-xs font-bold shrink-0">
+                        {data.count} found
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

@@ -18,7 +18,6 @@ import "@xyflow/react/dist/style.css";
 const CustomNode = ({ data, selected }: NodeProps) => {
   return (
     <div className={`relative flex items-center gap-3 w-64 p-3 rounded-2xl bg-surface/95 backdrop-blur-md transition-all duration-300 overflow-visible ${selected ? 'shadow-lg ring-red-400 ring-2 ring-offset-2 z-10 scale-[1.02] border-transparent' : 'border border-border-subtle shadow-sm hover:shadow-md hover:ring-red-400 hover:ring-1 hover:border-transparent'}`}>
-      <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl bg-red-400"></div>
       <Handle type="target" position={Position.Top} className="w-3 h-3 bg-surface transition-colors duration-300 border-2 border-slate-400" />
       
       <div className="flex flex-col min-w-0 flex-1 pl-2">

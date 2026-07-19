@@ -19,10 +19,10 @@ export function MetricsRow({ summary }: MetricsRowProps) {
   };
 
   const getRiskColor = (score: number) => {
-    if (score >= 75) return "text-severity-critical border-l-severity-critical";
-    if (score >= 55) return "text-severity-high border-l-severity-high";
-    if (score >= 30) return "text-severity-medium border-l-severity-medium";
-    return "text-severity-low border-l-severity-low";
+    if (score >= 75) return "text-severity-critical";
+    if (score >= 55) return "text-severity-high";
+    if (score >= 30) return "text-severity-medium";
+    return "text-severity-low";
   };
   
   const getActionLabel = (action: string) => {
@@ -36,16 +36,16 @@ export function MetricsRow({ summary }: MetricsRowProps) {
 
   const getActionColor = (action: string) => {
     switch (action) {
-      case "block": return "text-severity-critical border-l-severity-critical";
-      case "expedite": return "text-severity-high border-l-severity-high";
-      case "watch": return "text-severity-medium border-l-severity-medium";
-      default: return "text-severity-low border-l-severity-low";
+      case "block": return "text-severity-critical";
+      case "expedite": return "text-severity-high";
+      case "watch": return "text-severity-medium";
+      default: return "text-severity-low";
     }
   };
 
   const riskTone = getRiskColor(score);
   const actionTone = getActionColor(action);
-  const vulnTone = vulnerable > 0 ? "text-severity-high border-l-severity-high" : "text-severity-low border-l-severity-low";
+  const vulnTone = vulnerable > 0 ? "text-severity-high" : "text-severity-low";
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -56,14 +56,14 @@ export function MetricsRow({ summary }: MetricsRowProps) {
         </div>
         <div className="text-metric-value font-metric-value">{deps}</div>
       </div>
-      <div className={`bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 border-l-4 transition-colors duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-md ${vulnTone}`}>
+      <div className={`bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 transition-colors duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-md ${vulnTone}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-2">
           Vulnerable Packages
           <InfoTooltip text="Number of dependencies with known CVEs or security issues." />
         </div>
         <div className={`text-metric-value font-metric-value ${vulnTone.split(" ")[0]}`}>{vulnerable}</div>
       </div>
-      <div className={`bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 border-l-4 transition-colors duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-md ${riskTone}`}>
+      <div className={`bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 transition-colors duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-md ${riskTone}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-2">
           Business Risk
           <InfoTooltip text="Overall severity of exposure based on how close vulnerabilities are to critical endpoints." />
@@ -72,7 +72,7 @@ export function MetricsRow({ summary }: MetricsRowProps) {
           {getRiskLabel(score)}
         </div>
       </div>
-      <div className={`bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 border-l-4 transition-colors duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-md ${actionTone}`}>
+      <div className={`bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 transition-colors duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-md ${actionTone}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-2">
           Action Required
           <InfoTooltip text="Recommended action based on the highest risk level detected." />

@@ -21,17 +21,17 @@ export function SecretMetricsRow({ summary, risk, ciPolicy }: SecretMetricsRowPr
   };
 
   const getRiskColor = (score: number) => {
-    if (score >= 75) return "text-severity-critical border-l-severity-critical";
-    if (score >= 50) return "text-severity-high border-l-severity-high";
-    if (score >= 25) return "text-severity-medium border-l-severity-medium";
-    return "text-severity-low border-l-severity-low";
+    if (score >= 75) return "text-severity-critical";
+    if (score >= 50) return "text-severity-high";
+    if (score >= 25) return "text-severity-medium";
+    return "text-severity-low";
   };
 
   const getAction = () => {
-    if (ciPolicy?.label === "Blocked") return { label: "Block Deployment", color: "text-severity-critical border-l-severity-critical" };
-    if (risk?.rotation_required) return { label: "Rotate Immediately", color: "text-severity-critical border-l-severity-critical" };
-    if (exposurePaths > 0) return { label: "Review & Rotate", color: "text-severity-high border-l-severity-high" };
-    return { label: "Monitor", color: "text-severity-low border-l-severity-low" };
+    if (ciPolicy?.label === "Blocked") return { label: "Block Deployment", color: "text-severity-critical" };
+    if (risk?.rotation_required) return { label: "Rotate Immediately", color: "text-severity-critical" };
+    if (exposurePaths > 0) return { label: "Review & Rotate", color: "text-severity-high" };
+    return { label: "Monitor", color: "text-severity-low" };
   };
 
   const action = getAction();
@@ -48,7 +48,7 @@ export function SecretMetricsRow({ summary, risk, ciPolicy }: SecretMetricsRowPr
         <p className="text-xs text-text-muted mt-1">{uniqueSecrets} unique fingerprints</p>
       </div>
 
-      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 border-l-4 ${uniqueSecrets > 0 ? 'border-l-severity-high text-severity-high' : 'border-l-severity-low text-severity-low'}`}>
+      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 ${uniqueSecrets > 0 ? 'text-severity-high' : 'text-severity-low'}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Exposure Paths
           <InfoTooltip text="Confirmed paths where a leaked secret grants access to a sensitive asset or service." />
@@ -57,7 +57,7 @@ export function SecretMetricsRow({ summary, risk, ciPolicy }: SecretMetricsRowPr
         <p className="text-xs text-text-muted mt-1">attack vectors</p>
       </div>
 
-      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 border-l-4 ${riskTone}`}>
+      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 ${riskTone}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Business Risk
           <InfoTooltip text="Overall severity based on the types of secrets exposed and their potential blast radius." />
@@ -67,7 +67,7 @@ export function SecretMetricsRow({ summary, risk, ciPolicy }: SecretMetricsRowPr
         </div>
       </div>
 
-      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 border-l-4 ${action.color}`}>
+      <div className={`bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4 ${action.color}`}>
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           Action Required
           <InfoTooltip text="Recommended action based on rotation requirements and CI policy." />
