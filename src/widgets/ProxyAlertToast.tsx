@@ -42,22 +42,31 @@ export function ProxyAlertToast() {
         >
           <div className="flex items-start gap-3">
             <span className="material-symbols-outlined text-red-500 text-3xl animate-pulse">
-              {alert.type === 'PAYLOAD_BLOCK' ? 'bug_report' : 'security'}
+              {alert.type === 'PAYLOAD_BLOCK' ? 'bug_report' : 
+               alert.type === 'CODEBASE_COMPROMISE' ? 'gavel' :
+               alert.type === 'SECRET_BLOCK' ? 'key' :
+               alert.type === 'CONFIG_BLOCK' ? 'settings_alert' :
+               'security'}
             </span>
             <div>
               <h3 className="text-red-400 font-bold uppercase tracking-wider text-sm mb-1">
-                Zero Trust Proxy Block
+                {alert.type === 'CODEBASE_COMPROMISE' ? 'Zero Trust EDR Alert' : 'Zero Trust Proxy Block'}
               </h3>
               <p className="text-white text-sm font-medium leading-relaxed">
                 {alert.message}
               </p>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 <span className="bg-red-900/50 text-red-200 text-xs px-2 py-1 rounded font-mono border border-red-800/50">
                   {alert.package}
                 </span>
                 <span className="bg-red-900/50 text-red-200 text-xs px-2 py-1 rounded border border-red-800/50">
-                  {alert.type === 'PAYLOAD_BLOCK' ? 'Deep Scan' : 'Metadata Check'}
+                  {alert.type.replace('_', ' ')}
                 </span>
+                {alert.findings?.threatLevel && (
+                  <span className="bg-red-900/50 text-red-200 text-xs px-2 py-1 rounded border border-red-800/50">
+                    {alert.findings.threatLevel}
+                  </span>
+                )}
               </div>
             </div>
           </div>

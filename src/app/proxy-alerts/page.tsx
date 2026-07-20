@@ -48,26 +48,40 @@ export default function ProxyAlertsPage() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-5">
          <div className="bg-surface rounded-2xl p-5 border border-border-subtle shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center"><ShieldAlert /></div>
+            <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center shrink-0"><ShieldAlert /></div>
             <div>
               <p className="text-sm font-bold text-text-muted uppercase tracking-wider">Total Blocks</p>
               <p className="text-2xl font-black text-text-primary">{alerts.length}</p>
             </div>
          </div>
          <div className="bg-surface rounded-2xl p-5 border border-border-subtle shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center"><Package /></div>
+            <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center shrink-0"><Activity /></div>
             <div>
-              <p className="text-sm font-bold text-text-muted uppercase tracking-wider">Metadata Blocks</p>
-              <p className="text-2xl font-black text-text-primary">{alerts.filter(a => a.type === 'METADATA_BLOCK').length}</p>
+              <p className="text-sm font-bold text-text-muted uppercase tracking-wider">NPM Payload</p>
+              <p className="text-2xl font-black text-text-primary">{alerts.filter(a => a.type === 'PAYLOAD_BLOCK' || a.type === 'METADATA_BLOCK').length}</p>
             </div>
          </div>
          <div className="bg-surface rounded-2xl p-5 border border-border-subtle shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center"><Activity /></div>
+            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0"><Package /></div>
             <div>
-              <p className="text-sm font-bold text-text-muted uppercase tracking-wider">Payload Blocks</p>
-              <p className="text-2xl font-black text-text-primary">{alerts.filter(a => a.type === 'PAYLOAD_BLOCK').length}</p>
+              <p className="text-sm font-bold text-text-muted uppercase tracking-wider">Config Blocks</p>
+              <p className="text-2xl font-black text-text-primary">{alerts.filter(a => a.type === 'CONFIG_BLOCK').length}</p>
+            </div>
+         </div>
+         <div className="bg-surface rounded-2xl p-5 border border-border-subtle shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center shrink-0"><Package /></div>
+            <div>
+              <p className="text-sm font-bold text-text-muted uppercase tracking-wider">Secret Blocks</p>
+              <p className="text-2xl font-black text-text-primary">{alerts.filter(a => a.type === 'SECRET_BLOCK').length}</p>
+            </div>
+         </div>
+         <div className="bg-surface rounded-2xl p-5 border border-border-subtle shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 bg-gray-100 text-gray-800 rounded-full flex items-center justify-center shrink-0"><ShieldAlert /></div>
+            <div>
+              <p className="text-sm font-bold text-text-muted uppercase tracking-wider">EDR Alerts</p>
+              <p className="text-2xl font-black text-text-primary">{alerts.filter(a => a.type === 'CODEBASE_COMPROMISE').length}</p>
             </div>
          </div>
       </div>
@@ -118,16 +132,18 @@ export default function ProxyAlertsPage() {
                       </td>
                       <td className="py-4 px-2 align-top w-40">
                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border ${
-                           alert.type === 'PAYLOAD_BLOCK' 
-                            ? 'bg-purple-100 text-purple-800 border-purple-200' 
-                            : 'bg-orange-100 text-orange-800 border-orange-200'
+                           alert.type === 'PAYLOAD_BLOCK' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+                           alert.type === 'CODEBASE_COMPROMISE' ? 'bg-red-100 text-red-800 border-red-200' :
+                           alert.type === 'SECRET_BLOCK' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                           alert.type === 'CONFIG_BLOCK' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                           'bg-orange-100 text-orange-800 border-orange-200'
                          }`}>
-                           {alert.type === 'PAYLOAD_BLOCK' ? 'Deep Scan' : 'Metadata Check'}
+                           {alert.type.replace('_', ' ')}
                          </span>
                       </td>
                       <td className="py-4 px-2 align-top w-48">
                         <code className="text-sm font-bold bg-surface-container px-2 py-1 rounded text-text-primary border border-border-subtle">
-                          {alert.packageName}
+                          {alert.packageName || alert.package || 'Unknown'}
                         </code>
                       </td>
                       <td className="py-4 px-2 align-top text-sm font-medium text-text-secondary">

@@ -24,6 +24,8 @@ export function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   const isCipher = pathname.startsWith("/cipher-scanner");
   const isAgentsHistory = pathname.startsWith("/vm-agents/history") || (pathname.startsWith("/vm-agents/") && pathname !== "/vm-agents/history" && pathname !== "/vm-agents");
   const isAgents = pathname === "/vm-agents";
+  const isMonitoring = pathname === "/monitoring";
+  // const isVCDashboard = pathname === "/vc-dashboard";
 
   const handleLogout = () => {
     logout();
@@ -120,6 +122,26 @@ export function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
               dns
             </span>
             {isOpen && <span className="whitespace-nowrap overflow-hidden">VM Dashboard</span>}
+          </Link>
+          <Link
+            href="/monitoring"
+            className={getLinkClass(isMonitoring)}
+          >
+            {renderActiveIndicator(isMonitoring)}
+            <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isMonitoring ? "text-primary" : ""}`}>
+              policy
+            </span>
+            <span>EDR Monitoring</span>
+          </Link>
+          <Link
+            href="/monitoring"
+            className={getLinkClass(isMonitoring)}
+          >
+            {renderActiveIndicator(isMonitoring)}
+            <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isMonitoring ? "text-primary" : ""}`}>
+              policy
+            </span>
+            <span>EDR Monitoring</span>
           </Link>
 
           {isOpen && (
