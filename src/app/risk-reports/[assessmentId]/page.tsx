@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import { fetchRiskAssessment, generateRiskAssessmentRemedies, downloadRiskReportPdf } from "@/shared/api/client";
 import type { RiskAssessment, UnifiedRiskPriority } from "@/shared/api/types";
+import { usePageContext } from "@/features/chatbot/usePageContext";
 
 const SCANNER_LABELS: Record<string, string> = {
   secret: "Secret Scanner",
@@ -41,6 +42,18 @@ export default function RiskReportDetailPage() {
     const priorities = risk?.scanner_priorities || {};
     return Object.keys(priorities).filter((name) => (priorities[name] || []).length > 0);
   }, [risk?.scanner_priorities]);
+
+  usePageContext({
+    page: "Risk Report Detail",
+    assessmentId: assessmentId,
+    target: assessment?.target_name,
+    status: assessment?.status,
+    finalRiskScore: risk?.final_risk_score,
+    riskLevel: risk?.final_risk_level,
+    activeScanners: activeScannerNames,
+    aiRemediesCount: aiRemedies.length,
+    unifiedPrioritiesCount: (risk?.unified_priorities || []).length,
+  });
 
   const handleGenerateRemedies = async () => {
     if (!assessment || assessment.status !== "completed") return;

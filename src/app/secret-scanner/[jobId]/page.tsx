@@ -14,6 +14,7 @@ import { SecretInteractiveGraph } from "@/widgets/secret/SecretInteractiveGraph"
 import { AdvancedSecretInsights } from "@/widgets/secret/AdvancedSecretInsights";
 import { SecretFindingsTable } from "@/widgets/secret/SecretFindingsTable";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
+import { usePageContext } from "@/features/chatbot/usePageContext";
 
 function severityClass(severity?: string) {
   if (severity === "critical") return "bg-red-100 text-red-800";
@@ -114,6 +115,14 @@ export default function SecretScannerJobPage() {
   const { data: jobData, isLoading: isJobLoading, error: queryError } = useQuery({
     queryKey: ["secret-job", jobId],
     queryFn: () => fetchSecretJobStatus(jobId),
+  });
+
+  usePageContext({
+    page: "Secret Scanner — Job Detail",
+    jobId: jobId,
+    status: jobData?.status,
+    findings: jobData?.result?.findings,
+    summary: jobData?.result?.summary,
   });
 
   useEffect(() => {

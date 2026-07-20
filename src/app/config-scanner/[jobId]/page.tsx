@@ -15,6 +15,7 @@ import { ConfigAttackPathsList } from "@/widgets/config/ConfigAttackPathsList";
 import { AdvancedConfigInsights } from "@/widgets/config/AdvancedConfigInsights";
 import { ConfigFindingsTable } from "@/widgets/config/ConfigFindingsTable";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
+import { usePageContext } from "@/features/chatbot/usePageContext";
 
 export default function ConfigScannerJobPage() {
   const { jobId } = useParams() as { jobId: string };
@@ -43,6 +44,14 @@ export default function ConfigScannerJobPage() {
   const { data: jobData, isLoading: isJobLoading, error: queryError } = useQuery({
     queryKey: ["config-job", jobId],
     queryFn: () => fetchConfigJobStatus(jobId),
+  });
+
+  usePageContext({
+    page: "Config Scanner — Job Detail",
+    jobId: jobId,
+    status: jobData?.status,
+    findings: jobData?.result?.findings,
+    summary: jobData?.result?.summary,
   });
 
   useEffect(() => {

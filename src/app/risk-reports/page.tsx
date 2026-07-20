@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { fetchRiskAssessments } from "@/shared/api/client";
 import type { RiskAssessment } from "@/shared/api/types";
+import { usePageContext } from "@/features/chatbot/usePageContext";
 
 export default function RiskReportsPage() {
   const { data: assessments = [], isLoading } = useQuery({
@@ -13,6 +14,11 @@ export default function RiskReportsPage() {
       const active = query.state.data?.some((item) => ["waiting", "running"].includes(item.status));
       return active ? 4000 : false;
     },
+  });
+
+  usePageContext({
+    page: "Risk Reports",
+    assessmentsCount: assessments?.length || 0,
   });
 
   return (

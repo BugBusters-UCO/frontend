@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchProxyAlerts } from "@/shared/api/client";
 import { ShieldAlert, Activity, Package, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { SecurityRadar } from "@/widgets/SecurityRadar";
+import { usePageContext } from "@/features/chatbot/usePageContext";
 
 export default function ProxyAlertsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -13,6 +14,12 @@ export default function ProxyAlertsPage() {
     queryKey: ["proxy-alerts"],
     queryFn: fetchProxyAlerts,
     refetchInterval: 5000 // Poll every 5 seconds for new alerts
+  });
+
+  usePageContext({
+    page: "Proxy Gateway",
+    alertsCount: alerts?.length || 0,
+    topAlerts: alerts?.slice(0, 5),
   });
 
   return (

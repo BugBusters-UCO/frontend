@@ -14,6 +14,7 @@ import { AdvancedCipherInsights } from "@/widgets/cipher/AdvancedCipherInsights"
 import { CipherFindingsTable } from "@/widgets/cipher/CipherFindingsTable";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { usePageContext } from "@/features/chatbot/usePageContext";
 
 function severityClass(severity?: string) {
   if (severity === "critical") return "bg-red-100 text-red-800";
@@ -107,6 +108,14 @@ export default function CipherScannerJobPage() {
   const { data: jobData, isLoading: isJobLoading, error: queryError } = useQuery({
     queryKey: ["cipher-job", jobId],
     queryFn: () => fetchCipherJobStatus(jobId),
+  });
+
+  usePageContext({
+    page: "Cipher Scanner — Job Detail",
+    jobId: jobId,
+    status: jobData?.status,
+    findings: jobData?.result?.findings,
+    summary: jobData?.result?.summary,
   });
 
   function startLogStream(id: string) {

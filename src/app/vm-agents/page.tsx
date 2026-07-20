@@ -18,6 +18,7 @@ import {
 import type { AgentScanJob, BusinessRiskContext, RiskAssessment } from "@/shared/api/types";
 import { useAuth } from "@/shared/lib/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { usePageContext } from "@/features/chatbot/usePageContext";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 import { RemoteFileExplorer } from "@/shared/ui/RemoteFileExplorer";
 
@@ -43,8 +44,22 @@ export default function VmAgentsPage() {
   const queryClient = useQueryClient();
 
   const { data: agents = [], isLoading: isLoadingAgents, error: agentsError } = useQuery({
-    queryKey: ["agents"],
+    queryKey: ["vm-agents"],
     queryFn: fetchAgents,
+    refetchInterval: 10000,
+  });
+
+  usePageContext({
+    page: "VM Agents Management",
+    totalAgents: agents.length,
+    activeAgents: agents.filter((a) => a.status === "online").length,
+    offlineAgents: agents.filter((a) => a.status !== "online").length,
+    agentsList: agents.slice(0, 10).map((a) => ({
+      id: a.id,
+      name: a.hostname,
+      status: a.status,
+      os: a.os,
+    })),
   });
 
   const { data: reports = [], isLoading: isLoadingReports } = useQuery({

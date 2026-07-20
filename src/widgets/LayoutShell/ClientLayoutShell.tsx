@@ -1,12 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Topbar } from "./Topbar";
 import { Sidebar } from "./Sidebar";
+import { ChatbotPanel } from "@/widgets/ChatbotPanel/ChatbotPanel";
+import { useChatbot } from "@/features/chatbot/ChatbotContext";
 
 export function ClientLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { isOpen, panelWidth } = useChatbot();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
 
   const isAuthPage = pathname === "/login" || pathname === "/register";
 
@@ -19,14 +25,21 @@ export function ClientLayoutShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <>
-      <Topbar />
-      <div className="flex pt-16 w-full h-full">
-        <Sidebar />
-        <main className="ml-64 flex-1 h-[calc(100vh-4rem)] overflow-y-auto bg-surface p-page-margin">
+    <div className="flex flex-col h-screen w-screen overflow-hidden">
+      <Topbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+      <div className="flex flex-1 overflow-hidden relative">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        
+        <main 
+          className="flex-1 overflow-y-auto bg-surface p-page-margin transition-all duration-0"
+          style={{ marginRight: isOpen ? `${panelWidth}vw` : '0px' }}
+        >
           {children}
         </main>
+        
+        {/* Chatbot Panel */}
+        <ChatbotPanel />
       </div>
-    </>
+    </div>
   );
 }
