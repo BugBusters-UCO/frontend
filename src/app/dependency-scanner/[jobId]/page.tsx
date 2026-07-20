@@ -13,6 +13,7 @@ import { AdvancedDependencyInsights } from "@/widgets/AdvancedDependencyInsights
 import { SkeletonJobRow, SkeletonMetricsRow, SkeletonPanel } from "@/widgets/Skeleton";
 import { ArrowLeftCircle } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { usePageContext } from "@/features/chatbot/usePageContext";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:5000";
 
@@ -30,6 +31,17 @@ export default function ScannerJobPage() {
   const { data: jobData, isLoading: isJobLoading, error: queryError } = useQuery({
     queryKey: ["dependency-job", jobId],
     queryFn: () => fetchJobStatus(jobId),
+  });
+
+  usePageContext({
+    page: "Dependency Scanner — Job Detail",
+    jobId: jobId,
+    sourceLabel: jobData?.sourceLabel,
+    status: jobData?.status,
+    summary: jobData?.result?.summary,
+    findings: jobData?.result?.findings,
+    riskChains: (jobData?.result?.risk_chains || []).length,
+    capabilityFindings: (jobData?.result?.capability_findings || []).map((c: any) => c.capability),
   });
 
   useEffect(() => {

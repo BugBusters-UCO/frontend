@@ -2,6 +2,7 @@
 
 import React from "react";
 import { DisclaimerModal } from "@/widgets/DisclaimerModal";
+import { usePageContext } from "@/features/chatbot/usePageContext";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
@@ -21,6 +22,14 @@ export default function DashboardPage() {
     queryKey: ["risk-overview"],
     queryFn: () => fetchRiskOverview({}),
     refetchInterval: 12000,
+  });
+
+  usePageContext({
+    page: "Security Dashboard",
+    totalScans: stats?.totalScans || 0,
+    criticalFindings: stats?.criticalFindings || 0,
+    totalFindings: stats?.totalFindings || 0,
+    healthScore: riskOverview?.risk?.final_risk_score || 0,
   });
 
   const latestRiskScore = riskOverview?.risk?.final_risk_score;

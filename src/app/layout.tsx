@@ -9,6 +9,7 @@ import { ClientLayoutShell } from "@/widgets/LayoutShell/ClientLayoutShell";
 import { AuthProvider } from "@/shared/lib/AuthContext";
 import { ReactQueryProvider } from "@/shared/lib/ReactQueryProvider";
 import { ThemeProvider } from "@/shared/lib/ThemeProvider";
+import { ChatbotProvider } from "@/features/chatbot/ChatbotContext";
 
 export const metadata: Metadata = {
   title: "BugBusters Security Platform",
@@ -29,9 +30,11 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <ReactQueryProvider>
             <AuthProvider>
-              <ClientLayoutShell>
-                {children}
-              </ClientLayoutShell>
+              <ChatbotProvider>
+                <ClientLayoutShell>
+                  {children}
+                </ClientLayoutShell>
+              </ChatbotProvider>
             </AuthProvider>
           </ReactQueryProvider>
         </ThemeProvider>

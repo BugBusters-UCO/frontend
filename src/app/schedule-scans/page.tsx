@@ -14,6 +14,7 @@ import {
 import type { BusinessRiskContext, ScheduledScan, ScannerModule, VmAgent } from "@/shared/api/types";
 import { RemoteFileExplorer } from "@/shared/ui/RemoteFileExplorer";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
+import { usePageContext } from "@/features/chatbot/usePageContext";
 
 const SCANNERS: Array<{ id: ScannerModule; label: string; icon: string }> = [
   { id: "dependency", label: "Dependency", icon: "inventory_2" },
@@ -80,6 +81,20 @@ export default function ScheduleScansPage() {
       setLoading(false);
     }
   }, []);
+
+  usePageContext({
+    page: "Scheduled Scans Management",
+    totalSchedules: schedules.length,
+    availableAgents: agents.length,
+    activeSchedules: schedules.filter((s) => s.status === "active").length,
+    schedulesList: schedules.slice(0, 5).map((s) => ({
+      id: s.id,
+      name: s.name,
+      status: s.status,
+      frequency: s.frequency,
+      agentCount: (s.target_agents || []).length,
+    })),
+  });
 
   useEffect(() => {
     const timer = window.setTimeout(() => {

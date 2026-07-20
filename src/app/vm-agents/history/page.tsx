@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchAgentScanReports } from "@/shared/api/client";
 import { AgentScanJob } from "@/shared/api/types";
 import { SkeletonJobRow } from "@/widgets/Skeleton";
+import { usePageContext } from "@/features/chatbot/usePageContext";
 
 export default function VmAgentHistoryPage() {
   const currentSession = getCookie("bugbusters_github_session") as string | undefined;
@@ -26,6 +27,11 @@ export default function VmAgentHistoryPage() {
     acc[label].push(job);
     return acc;
   }, {} as Record<string, AgentScanJob[]>);
+
+  usePageContext({
+    page: "VM Agents History",
+    historyCount: jobs?.length || 0,
+  });
 
   return (
     <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap">
