@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProxyAlerts } from "@/shared/api/client";
 import { ShieldAlert, Activity, Package, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { SecurityRadar } from "@/widgets/SecurityRadar";
 
 export default function ProxyAlertsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -17,26 +18,46 @@ export default function ProxyAlertsPage() {
   return (
     <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap animate-in fade-in duration-500">
       
-      {/* Header */}
-      <div className="bg-[#2D0F0F] transition-colors duration-300 rounded-2xl border border-red-900/50 shadow-lg p-8 flex items-center justify-between gap-6 overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 rounded-bl-[200px] -z-10 pointer-events-none"></div>
-        <div className="flex items-center gap-5 relative z-10">
-          <div className="w-14 h-14 rounded-2xl bg-red-500/20 flex items-center justify-center shrink-0 border border-red-500/30">
-            <ShieldAlert className="text-red-500" size={32} />
-          </div>
-          <div>
-            <h1 className="font-headline-lg text-headline-lg text-red-100 mb-1 tracking-tight">Security Gateway Alerts</h1>
-            <p className="font-body-sm text-body-sm text-red-300/80">
-              Live intercept logs of malicious packages blocked by the Zero Trust NPM proxy.
-            </p>
+      {/* Header & Radar Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Header */}
+        <div className="lg:col-span-2 bg-[#0A0A0A] transition-colors duration-300 rounded-2xl border border-green-900/30 shadow-[inset_0_0_50px_rgba(0,255,0,0.02)] p-8 flex flex-col justify-center overflow-hidden relative">
+          {/* Abstract Grid Background */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,0,0.03)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/5 rounded-full blur-3xl -z-10 pointer-events-none transform translate-x-1/3 -translate-y-1/3"></div>
+          
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10 w-full h-full">
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 rounded-2xl bg-[#0A0A0A] flex items-center justify-center shrink-0 border border-green-500/20 shadow-[0_0_15px_rgba(0,255,0,0.1)] relative overflow-hidden">
+                <div className="absolute inset-0 bg-green-500/10 animate-pulse"></div>
+                <ShieldAlert className="text-green-500 relative z-10" size={32} />
+              </div>
+              <div>
+                <h1 className="text-3xl font-black text-white mb-2 tracking-wide uppercase drop-shadow-sm">Security Gateway</h1>
+                <p className="font-mono text-xs text-green-400/80 max-w-md leading-relaxed">
+                  Live intercept logs of malicious packages blocked by the Zero Trust proxy.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col items-start md:items-end gap-2">
+              <div className="flex items-center gap-3 bg-green-950/40 px-4 py-2.5 rounded-lg border border-green-900/50 backdrop-blur-sm">
+                 <span className="relative flex h-3 w-3">
+                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                   <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                 </span>
+                 <span className="text-green-400 font-mono text-xs font-bold uppercase tracking-widest">System Online</span>
+              </div>
+              <div className="text-[10px] font-mono text-green-600/50 tracking-widest pr-1">
+                Z-TRUST ENGINE v1.0
+              </div>
+            </div>
           </div>
         </div>
-        <div className="relative z-10 flex items-center gap-2 bg-red-950 px-4 py-2 rounded-xl border border-red-900/50">
-           <span className="relative flex h-3 w-3">
-             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-             <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-           </span>
-           <span className="text-red-200 text-sm font-bold uppercase tracking-widest">Active</span>
+
+        {/* Radar */}
+        <div className="lg:col-span-1 h-[250px] lg:h-auto">
+          <SecurityRadar />
         </div>
       </div>
 
