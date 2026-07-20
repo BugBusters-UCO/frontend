@@ -19,6 +19,7 @@ export function Sidebar() {
   const isCipher = pathname.startsWith("/cipher-scanner");
   const isAgentsHistory = pathname.startsWith("/vm-agents/history") || (pathname.startsWith("/vm-agents/") && pathname !== "/vm-agents/history" && pathname !== "/vm-agents");
   const isAgents = pathname === "/vm-agents";
+  const isMonitoring = pathname === "/monitoring";
   // const isVCDashboard = pathname === "/vc-dashboard";
 
   const handleLogout = () => {
@@ -94,6 +95,16 @@ export function Sidebar() {
               dns
             </span>
             <span>VM Dashboard</span>
+          </Link>
+          <Link
+            href="/monitoring"
+            className={getLinkClass(isMonitoring)}
+          >
+            {renderActiveIndicator(isMonitoring)}
+            <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isMonitoring ? "text-primary" : ""}`}>
+              policy
+            </span>
+            <span>EDR Monitoring</span>
           </Link>
 
           <p className="text-xs font-bold text-text-muted uppercase tracking-widest mb-2 px-2 mt-4">
