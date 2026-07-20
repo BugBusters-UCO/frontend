@@ -126,22 +126,13 @@ export function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
           <Link
             href="/monitoring"
             className={getLinkClass(isMonitoring)}
+            title="EDR Monitoring"
           >
             {renderActiveIndicator(isMonitoring)}
-            <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isMonitoring ? "text-primary" : ""}`}>
+            <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 shrink-0 ${isMonitoring ? "text-primary" : ""}`}>
               policy
             </span>
-            <span>EDR Monitoring</span>
-          </Link>
-          <Link
-            href="/monitoring"
-            className={getLinkClass(isMonitoring)}
-          >
-            {renderActiveIndicator(isMonitoring)}
-            <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 ${isMonitoring ? "text-primary" : ""}`}>
-              policy
-            </span>
-            <span>EDR Monitoring</span>
+            {isOpen && <span className="whitespace-nowrap overflow-hidden">EDR Monitoring</span>}
           </Link>
 
           {isOpen && (
