@@ -46,6 +46,7 @@ export function ProxyAlertToast() {
                alert.type === 'CODEBASE_COMPROMISE' ? 'gavel' :
                alert.type === 'SECRET_BLOCK' ? 'key' :
                alert.type === 'CONFIG_BLOCK' ? 'settings_alert' :
+               alert.type === 'CIPHER_BLOCK' ? 'policy' :
                'security'}
             </span>
             <div>
