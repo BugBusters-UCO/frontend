@@ -41,7 +41,7 @@ export default function ProxyAlertsPage() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-5">
          <div className="bg-surface rounded-2xl p-5 border border-border-subtle shadow-sm flex items-center gap-4">
             <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center shrink-0"><ShieldAlert /></div>
             <div>
@@ -68,6 +68,13 @@ export default function ProxyAlertsPage() {
             <div>
               <p className="text-sm font-bold text-text-muted uppercase tracking-wider">Secret Blocks</p>
               <p className="text-2xl font-black text-text-primary">{alerts.filter(a => a.type === 'SECRET_BLOCK').length}</p>
+            </div>
+         </div>
+         <div className="bg-surface rounded-2xl p-5 border border-border-subtle shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center shrink-0"><ShieldAlert /></div>
+            <div>
+              <p className="text-sm font-bold text-text-muted uppercase tracking-wider">Cipher Blocks</p>
+              <p className="text-2xl font-black text-text-primary">{alerts.filter(a => a.type === 'CIPHER_BLOCK').length}</p>
             </div>
          </div>
          <div className="bg-surface rounded-2xl p-5 border border-border-subtle shadow-sm flex items-center gap-4">
@@ -129,6 +136,7 @@ export default function ProxyAlertsPage() {
                            alert.type === 'CODEBASE_COMPROMISE' ? 'bg-red-100 text-red-800 border-red-200' :
                            alert.type === 'SECRET_BLOCK' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
                            alert.type === 'CONFIG_BLOCK' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                           alert.type === 'CIPHER_BLOCK' ? 'bg-indigo-100 text-indigo-800 border-indigo-200' :
                            'bg-orange-100 text-orange-800 border-orange-200'
                          }`}>
                            {alert.type.replace('_', ' ')}
