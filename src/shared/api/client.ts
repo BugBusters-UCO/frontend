@@ -772,3 +772,15 @@ export async function fetchCipherExplanation(jobId: string, sectionId: string, d
   if (!response.ok) throw new Error("Failed to fetch AI explanation");
   return response.json();
 }
+
+// ------------------------------------------------------------------
+// Proxy Alerts
+// ------------------------------------------------------------------
+
+export async function fetchProxyAlerts(): Promise<any[]> {
+  const response = await apiFetch(`${API_BASE_URL}/api/proxy/alerts`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to fetch proxy alerts");
+  return response.json();
+}

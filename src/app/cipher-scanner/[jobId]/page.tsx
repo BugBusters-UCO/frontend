@@ -282,7 +282,7 @@ export default function CipherScannerJobPage() {
 
             {activeTab === "technical" && (
               <div className="flex flex-col gap-6">
-                <CipherFindingsTable findings={findings} endpointPolicies={endpointPolicies} />
+                <CipherFindingsTable findings={findings} />
                 <AdvancedCipherInsights jobId={jobId} result={result as any} />
               </div>
             )}
