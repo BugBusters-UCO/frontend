@@ -47,18 +47,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const res = await loginUser(data);
     setCookie("auth_token", res.token, { maxAge: 60 * 60 * 24 * 7 }); // 7 days
     setUser(res.user);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cached_pass", data.password);
+    }
   };
 
   const register = async (data: any) => {
     const res = await registerUser(data);
     setCookie("auth_token", res.token, { maxAge: 60 * 60 * 24 * 7 });
     setUser(res.user);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cached_pass", data.password);
+    }
   };
 
   const logout = () => {
     deleteCookie("auth_token");
     deleteCookie("bugbusters_github_session"); // Also clear github session on logout
     setUser(null);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("cached_pass");
+    }
   };
 
   return (

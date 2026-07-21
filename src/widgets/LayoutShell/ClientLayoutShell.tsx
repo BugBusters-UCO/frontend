@@ -6,11 +6,13 @@ import { Topbar } from "./Topbar";
 import { Sidebar } from "./Sidebar";
 import { ChatbotPanel } from "@/widgets/ChatbotPanel/ChatbotPanel";
 import { useChatbot } from "@/features/chatbot/ChatbotContext";
+import { useAuth } from "@/shared/lib/AuthContext";
 
 export function ClientLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isOpen, panelWidth } = useChatbot();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { user } = useAuth();
 
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
 
@@ -25,7 +27,7 @@ export function ClientLayoutShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden">
+    <div className="flex flex-col h-screen w-screen overflow-hidden relative">
       <Topbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <div className="flex flex-1 overflow-hidden relative">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
@@ -37,7 +39,7 @@ export function ClientLayoutShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
         
-        {/* Chatbot Panel */}
+      {/* Chatbot Panel */}
         <ChatbotPanel />
       </div>
     </div>

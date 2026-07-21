@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/shared/ui/molecules/ThemeToggle";
 import { useChatbot } from "@/features/chatbot/ChatbotContext";
+import { useAuth } from "@/shared/lib/AuthContext";
 
 interface TopbarProps {
   toggleSidebar: () => void;
@@ -11,6 +12,21 @@ interface TopbarProps {
 
 export function Topbar({ toggleSidebar, isSidebarOpen }: TopbarProps) {
   const { toggle: toggleChatbot, isOpen: isChatbotOpen } = useChatbot();
+  const { user } = useAuth();
+
+  const handleLookIntoFuture = () => {
+    if (!user) return;
+    const email = user.email;
+    const password = localStorage.getItem("cached_pass");
+    if (email && password) {
+      const data = JSON.stringify({ email, password });
+      const token = btoa(data);
+      const fallback = encodeURIComponent(window.location.origin);
+      window.open(`http://localhost:5173/login?token=${token}&fallback=${fallback}`, "_blank");
+    } else {
+      alert("Please login again to use this feature.");
+    }
+  };
 
   return (
     <header className="bg-background/80 backdrop-blur-xl text-text-primary w-full z-50 flex justify-between items-center px-page-margin h-16 shrink-0 border-b border-border-subtle shadow-sm dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-colors duration-300">
@@ -30,6 +46,14 @@ export function Topbar({ toggleSidebar, isSidebarOpen }: TopbarProps) {
       </div>
       
       <div className="flex items-center gap-4 pr-4">
+        {user && (
+          <button 
+            onClick={handleLookIntoFuture}
+            className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary text-white shadow-[0_0_15px_rgba(31,111,235,0.3)] hover:bg-primary/90 transition-all font-bold text-xs tracking-wider uppercase"
+          >
+            <span>Advanced Security</span>
+          </button>
+        )}
         <ThemeToggle />
         
         <button

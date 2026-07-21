@@ -12,8 +12,11 @@ import { ThemeProvider } from "@/shared/lib/ThemeProvider";
 import { ChatbotProvider } from "@/features/chatbot/ChatbotContext";
 
 export const metadata: Metadata = {
-  title: "BugBusters Security Platform",
+  title: "BugBusters",
   description: "Comprehensive security scanning for your codebase",
+  icons: {
+    icon: '/icon-uco.png',
+  },
 };
 
 export default function RootLayout({
