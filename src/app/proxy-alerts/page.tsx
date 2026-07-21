@@ -26,36 +26,37 @@ export default function ProxyAlertsPage() {
     <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap animate-in fade-in duration-500">
       
       {/* Header & Radar Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Header */}
-        <div className="lg:col-span-2 bg-[#0A0A0A] transition-colors duration-300 rounded-2xl border border-green-900/30 shadow-[inset_0_0_50px_rgba(0,255,0,0.02)] p-8 flex flex-col justify-center overflow-hidden relative">
+      <div className="bg-white dark:bg-[#0A0A0A] rounded-2xl border border-border-subtle dark:border-green-900/30 shadow-sm dark:shadow-[inset_0_0_50px_rgba(0,255,0,0.02)] overflow-hidden mb-8 transition-colors duration-300">
+        <div className="grid grid-cols-1 @lg:grid-cols-3">
+          {/* Header */}
+          <div className="@lg:col-span-2 p-8 flex flex-col justify-center overflow-hidden relative border-b @lg:border-b-0 @lg:border-r border-border-subtle dark:border-green-900/30">
           {/* Abstract Grid Background */}
           <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,0,0.03)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
           <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/5 rounded-full blur-3xl -z-10 pointer-events-none transform translate-x-1/3 -translate-y-1/3"></div>
           
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10 w-full h-full">
+          <div className="flex flex-col @md:flex-row items-start @md:items-center justify-between gap-6 relative z-10 w-full h-full">
             <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-2xl bg-[#0A0A0A] flex items-center justify-center shrink-0 border border-green-500/20 shadow-[0_0_15px_rgba(0,255,0,0.1)] relative overflow-hidden">
-                <div className="absolute inset-0 bg-green-500/10 animate-pulse"></div>
-                <ShieldAlert className="text-green-500 relative z-10" size={32} />
+              <div className="w-16 h-16 rounded-2xl bg-surface-dim dark:bg-[#0A0A0A] flex items-center justify-center shrink-0 border border-border-subtle dark:border-green-500/20 shadow-sm dark:shadow-[0_0_15px_rgba(0,255,0,0.1)] relative overflow-hidden">
+                <div className="absolute inset-0 bg-primary/5 dark:bg-green-500/10 animate-pulse"></div>
+                <ShieldAlert className="text-primary dark:text-green-500 relative z-10" size={32} />
               </div>
               <div>
-                <h1 className="text-3xl font-black text-white mb-2 tracking-wide uppercase drop-shadow-sm">Security Gateway</h1>
-                <p className="font-mono text-xs text-green-400/80 max-w-md leading-relaxed">
+                <h1 className="text-3xl font-black text-text-primary dark:text-white mb-2 tracking-wide uppercase drop-shadow-sm">Security Gateway</h1>
+                <p className="font-mono text-xs text-text-secondary dark:text-green-400/80 max-w-md leading-relaxed">
                   Live intercept logs of malicious packages blocked by the Zero Trust proxy.
                 </p>
               </div>
             </div>
             
-            <div className="flex flex-col items-start md:items-end gap-2">
-              <div className="flex items-center gap-3 bg-green-950/40 px-4 py-2.5 rounded-lg border border-green-900/50 backdrop-blur-sm">
+            <div className="flex flex-col items-start @md:items-end gap-2">
+              <div className="flex items-center gap-3 bg-primary/5 dark:bg-green-950/40 px-4 py-2.5 rounded-lg border border-primary/20 dark:border-green-900/50 backdrop-blur-sm">
                  <span className="relative flex h-3 w-3">
-                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                   <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/80 dark:bg-green-400 opacity-75"></span>
+                   <span className="relative inline-flex rounded-full h-3 w-3 bg-primary dark:bg-green-500"></span>
                  </span>
-                 <span className="text-green-400 font-mono text-xs font-bold uppercase tracking-widest">System Online</span>
+                 <span className="text-primary dark:text-green-400 font-mono text-xs font-bold uppercase tracking-widest">System Online</span>
               </div>
-              <div className="text-[10px] font-mono text-green-600/50 tracking-widest pr-1">
+              <div className="text-[10px] font-mono text-text-muted dark:text-green-600/50 tracking-widest pr-1">
                 Z-TRUST ENGINE v1.0
               </div>
             </div>
@@ -63,13 +64,14 @@ export default function ProxyAlertsPage() {
         </div>
 
         {/* Radar */}
-        <div className="lg:col-span-1 h-[250px] lg:h-auto">
+        <div className="@lg:col-span-1 h-[250px] @lg:h-auto min-h-[300px]">
           <SecurityRadar />
+        </div>
         </div>
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-5">
+      <div className="grid grid-cols-1 @md:grid-cols-3 @lg:grid-cols-6 gap-5">
          <div className="bg-surface rounded-2xl p-5 border border-border-subtle shadow-sm flex items-center gap-4">
             <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center shrink-0"><ShieldAlert /></div>
             <div>

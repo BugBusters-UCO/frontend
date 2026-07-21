@@ -92,7 +92,7 @@ export default function RiskReportDetailPage() {
   return (
     <div className="mx-auto flex max-w-[1280px] flex-col gap-section-gap">
       <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-6 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-4 @lg:flex-row @lg:items-start @lg:justify-between">
           <div>
             <Link href="/risk-reports" className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
               <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -334,7 +334,7 @@ function TechnicalView({ assessment, scannerNames }: { assessment: RiskAssessmen
 
       <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
         <h2 className="text-section-header font-section-header">Priorities By Scanner</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div className="mt-4 grid grid-cols-1 gap-4 @xl:grid-cols-2">
           {scannerNames.length === 0 ? (
             <p className="text-sm text-text-muted">No scanner-specific priority items were found.</p>
           ) : (
@@ -359,7 +359,7 @@ function TechnicalView({ assessment, scannerNames }: { assessment: RiskAssessmen
 
       <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
         <h2 className="text-section-header font-section-header">Scanner Score Evidence</h2>
-        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-3 @md:grid-cols-4">
           {Object.values(risk.scanner_scores).map((scanner) => (
             <div key={scanner.scanner} className="rounded-2xl border border-border-divider p-4">
               <p className="text-xs font-bold uppercase text-text-muted">{scanner.scanner}</p>
@@ -397,7 +397,7 @@ function PriorityRow({ item, compact = false }: { item: UnifiedRiskPriority; com
         </div>
       </div>
       {!compact && <p className="mt-3 text-sm text-text-secondary">{item.why_first}</p>}
-      <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-3 @md:grid-cols-2">
         <div>
           <p className="text-xs font-bold uppercase text-text-muted">Fix first</p>
           <p className="mt-1 text-sm text-text-secondary">{item.fix_first}</p>

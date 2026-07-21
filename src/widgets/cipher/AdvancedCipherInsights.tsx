@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 import { AiExplanation } from "@/shared/ui/AiExplanation";
 import { CipherScanResult } from "@/shared/api/types";
+import { useChatbot } from "@/features/chatbot/ChatbotContext";
 
 interface AdvancedCipherInsightsProps {
   jobId: string;
@@ -102,6 +103,22 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
 
   const [activeTab, setActiveTab] = useState<TabKey | null>(tabs.length > 0 ? tabs[0].key : null);
 
+  const { setSelectedTopic } = useChatbot();
+
+  useEffect(() => {
+    if (!activeTab) return;
+    const tabToKey: Record<TabKey, string> = {
+      posture: "policy_decision,compliance_mapping,remediation_plan",
+      banking: "deployment_readiness,environment_drifts,agility_risks,compatibility_risks,mtls_readiness",
+      domains: "domain_inventory",
+      probes: "live_tls_probes",
+      endpoints: "endpoint_policies",
+      attack_paths: "attack_paths",
+      facts: "tls_facts",
+    };
+    setSelectedTopic(tabToKey[activeTab]);
+  }, [activeTab, setSelectedTopic]);
+
   if (!activeTab || tabs.length === 0) return null;
 
   return (
@@ -157,7 +174,7 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
                     {summary?.ci_status === "failed" ? "Deployment Blocked" : "Deployment Allowed"}
                   </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 @md:grid-cols-4 gap-4">
                   <div className="border border-border-divider rounded-2xl p-4">
                     <p className="text-xs uppercase text-text-muted font-semibold mb-2">TLS Facts</p>
                     <p className="text-3xl font-bold">{summary?.tls_facts || 0}</p>
@@ -201,7 +218,7 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-5">
+                <div className="grid grid-cols-1 @md:grid-cols-4 gap-3 mb-5">
                   <div className="border border-border-divider rounded-2xl p-3">
                     <p className="text-xs uppercase text-text-muted font-semibold">Drifts</p>
                     <p className="text-2xl font-bold">{environmentDrifts.length}</p>
@@ -221,7 +238,7 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
                 </div>
 
                 {deploymentReadiness && (
-                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-5">
+                  <div className="grid grid-cols-1 @xl:grid-cols-3 gap-4 mb-5">
                     <div className="border border-red-100 bg-red-50 rounded-2xl p-4">
                       <p className="text-xs uppercase font-semibold text-red-700 mb-2">Blockers</p>
                       {(deploymentReadiness.blockers || []).length ? (
@@ -249,7 +266,7 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 @xl:grid-cols-2 gap-4">
                   {environmentDrifts.length > 0 && (
                     <div className="border border-yellow-200 bg-yellow-50 rounded-2xl p-4">
                       <h4 className="font-bold text-yellow-950 mb-2">Environment Drift</h4>
@@ -331,7 +348,7 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
                     <span className="px-3 py-1 rounded-full bg-surface-container text-text-secondary">{domainInventory.length} domains</span>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 @xl:grid-cols-2 gap-4">
                   {domainGroups.map((group: any) => (
                     <div key={group.baseDomain} className="border border-border-divider rounded-2xl p-4">
                       <div className="flex items-start justify-between gap-4">
@@ -386,7 +403,7 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
                     <p className="text-sm text-text-secondary">Runtime check for discovered domains: deployment status, certificate expiry, negotiated cipher.</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 @xl:grid-cols-2 gap-4">
                   {liveTlsProbes.map(probe => (
                     <div key={probe.id} className="border border-border-divider rounded-2xl p-4">
                       <div className="flex items-start justify-between gap-4">
@@ -398,7 +415,7 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
                           {probe.deployment_status}
                         </span>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
+                      <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 mt-4 text-sm">
                         <div className="bg-surface-container-low rounded p-3">
                           <p className="text-xs uppercase text-text-muted font-semibold">Negotiated TLS</p>
                           <p className="font-semibold mt-1">{probe.negotiated_protocol || "Not available"}</p>
@@ -412,7 +429,7 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
                           <p className="text-xs text-text-secondary mt-1">{probe.certificate_days_remaining === null || probe.certificate_days_remaining === undefined ? "Expiry unknown" : `${probe.certificate_days_remaining} day(s) remaining`}</p>
                         </div>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-xs">
+                      <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 mt-3 text-xs">
                         <div>
                           <p className="uppercase text-text-muted font-semibold mb-1">Certificate</p>
                           <p className="font-mono break-all">Subject: {probe.certificate_subject || "-"}</p>
@@ -439,7 +456,7 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
               <div>
                 <h3 className="text-xl font-bold mb-2">Endpoint TLS Posture Grades</h3>
                 <p className="text-sm text-text-secondary mb-5">Risk-first grading of every detected TLS edge or policy-bearing file.</p>
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 @xl:grid-cols-2 gap-4">
                   {endpointPolicies.map(policy => (
                     <div key={policy.id} className="border border-border-divider rounded-2xl p-4">
                       <div className="flex items-start justify-between gap-4">
@@ -449,7 +466,7 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
                         </div>
                         <span className={`px-3 py-1 rounded-full text-sm font-bold border ${gradeClass(policy.grade)}`}>Grade {policy.grade}</span>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
+                      <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 mt-4 text-sm">
                         <div>
                           <p className="text-xs uppercase text-text-muted font-semibold mb-1">Protocols</p>
                           <div className="flex flex-wrap gap-1">
@@ -491,7 +508,7 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
                           <p className="text-xs text-red-900 mt-1">Entry point: {path.entry_point}</p>
                         </div>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div className="grid grid-cols-1 @md:grid-cols-2 gap-4 mt-4">
                         <div className="bg-surface transition-colors duration-300 border border-red-100 rounded p-3">
                           <p className="text-xs uppercase font-semibold text-red-700 mb-2">Weakness Chain</p>
                           <ol className="space-y-1 text-sm text-red-950 list-decimal list-inside">
@@ -525,7 +542,7 @@ export function AdvancedCipherInsights({ jobId, result }: AdvancedCipherInsights
             {activeTab === "facts" && (
               <div>
                 <h3 className="text-xl font-bold mb-4">Extracted TLS Facts</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto">
+                <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto">
                   {tlsFacts.map(fact => (
                     <div key={fact.id} className="border border-border-divider rounded-2xl p-3">
                       <div className="flex items-center justify-between gap-3">

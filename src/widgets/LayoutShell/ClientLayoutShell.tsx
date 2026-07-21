@@ -31,7 +31,7 @@ export function ClientLayoutShell({ children }: { children: React.ReactNode }) {
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         
         <main 
-          className="flex-1 overflow-y-auto bg-surface p-page-margin transition-all duration-0"
+          className="flex-1 overflow-y-auto bg-surface p-page-margin transition-all duration-0 @container"
           style={{ marginRight: isOpen ? `${panelWidth}vw` : '0px' }}
         >
           {children}

@@ -5,6 +5,7 @@ import { fetchAgents } from "@/shared/api/client";
 import { useQuery } from "@tanstack/react-query";
 import { RemoteFileExplorer } from "@/shared/ui/RemoteFileExplorer";
 import axios from "axios";
+import { usePageContext } from "@/features/chatbot/usePageContext";
 
 export default function EdrMonitoringPage() {
   const { data: agents = [], isLoading } = useQuery({
@@ -18,6 +19,14 @@ export default function EdrMonitoringPage() {
   const [watchSuccess, setWatchSuccess] = useState(false);
 
   const activeAgent = agents.find(a => a.id === selectedAgentId);
+
+  usePageContext({
+    page: "EDR Monitoring",
+    agentsCount: agents?.length || 0,
+    activeAgent,
+    selectedPaths,
+    isWatching
+  });
 
   const handleStartWatcher = async () => {
     if (selectedPaths.length === 0) return;

@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ConfigScanResult } from "@/shared/api/types";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useChatbot } from "@/features/chatbot/ChatbotContext";
 
 interface AdvancedConfigInsightsProps {
   result: ConfigScanResult;
@@ -19,6 +20,20 @@ export function AdvancedConfigInsights({ result }: AdvancedConfigInsightsProps) 
     if (result.remediation_plan?.length) return "remediation";
     return null;
   });
+
+  const { setSelectedTopic } = useChatbot();
+
+  useEffect(() => {
+    if (!activeTab) return;
+    const tabToKey: Record<TabKey, string> = {
+      facts: "normalized_config_facts",
+      drifts: "environment_drifts,runtime_drifts",
+      policy: "policy_decision",
+      compliance: "compliance_mapping",
+      remediation: "remediation_plan",
+    };
+    setSelectedTopic(tabToKey[activeTab]);
+  }, [activeTab, setSelectedTopic]);
 
   if (!activeTab) return null;
 

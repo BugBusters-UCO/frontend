@@ -118,8 +118,8 @@ export function RemoteFileExplorer({
           </div>
 
           {/* Fake Columns for Table Look */}
-          <div className="hidden sm:block w-[100px] text-[11px] font-mono text-text-muted shrink-0">--</div>
-          <div className="hidden sm:block w-[120px] text-[11px] text-text-muted shrink-0">--</div>
+          <div className="hidden @sm:block w-[100px] text-[11px] font-mono text-text-muted shrink-0">--</div>
+          <div className="hidden @sm:block w-[120px] text-[11px] text-text-muted shrink-0">--</div>
         </div>
         
         <AnimatePresence initial={false}>
@@ -143,8 +143,8 @@ export function RemoteFileExplorer({
                     <span className="material-symbols-outlined text-[14px] text-text-muted opacity-50">info</span>
                     <span className="text-[11px] text-text-muted italic opacity-50">Empty folder</span>
                   </div>
-                  <div className="hidden sm:block w-[100px]"></div>
-                  <div className="hidden sm:block w-[120px]"></div>
+                  <div className="hidden @sm:block w-[100px]"></div>
+                  <div className="hidden @sm:block w-[120px]"></div>
                 </div>
               ) : (
                 children.map(child => renderNode(child.path, level + 1))
@@ -186,8 +186,8 @@ export function RemoteFileExplorer({
           <div className="w-[14px]"></div> {/* spacer for checkbox */}
           <span>Name</span>
         </div>
-        <div className="hidden sm:block w-[100px]">Size</div>
-        <div className="hidden sm:block w-[120px]">Last Modified</div>
+        <div className="hidden @sm:block w-[100px]">Size</div>
+        <div className="hidden @sm:block w-[120px]">Last Modified</div>
       </div>
 
       {/* File Tree Container */}

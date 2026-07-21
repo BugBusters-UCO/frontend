@@ -105,7 +105,7 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
   const selectedChain = chains.find((c) => c.id === selectedChainId) || chains[0];
 
   return (
-    <div className={`transition-all duration-300 ease-in-out ${isFullscreen ? "fixed inset-0 z-[100] bg-background p-6 md:p-8 overflow-y-auto m-0 rounded-none border-0" : "bg-surface rounded-2xl border border-border-subtle shadow-[0_4px_30px_rgba(0,0,0,0.4)] p-card-padding overflow-hidden relative"}`}>
+    <div className={`transition-all duration-300 ease-in-out ${isFullscreen ? "fixed inset-0 z-[100] bg-background p-6 @md:p-8 overflow-y-auto m-0 rounded-none border-0" : "bg-surface rounded-2xl border border-border-subtle shadow-[0_4px_30px_rgba(0,0,0,0.4)] p-card-padding overflow-hidden relative"}`}>
       {!isFullscreen && <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-primary to-severity-critical"></div>}
       <div className="flex justify-between items-start mb-6">
         <div>
@@ -120,7 +120,7 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-2.5 py-1 bg-surface-container border border-border-subtle rounded-md text-body-xs font-semibold text-text-secondary hidden sm:block">
+          <div className="px-2.5 py-1 bg-surface-container border border-border-subtle rounded-md text-body-xs font-semibold text-text-secondary hidden @sm:block">
             {chains.length} chains detected
           </div>
           <button 
@@ -135,9 +135,9 @@ export function BlastRadiusMap({ chains }: BlastRadiusMapProps) {
         </div>
       </div>
 
-      <div className="flex flex-col xl:flex-row gap-6">
+      <div className="flex flex-col @xl:flex-row gap-6">
         {/* Chain Selector */}
-        <div className="xl:w-[280px] shrink-0">
+        <div className="@xl:w-[280px] shrink-0">
           <div className="flex items-center mb-3">
             <span className="material-symbols-outlined text-text-muted text-[18px] mr-2">list_alt</span>
             <div className="text-body-xs font-bold tracking-widest uppercase text-text-muted">

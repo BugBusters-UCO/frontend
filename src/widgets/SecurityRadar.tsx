@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { AlertTriangle } from "lucide-react";
+import { useTheme } from "next-themes";
 
 interface Blip {
   x: number;
@@ -27,6 +28,13 @@ export function SecurityRadar() {
   const blipsRef = useRef<Blip[]>([]);
   const rotationRef = useRef<number>(0);
   const threatTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const { resolvedTheme } = useTheme();
+  const themeRef = useRef(resolvedTheme);
+  
+  useEffect(() => {
+    themeRef.current = resolvedTheme;
+  }, [resolvedTheme]);
 
   useEffect(() => {
     // Connect directly to the Security Proxy's real-time stream
@@ -88,18 +96,27 @@ export function SecurityRadar() {
     let animationFrameId: number;
 
     const render = () => {
+      const isLight = themeRef.current === "light";
       const width = canvas.width;
       const height = canvas.height;
       const centerX = width / 2;
       const centerY = height / 2;
       const radius = Math.min(width, height) / 2 - 10; // padding
 
-      // Clear canvas with dark background
-      ctx.fillStyle = "#0A0A0A";
+      // Clear canvas with background
+      ctx.fillStyle = isLight ? "#ffffff" : "#0A0A0A";
       ctx.fillRect(0, 0, width, height);
 
+      // Colors
+      const gridColor = isLight ? "rgba(34, 197, 94, 0.4)" : "rgba(0, 255, 0, 0.2)";
+      const sweepColorStrong = isLight ? "rgba(34, 197, 94, 0.6)" : "rgba(0, 255, 0, 0.8)";
+      const sweepColorFaint = isLight ? "rgba(34, 197, 94, 0.1)" : "rgba(0, 255, 0, 0.1)";
+      const sweepLineColor = isLight ? "rgba(21, 128, 61, 1)" : "rgba(0, 255, 0, 1)"; // darker green for light mode edge
+      const backendPulseBase = isLight ? "rgba(34, 197, 94, " : "rgba(0, 255, 0, ";
+      const backendDotColor = isLight ? "rgba(21, 128, 61, 0.9)" : "rgba(50, 255, 50, 0.9)";
+
       // Draw Grid (Concentric Circles)
-      ctx.strokeStyle = "rgba(0, 255, 0, 0.2)";
+      ctx.strokeStyle = gridColor;
       ctx.lineWidth = 1;
       for (let i = 1; i <= 4; i++) {
         ctx.beginPath();
@@ -125,8 +142,8 @@ export function SecurityRadar() {
       
       // Sweep gradient
       const sweepGradient = ctx.createConicGradient(0, 0, 0);
-      sweepGradient.addColorStop(0, "rgba(0, 255, 0, 0.8)");
-      sweepGradient.addColorStop(0.1, "rgba(0, 255, 0, 0.1)");
+      sweepGradient.addColorStop(0, sweepColorStrong);
+      sweepGradient.addColorStop(0.1, sweepColorFaint);
       sweepGradient.addColorStop(1, "rgba(0, 255, 0, 0)");
       
       ctx.beginPath();
@@ -140,7 +157,7 @@ export function SecurityRadar() {
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.lineTo(radius, 0);
-      ctx.strokeStyle = "rgba(0, 255, 0, 1)";
+      ctx.strokeStyle = sweepLineColor;
       ctx.lineWidth = 2;
       ctx.stroke();
       
@@ -156,12 +173,12 @@ export function SecurityRadar() {
         
         ctx.beginPath();
         ctx.arc(bx, by, 4 + (pulse * 3), 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 255, 0, ${0.3 + pulse * 0.3})`;
+        ctx.fillStyle = `${backendPulseBase}${0.3 + pulse * 0.3})`;
         ctx.fill();
         
         ctx.beginPath();
         ctx.arc(bx, by, 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(50, 255, 50, 0.9)`;
+        ctx.fillStyle = backendDotColor;
         ctx.fill();
       });
 
@@ -213,7 +230,7 @@ export function SecurityRadar() {
   }, []);
 
   return (
-    <div className="relative w-full h-full min-h-[300px] flex items-center justify-center bg-[#0A0A0A] rounded-2xl border border-green-900/30 overflow-hidden shadow-[inset_0_0_50px_rgba(0,255,0,0.05)]">
+    <div className="relative w-full h-full min-h-[300px] flex items-center justify-center overflow-hidden">
       {/* The Canvas Radar */}
       <canvas 
         ref={canvasRef} 
@@ -226,7 +243,7 @@ export function SecurityRadar() {
       {threatActive && (
         <div className="fixed inset-0 w-screen h-screen flex items-center justify-center z-[9999] pointer-events-none animate-in fade-in duration-200 bg-black/20 backdrop-blur-[3px]">
           <div className="flex flex-col items-center gap-2 transform scale-110">
-            <h2 className="text-red-500 font-bold text-4xl md:text-5xl tracking-wide text-center drop-shadow-md">
+            <h2 className="text-red-500 font-bold text-4xl @md:text-5xl tracking-wide text-center drop-shadow-md">
               Alert: {threatMessage}
             </h2>
           </div>
@@ -234,13 +251,13 @@ export function SecurityRadar() {
       )}
 
       {/* Static HUD Elements */}
-      <div className="absolute top-4 left-4 font-mono text-green-500/50 text-[10px] tracking-widest pointer-events-none">
+      <div className="absolute top-4 left-4 font-mono text-green-700 dark:text-green-500/50 text-[10px] tracking-widest pointer-events-none font-semibold dark:font-normal">
         <div>SYS_SCAN: ACTIVE</div>
         <div>PROT: 0x4F92</div>
-        <div className="mt-2 text-green-400/80">{threatActive ? 'STATUS: ENGAGED' : 'STATUS: SCANNING'}</div>
+        <div className="mt-2 text-green-600 dark:text-green-400/80">{threatActive ? 'STATUS: ENGAGED' : 'STATUS: SCANNING'}</div>
       </div>
       
-      <div className="absolute bottom-4 right-4 font-mono text-green-500/50 text-[10px] tracking-widest text-right pointer-events-none">
+      <div className="absolute bottom-4 right-4 font-mono text-green-700 dark:text-green-500/50 text-[10px] tracking-widest text-right pointer-events-none font-semibold dark:font-normal">
         <div>Z-TRUST PROXY v1.0</div>
         <div>NET_MONITOR: ONLINE</div>
       </div>

@@ -105,7 +105,7 @@ export default function VmAgentHistoryPage() {
                   return (
                     <div
                       key={job.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-surface-container-low transition-colors group"
+                      className="flex flex-col @sm:flex-row @sm:items-center justify-between p-4 hover:bg-surface-container-low transition-colors group"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center group-hover:scale-105 transition-transform">
@@ -134,7 +134,7 @@ export default function VmAgentHistoryPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 mt-3 sm:mt-0">
+                      <div className="flex items-center gap-4 mt-3 @sm:mt-0">
                         <div className="text-right">
                           <div className="text-xs font-bold text-text-primary">{job.result?.summary?.total_findings || 0} Findings</div>
                           <div className="text-[10px] text-text-muted">Risk Score: {job.result?.summary?.risk_score || 0}</div>

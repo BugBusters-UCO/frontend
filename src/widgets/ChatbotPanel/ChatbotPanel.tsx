@@ -7,7 +7,7 @@ import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 
 export function ChatbotPanel() {
-  const { isOpen, close, messages, isTyping, pageContext, panelWidth, setPanelWidth, selectedTopic, setSelectedTopic } = useChatbot();
+  const { isOpen, close, messages, isTyping, pageContext, panelWidth, setPanelWidth, selectedTopic, setSelectedTopic, isTtsAutoEnabled, setIsTtsAutoEnabled } = useChatbot();
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const [isResizing, setIsResizing] = useState(false);
@@ -79,12 +79,27 @@ export function ChatbotPanel() {
               </div>
               <h2 className="font-sans font-bold tracking-wider text-text-primary text-sm">BUGBUSTERS AI</h2>
             </div>
-            <button
-              onClick={close}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-surface-dim hover:text-text-primary"
-            >
-              <span className="material-symbols-outlined text-lg">close</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsTtsAutoEnabled(!isTtsAutoEnabled)}
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                  isTtsAutoEnabled 
+                    ? "bg-primary/20 text-primary hover:bg-primary/30" 
+                    : "text-text-secondary hover:bg-surface-dim hover:text-text-primary"
+                }`}
+                title={isTtsAutoEnabled ? "Auto-read enabled" : "Auto-read disabled"}
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  {isTtsAutoEnabled ? "record_voice_over" : "voice_over_off"}
+                </span>
+              </button>
+              <button
+                onClick={close}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-surface-dim hover:text-text-primary"
+              >
+                <span className="material-symbols-outlined text-lg">close</span>
+              </button>
+            </div>
           </div>
 
           {/* Context Indicator Pill */}

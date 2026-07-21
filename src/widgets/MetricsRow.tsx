@@ -48,7 +48,7 @@ export function MetricsRow({ summary }: MetricsRowProps) {
   const vulnTone = vulnerable > 0 ? "text-severity-high" : "text-severity-low";
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 @md:grid-cols-4 gap-6">
       <div className="bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 transition-colors duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-md">
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-2">
           Scanned Packages

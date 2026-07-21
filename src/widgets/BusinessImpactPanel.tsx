@@ -81,8 +81,8 @@ export function BusinessImpactPanel({
 
   return (
     <div className={`bg-surface transition-colors duration-300 rounded-2xl border-2 ${bgRisk} shadow-sm p-6`}>
-      <div className="flex flex-col md:flex-row gap-8">
-        <div className="md:w-1/3 flex flex-col justify-center border-b md:border-b-0 md:border-r border-border-divider pb-6 md:pb-0 md:pr-6">
+      <div className="flex flex-col @md:flex-row gap-8">
+        <div className="@md:w-1/3 flex flex-col justify-center border-b @md:border-b-0 @md:border-r border-border-divider pb-6 @md:pb-0 @md:pr-6">
           <div className="flex items-center mb-2">
             <h2 className="text-section-header font-section-header text-text-primary">
               Business Risk Assessment
@@ -105,7 +105,7 @@ export function BusinessImpactPanel({
           />
         </div>
         
-        <div className="md:w-2/3 flex flex-col gap-4 justify-center">
+        <div className="@md:w-2/3 flex flex-col gap-4 justify-center">
           <div>
             <div className="flex items-center mb-3">
               <h3 className="text-body-md font-bold text-text-primary">Key Risk Factors</h3>

@@ -273,7 +273,7 @@ export default function VCDashboardPage() {
 
 
       {/* Configuration & Jobs Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-element-gap">
+      <div className="grid grid-cols-1 @lg:grid-cols-[1fr_400px] gap-element-gap">
         <div className="flex flex-col gap-element-gap">
           {isScanning && progressStage && (
             <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-6 mb-4 animate-in fade-in duration-300">
