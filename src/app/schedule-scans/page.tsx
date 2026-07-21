@@ -178,9 +178,9 @@ export default function ScheduleScansPage() {
       initial="hidden" 
       animate="show" 
       variants={containerVariants}
-      className="max-w-[1280px] mx-auto flex flex-col gap-8 py-8 px-4 sm:px-6 lg:px-8 pb-12"
+      className="max-w-[1280px] mx-auto flex flex-col gap-8 py-8 px-4 @sm:px-6 @lg:px-8 pb-12"
     >
-      <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <motion.div variants={itemVariants} className="flex flex-col @md:flex-row @md:items-center justify-between gap-4">
         <div>
           <h1 className="font-sans font-bold text-headline-lg text-text-primary mb-1 uppercase tracking-wider">Schedule Scans</h1>
           <p className="font-body-sm text-body-sm text-text-secondary">Automate security assessments for your VM infrastructure.</p>
@@ -204,9 +204,9 @@ export default function ScheduleScansPage() {
         </motion.div>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-12 items-start">
+      <div className="grid gap-8 @lg:grid-cols-12 items-start">
         {/* Left Side: Create Form */}
-        <motion.div variants={itemVariants} className="lg:col-span-7 flex flex-col gap-6">
+        <motion.div variants={itemVariants} className="@lg:col-span-7 flex flex-col gap-6">
           <div className="rounded-2xl border border-border-subtle bg-surface p-6 overflow-hidden">
             <div className="flex items-center gap-2 mb-6">
               <span className="material-symbols-outlined text-primary text-[24px]">calendar_add_on</span>
@@ -260,7 +260,7 @@ export default function ScheduleScansPage() {
               {/* Scanners */}
               <div className="flex flex-col gap-1.5 pt-2">
                 <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Active Modules</span>
-                <div className="grid gap-3 grid-cols-2 sm:grid-cols-4 mt-1">
+                <div className="grid gap-3 grid-cols-2 @sm:grid-cols-4 mt-1">
                   {SCANNERS.map((scanner) => {
                     const selected = selectedScanners.includes(scanner.id);
                     return (
@@ -281,7 +281,7 @@ export default function ScheduleScansPage() {
               {/* Frequency Settings */}
               <div className="flex flex-col gap-1.5 pt-2">
                 <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Timing & Frequency</span>
-                <div className="grid gap-4 sm:grid-cols-3 mt-1 p-4 rounded-xl border border-border-subtle bg-surface-container">
+                <div className="grid gap-4 @sm:grid-cols-3 mt-1 p-4 rounded-xl border border-border-subtle bg-surface-container">
                   <label className="space-y-1.5">
                     <span className="text-xs font-semibold text-text-muted">Type</span>
                     <select 
@@ -367,7 +367,7 @@ export default function ScheduleScansPage() {
                   <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Business Risk Context</span>
                   <InfoTooltip text="These parameters weight the final risk score in the unified reports." />
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2 p-4 rounded-xl border border-border-subtle bg-surface-container">
+                <div className="grid gap-3 @sm:grid-cols-2 p-4 rounded-xl border border-border-subtle bg-surface-container">
                   {BUSINESS_FIELDS.map((field) => (
                     <label key={field.key} className="flex flex-col gap-1.5 p-2" title={field.help}>
                       <div className="flex items-center justify-between">
@@ -400,7 +400,7 @@ export default function ScheduleScansPage() {
         </motion.div>
 
         {/* Right Side: Active Schedules */}
-        <motion.div variants={itemVariants} className="lg:col-span-5 flex flex-col gap-4">
+        <motion.div variants={itemVariants} className="@lg:col-span-5 flex flex-col gap-4">
           <div className="flex items-center gap-2 mb-2 px-1">
             <span className="material-symbols-outlined text-text-secondary text-[20px]">list_alt</span>
             <h2 className="text-sm font-bold font-sans uppercase tracking-wider text-text-secondary">Active Configurations</h2>

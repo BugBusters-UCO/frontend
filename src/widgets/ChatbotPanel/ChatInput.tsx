@@ -48,16 +48,25 @@ export function ChatInput() {
           filteredContext = pageContext;
         } else {
           filteredContext = {};
-          const baseKeys = ['page', 'jobId', 'assessmentId', 'status', 'sourceLabel'];
+          const baseKeys = ['page', 'jobId', 'assessmentId', 'status', 'sourceLabel', 'summary', 'findings'];
           
-          // Always include base metadata
+          // Always include base metadata and summary/findings if they exist at top level or inside result
           baseKeys.forEach(k => {
-            if (pageContext[k]) filteredContext[k] = pageContext[k];
+            if (pageContext[k] !== undefined) filteredContext[k] = pageContext[k];
+            else if (pageContext.result && pageContext.result[k] !== undefined) filteredContext[k] = pageContext.result[k];
           });
           
           // Include selected topic data if not basic
-          if (selectedTopic !== "basic" && pageContext[selectedTopic]) {
-            filteredContext[selectedTopic] = pageContext[selectedTopic];
+          if (selectedTopic !== "basic") {
+            const topics = selectedTopic.split(',');
+            topics.forEach(t => {
+              const key = t.trim();
+              if (pageContext[key]) {
+                filteredContext[key] = pageContext[key];
+              } else if (pageContext.result && pageContext.result[key]) {
+                filteredContext[key] = pageContext.result[key];
+              }
+            });
           }
         }
       }

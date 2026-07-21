@@ -114,8 +114,7 @@ export default function CipherScannerJobPage() {
     page: "Cipher Scanner — Job Detail",
     jobId: jobId,
     status: jobData?.status,
-    findings: jobData?.result?.findings,
-    summary: jobData?.result?.summary,
+    result: jobData?.result,
   });
 
   function startLogStream(id: string) {

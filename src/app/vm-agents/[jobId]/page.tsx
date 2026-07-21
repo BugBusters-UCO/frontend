@@ -129,7 +129,7 @@ export default function VmAgentJobPage() {
               <h2 className="text-xl font-bold mb-2">VM Scan Details</h2>
               <p className="text-body-sm text-text-secondary mb-6">Select a scanner module below to view its full report and findings.</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 @md:grid-cols-2 @lg:grid-cols-4 gap-4">
                 {reports.map((report: any) => (
                   <button
                     key={report.module}

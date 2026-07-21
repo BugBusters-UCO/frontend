@@ -121,8 +121,7 @@ export default function SecretScannerJobPage() {
     page: "Secret Scanner — Job Detail",
     jobId: jobId,
     status: jobData?.status,
-    findings: jobData?.result?.findings,
-    summary: jobData?.result?.summary,
+    result: jobData?.result,
   });
 
   useEffect(() => {
@@ -267,7 +266,7 @@ export default function SecretScannerJobPage() {
                 <SecretBusinessImpactPanel jobId={jobId} summary={summary} risk={risk} ciPolicy={ciPolicy} />
 
             {(exposurePaths.length > 0 || rotationPlaybooks.length > 0 || secretGraph) && (
-              <div className={`grid grid-cols-1 ${isExposureSidebarOpen && exposurePaths.length > 0 ? 'xl:grid-cols-[1fr_1.5fr]' : 'xl:grid-cols-1'} gap-6`}>
+              <div className={`grid grid-cols-1 ${isExposureSidebarOpen && exposurePaths.length > 0 ? '@xl:grid-cols-[1fr_1.5fr]' : '@xl:grid-cols-1'} gap-6`}>
                 {isExposureSidebarOpen && exposurePaths.length > 0 && (
                   <div className="bg-surface-container-lowest rounded-2xl border border-border-divider p-6 h-fit">
                     <div className="flex items-center justify-between gap-4 mb-4">
@@ -293,7 +292,7 @@ export default function SecretScannerJobPage() {
                               <p className="text-xs text-red-900 font-mono">{path.file_path}:{path.line_number || "-"}</p>
                             </div>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
+                          <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 mt-4 text-sm">
                             <div>
                               <p className="text-xs uppercase font-semibold text-red-700 mb-1">Probable Capabilities</p>
                               <ul className="space-y-1 text-red-950">

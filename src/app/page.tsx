@@ -38,7 +38,7 @@ export default function DashboardPage() {
     return (
       <div className="max-w-[1280px] mx-auto flex flex-col gap-section-gap animate-pulse">
         <div className="h-12 w-64 bg-surface-container-high rounded-md mb-6"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-element-gap">
+        <div className="grid grid-cols-1 @md:grid-cols-2 @lg:grid-cols-4 gap-element-gap">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-28 bg-surface-container-high rounded-2xl"></div>
           ))}
@@ -68,12 +68,12 @@ export default function DashboardPage() {
       initial="hidden"
       animate="show"
       variants={containerVariants}
-      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8 pb-12 text-text-primary transition-colors duration-300"
+      className="max-w-7xl mx-auto px-4 @sm:px-6 @lg:px-8 py-8 flex flex-col gap-8 pb-12 text-text-primary transition-colors duration-300"
     >
       <DisclaimerModal />
       
       {/* Quick Actions & Header */}
-      <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <motion.div variants={itemVariants} className="flex flex-col @md:flex-row @md:items-center justify-between gap-4">
         <div>
           <h1 className="font-sans font-bold text-headline-lg text-text-primary mb-1 uppercase tracking-wider">Security Dashboard</h1>
           <p className="font-body-sm text-body-sm text-text-secondary">Comprehensive security insights and scanning metrics.</p>
@@ -103,7 +103,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Top Metrics Row - Monochromatic with minimal accents */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-element-gap">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 @md:grid-cols-2 @lg:grid-cols-4 gap-element-gap">
         <div className="bg-surface p-6 rounded-2xl border border-border-subtle shadow-sm flex flex-col gap-3 group hover:border-primary/50 hover:shadow-md transition-all duration-300 relative overflow-hidden">
           <div className="flex items-center justify-between ml-1">
             <p className="font-body-sm text-body-sm text-text-muted font-medium flex items-center gap-1.5">
@@ -150,7 +150,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Graphical Dashboard */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-element-gap">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 @lg:grid-cols-3 gap-element-gap">
         {/* Scans by Category Chart */}
         <div className="bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 group hover:shadow-md transition-all duration-300">
           <div className="flex items-center gap-2 mb-2">
@@ -161,7 +161,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Activity Trend (7 Days) */}
-        <div className="bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 group hover:shadow-md transition-all duration-300 lg:col-span-2 flex flex-col">
+        <div className="bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 group hover:shadow-md transition-all duration-300 @lg:col-span-2 flex flex-col">
           <div className="flex items-center gap-2 mb-2">
             <h2 className="text-sm font-bold font-sans uppercase tracking-wider text-text-secondary">Findings Trend (7 Days)</h2>
             <InfoTooltip text="Total findings identified per day over the last week." />
@@ -173,7 +173,7 @@ export default function DashboardPage() {
       </motion.div>
       
       {/* Third Row */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-element-gap">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 @lg:grid-cols-3 gap-element-gap">
         
         {/* Scan Execution Status */}
         <div className="bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 flex flex-col group hover:shadow-md transition-all duration-300">
@@ -218,7 +218,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Top Riskiest Assets */}
-        <div className="bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 group hover:shadow-md transition-all duration-300 lg:col-span-2 flex flex-col">
+        <div className="bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 group hover:shadow-md transition-all duration-300 @lg:col-span-2 flex flex-col">
           <div className="flex items-center justify-between mb-4">
              <div className="flex items-center gap-2">
               <h2 className="text-sm font-bold font-sans uppercase tracking-wider text-text-secondary">Top Riskiest Assets</h2>
@@ -265,7 +265,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2 mb-4">
           <h2 className="text-sm font-bold font-sans uppercase tracking-wider text-text-secondary">System Integrations</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-element-gap">
+        <div className="grid grid-cols-1 @md:grid-cols-3 gap-element-gap">
           <div className="bg-surface p-5 rounded-2xl border border-border-subtle shadow-sm flex items-center justify-between group hover:border-border-divider transition-colors">
             <div className="flex flex-col gap-1">
               <p className="font-body-sm text-sm text-text-muted font-medium">Scheduled Scans</p>

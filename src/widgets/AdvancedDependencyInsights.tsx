@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DependencyScanResult } from "@/shared/api/types";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useChatbot } from "@/features/chatbot/ChatbotContext";
 
 interface AdvancedDependencyInsightsProps {
   result: DependencyScanResult;
@@ -20,6 +21,21 @@ export function AdvancedDependencyInsights({ result }: AdvancedDependencyInsight
     if (result.dependency_risks?.length) return "dependency";
     return null;
   });
+
+  const { setSelectedTopic } = useChatbot();
+
+  useEffect(() => {
+    if (!activeTab) return;
+    const tabToKey: Record<TabKey, string> = {
+      capabilities: "capability_findings",
+      malware: "static_malware_findings",
+      behavior: "behavior_findings",
+      intelligence: "package_intelligence_findings",
+      namespace: "namespace_risks",
+      dependency: "dependency_risks",
+    };
+    setSelectedTopic(tabToKey[activeTab]);
+  }, [activeTab, setSelectedTopic]);
 
   if (!activeTab) return null;
 

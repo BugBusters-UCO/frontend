@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
 import { SecretScanResult } from "@/shared/api/types";
+import { useChatbot } from "@/features/chatbot/ChatbotContext";
 
 interface AdvancedSecretInsightsProps {
   result: SecretScanResult;
@@ -33,6 +34,20 @@ export function AdvancedSecretInsights({ result }: AdvancedSecretInsightsProps) 
     if (compromisedMatches.length) return "compromised";
     return null;
   });
+
+  const { setSelectedTopic } = useChatbot();
+
+  useEffect(() => {
+    if (!activeTab) return;
+    const tabToKey: Record<TabKey, string> = {
+      policy: "policy_decision",
+      usage: "usage_paths",
+      sensitive: "sensitive_data_findings",
+      history: "historical_exposures",
+      compromised: "compromised_matches",
+    };
+    setSelectedTopic(tabToKey[activeTab]);
+  }, [activeTab, setSelectedTopic]);
 
   if (!activeTab) return null;
 
@@ -96,7 +111,7 @@ export function AdvancedSecretInsights({ result }: AdvancedSecretInsightsProps) 
                   </span>
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-text-secondary">{policyDecision.gate}</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 @md:grid-cols-2 gap-6">
                   <div>
                     <p className="text-xs uppercase font-semibold text-text-muted mb-2">Reasons</p>
                     <ul className="space-y-1 text-sm text-text-secondary">
@@ -114,7 +129,7 @@ export function AdvancedSecretInsights({ result }: AdvancedSecretInsightsProps) 
             )}
 
             {activeTab === "usage" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 {usagePaths.map((usage: any) => (
                   <div key={usage.id} className="bg-surface-container-lowest border border-border-divider rounded-2xl p-4">
                     <div className="flex items-center justify-between gap-3 mb-2">
@@ -130,7 +145,7 @@ export function AdvancedSecretInsights({ result }: AdvancedSecretInsightsProps) 
             )}
 
             {activeTab === "sensitive" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 {sensitiveDataFindings.map((item: any) => (
                   <div key={item.id} className="bg-surface-container-lowest border border-border-divider rounded-2xl p-4">
                     <div className="flex items-center justify-between gap-3 mb-2">
@@ -146,7 +161,7 @@ export function AdvancedSecretInsights({ result }: AdvancedSecretInsightsProps) 
             )}
 
             {activeTab === "history" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 {historicalExposures.map((item: any) => (
                   <div key={item.id} className="bg-red-50 border border-red-200 rounded-2xl p-4">
                     <div className="flex items-center justify-between gap-3 mb-2">
@@ -162,7 +177,7 @@ export function AdvancedSecretInsights({ result }: AdvancedSecretInsightsProps) 
             )}
 
             {activeTab === "compromised" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 {compromisedMatches.map((item: any) => (
                   <div key={item.id} className="bg-red-50 border border-red-200 rounded-2xl p-4">
                     <p className="font-mono text-xs font-bold text-red-900 mb-2 break-all">{item.secret_fingerprint}</p>

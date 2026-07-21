@@ -364,7 +364,7 @@ export default function VmAgentsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-element-gap">
+      <div className="grid grid-cols-1 @md:grid-cols-4 gap-element-gap">
         <Metric label="Active Agents" value={agents.filter(a => a.status === 'online').length} tone="neutral" icon="computer" />
         <Metric label="Total Reports" value={metrics.total} tone="neutral" icon="description" />
         <Metric label="Active Scans" value={metrics.active} tone="warning" icon="sync" spinning={metrics.active > 0} />
@@ -373,7 +373,7 @@ export default function VmAgentsPage() {
 
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 text-red-800 p-4 animate-in slide-in-from-top-2">{error}</div>}
 
-      <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-element-gap">
+      <div className="grid grid-cols-1 @xl:grid-cols-[420px_1fr] gap-element-gap">
         <div className="space-y-5">
           <section className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-card-padding transition-all">
             <div className="flex items-center justify-between mb-4">
@@ -499,7 +499,7 @@ export default function VmAgentsPage() {
             )}
           </div>
 
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+          <div className="relative z-10 grid grid-cols-1 @lg:grid-cols-2 gap-5 mb-6">
             <div>
               <label className="text-sm font-semibold text-text-secondary">Project / Report Name</label>
               <input
@@ -525,7 +525,7 @@ export default function VmAgentsPage() {
 
           <div className="relative z-10 mb-6">
             <p className="text-sm font-semibold text-text-secondary mb-3">Analysis Modules</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 @md:grid-cols-4 gap-3">
               {MODULES.map((module) => (
                 <button
                   key={module.id}
@@ -545,7 +545,7 @@ export default function VmAgentsPage() {
               Risk Engine Business Inputs
               <InfoTooltip text="These values become part of this scan's risk assessment. Final risk is 70% technical scanner evidence and 30% these admin business inputs by default." />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
               <BusinessSlider
                 label="Asset Criticality"
                 value={businessContext.assetCriticality}
@@ -598,7 +598,7 @@ export default function VmAgentsPage() {
             </button>
 
             <div className={`transition-all duration-500 ease-in-out ${showAdvanced ? "max-h-[800px] opacity-100 border-t border-border-divider" : "max-h-0 opacity-0"}`}>
-              <div className="p-4 md:p-5">
+              <div className="p-4 @md:p-5">
 
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-bold text-text-secondary uppercase tracking-wider flex items-center gap-1">
@@ -617,7 +617,7 @@ export default function VmAgentsPage() {
             </div>
           </div>
 
-          <div className="mt-auto pt-2 flex flex-col sm:flex-row gap-3 relative z-10">
+          <div className="mt-auto pt-2 flex flex-col @sm:flex-row gap-3 relative z-10">
             <button
               onClick={handleStart}
               disabled={starting || !isAgentOnline || selectedModules.length === 0}
@@ -748,7 +748,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
   return (
     <section className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="p-card-padding border-b border-border-divider bg-surface-container-lowest">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div className="flex flex-col @md:flex-row @md:items-start justify-between gap-4">
           <div>
             <h2 className="text-section-header font-section-header flex items-center gap-2">
               <span className="material-symbols-outlined text-primary-container">analytics</span>
@@ -774,7 +774,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col sm:flex-row gap-4">
+        <div className="mt-6 flex flex-col @sm:flex-row gap-4">
           <div className="flex-1 rounded-2xl border border-border-divider bg-surface transition-colors duration-300 p-4 shadow-sm flex items-start gap-4">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${report.status === 'completed' ? 'bg-green-100 text-green-700' :
                 report.status === 'failed' ? 'bg-red-100 text-red-700' :
@@ -810,7 +810,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
         {/* Pipeline Visualization */}
         <div className="relative mb-8 pt-2">
           {/* Progress Line */}
-          <div className="absolute top-[28px] left-0 w-full h-1 -translate-y-1/2 pointer-events-none px-2 sm:px-10">
+          <div className="absolute top-[28px] left-0 w-full h-1 -translate-y-1/2 pointer-events-none px-2 @sm:px-10">
             <div className="relative w-full h-full flex">
                <div style={{ width: `${pipelineModules.length > 0 ? 100 / (pipelineModules.length * 2) : 0}%` }} />
                <div className="relative h-full bg-surface-container rounded-full overflow-hidden" 
@@ -821,7 +821,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
             </div>
           </div>
 
-          <div className="relative flex bg-transparent items-start z-10 px-2 sm:px-10">
+          <div className="relative flex bg-transparent items-start z-10 px-2 @sm:px-10">
             {pipelineModules.map((moduleName, index) => {
               const isCompleted = completedModules.includes(moduleName);
               const isCurrent = isActive && !isCompleted && (index === 0 || completedModules.includes(pipelineModules[index - 1]));
@@ -842,7 +842,7 @@ function VmReportDetails({ report, assessment }: { report?: AgentScanJob; assess
                     }`}>
                     {moduleIcon}
                   </div>
-                  <span className={`text-[11px] font-bold uppercase tracking-wider hidden sm:block ${isCompleted || isCurrent ? 'text-text-primary' : 'text-text-muted'
+                  <span className={`text-[11px] font-bold uppercase tracking-wider hidden @sm:block ${isCompleted || isCurrent ? 'text-text-primary' : 'text-text-muted'
                     }`}>{moduleName}</span>
                 </div>
               );
@@ -1009,17 +1009,17 @@ function getStatusExplanation(report: AgentScanJob) {
 }
 
 function Metric({ label, value, tone, icon, spinning = false }: { label: string; value: string | number; tone: "neutral" | "warning" | "danger", icon: string, spinning?: boolean }) {
-  const color = tone === "danger" ? "text-severity-critical" : tone === "warning" ? "text-orange-600" : "text-text-primary";
-  const bg = tone === "danger" ? "bg-red-50" : tone === "warning" ? "bg-orange-50" : "bg-surface-container-lowest";
-  const border = tone === "danger" ? "border-red-200" : tone === "warning" ? "border-orange-200" : "border-border-divider";
+  const color = tone === "danger" ? "text-red-600 dark:text-red-400" : tone === "warning" ? "text-orange-600 dark:text-orange-400" : "text-text-primary";
+  const bg = tone === "danger" ? "bg-red-50 dark:bg-red-950/20" : tone === "warning" ? "bg-orange-50 dark:bg-orange-950/20" : "bg-surface";
+  const border = tone === "danger" ? "border-red-200 dark:border-red-900/30" : tone === "warning" ? "border-orange-200 dark:border-orange-900/30" : "border-border-subtle";
 
   return (
-    <div className={`${bg} p-5 rounded-2xl border ${border} shadow-sm flex items-center justify-between group hover:shadow-md transition-shadow`}>
+    <div className={`${bg} p-5 rounded-2xl border ${border} shadow-sm flex items-center justify-between group hover:shadow-md transition-all duration-300`}>
       <div className="flex flex-col gap-1">
-        <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">{label}</p>
+        <p className={`text-xs font-bold uppercase tracking-wider ${tone === "neutral" ? "text-text-secondary" : color.replace('text-', 'text-opacity-80 text-').replace('dark:text-', 'dark:text-opacity-80 dark:text-')}`}>{label}</p>
         <p className={`text-3xl font-black ${color}`}>{value}</p>
       </div>
-      <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-surface transition-colors duration-300 shadow-sm border ${border}`}>
+      <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-background/50 backdrop-blur-sm transition-colors duration-300 shadow-sm border ${border}`}>
         <span className={`material-symbols-outlined text-[24px] ${color} ${spinning ? 'animate-spin' : 'group-hover:scale-110 transition-transform'}`}>{icon}</span>
       </div>
     </div>

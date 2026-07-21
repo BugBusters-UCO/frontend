@@ -139,7 +139,7 @@ export function CipherInteractiveGraph({ graphData }: CipherInteractiveGraphProp
   }
 
   return (
-    <div className={`transition-all duration-300 ease-in-out ${isFullscreen ? "fixed inset-0 z-[100] bg-surface-container-lowest p-6 md:p-8 overflow-y-auto m-0 rounded-none border-0" : "bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-card-padding overflow-hidden relative"}`}>
+    <div className={`transition-all duration-300 ease-in-out ${isFullscreen ? "fixed inset-0 z-[100] bg-surface-container-lowest p-6 @md:p-8 overflow-y-auto m-0 rounded-none border-0" : "bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-card-padding overflow-hidden relative"}`}>
       <div className="flex justify-between items-start mb-6">
         <div>
           <div className="flex items-center">
@@ -153,7 +153,7 @@ export function CipherInteractiveGraph({ graphData }: CipherInteractiveGraphProp
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-2.5 py-1 bg-surface-container-low border border-border-subtle rounded-md text-body-xs font-semibold hidden sm:block">
+          <div className="px-2.5 py-1 bg-surface-container-low border border-border-subtle rounded-md text-body-xs font-semibold hidden @sm:block">
             {graphData.nodes.length} nodes
           </div>
           <button 

@@ -37,7 +37,7 @@ export function CipherMetricsRow({ summary, ciPolicy }: CipherMetricsRowProps) {
   const riskTone = getRiskColor(riskScore);
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 @md:grid-cols-4 gap-4">
       <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle shadow-sm p-4">
         <div className="flex items-center text-body-xs text-text-muted font-label-caps uppercase tracking-wider mb-1">
           TLS Posture

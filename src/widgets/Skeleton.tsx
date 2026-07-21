@@ -57,7 +57,7 @@ export function SkeletonPanel() {
 
 export function SkeletonMetricsRow() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-element-gap">
+    <div className="grid grid-cols-1 @md:grid-cols-4 gap-element-gap">
       {[...Array(4)].map((_, i) => (
         <div key={i} className="bg-surface-container-lowest p-card-padding rounded-2xl border border-border-divider shadow-sm flex flex-col gap-2">
           <Skeleton width="40%" height={14} />

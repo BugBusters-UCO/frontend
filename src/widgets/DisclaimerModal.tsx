@@ -29,7 +29,7 @@ export function DisclaimerModal() {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-300">
       <div className="bg-surface transition-colors duration-300 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col border border-border-divider animate-in zoom-in-95 duration-300">
-        <div className="p-6 md:p-8 flex-1 overflow-y-auto max-h-[80vh]">
+        <div className="p-6 @md:p-8 flex-1 overflow-y-auto max-h-[80vh]">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-[28px] text-primary-container">shield_locked</span>
@@ -78,7 +78,7 @@ export function DisclaimerModal() {
           </div>
         </div>
         
-        <div className="p-6 bg-surface-container-lowest border-t border-border-divider flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
+        <div className="p-6 bg-surface-container-lowest border-t border-border-divider flex flex-col-reverse @sm:flex-row items-center justify-between gap-4">
           <button 
             onClick={handleDontShowAgain}
             className="text-text-secondary hover:text-text-primary font-medium text-sm transition-colors flex items-center gap-2 px-4 py-2 rounded-2xl hover:bg-surface-container"
@@ -88,7 +88,7 @@ export function DisclaimerModal() {
           </button>
           <button 
             onClick={handleUnderstood}
-            className="w-full sm:w-auto bg-primary-container hover:bg-primary-container/90 text-white font-semibold py-2.5 px-8 rounded-2xl transition-all shadow-sm hover:shadow-md"
+            className="w-full @sm:w-auto bg-primary-container hover:bg-primary-container/90 text-white font-semibold py-2.5 px-8 rounded-2xl transition-all shadow-sm hover:shadow-md"
           >
             I Understand
           </button>

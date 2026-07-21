@@ -43,7 +43,7 @@ export function Topbar({ toggleSidebar, isSidebarOpen }: TopbarProps) {
           <span className="material-symbols-outlined text-[20px]">
             {isChatbotOpen ? "chat_bubble" : "chat"}
           </span>
-          <span className="font-bold text-xs tracking-wider uppercase hidden sm:block">AI</span>
+          <span className="font-bold text-xs tracking-wider uppercase hidden @sm:block">AI</span>
         </button>
       </div>
     </header>

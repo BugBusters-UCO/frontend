@@ -38,10 +38,7 @@ export default function ScannerJobPage() {
     jobId: jobId,
     sourceLabel: jobData?.sourceLabel,
     status: jobData?.status,
-    summary: jobData?.result?.summary,
-    findings: jobData?.result?.findings,
-    riskChains: (jobData?.result?.risk_chains || []).length,
-    capabilityFindings: (jobData?.result?.capability_findings || []).map((c: any) => c.capability),
+    result: jobData?.result,
   });
 
   useEffect(() => {

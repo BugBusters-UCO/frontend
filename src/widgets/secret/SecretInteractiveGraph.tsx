@@ -146,7 +146,7 @@ export function SecretInteractiveGraph({ graphData }: SecretInteractiveGraphProp
   }
 
   return (
-    <div className={`transition-all duration-300 ease-in-out ${isFullscreen ? "fixed inset-0 z-[100] bg-background p-6 md:p-8 overflow-y-auto m-0 rounded-none border-0" : "bg-surface rounded-2xl border border-border-subtle shadow-[0_4px_30px_rgba(0,0,0,0.4)] p-card-padding overflow-hidden relative"}`}>
+    <div className={`transition-all duration-300 ease-in-out ${isFullscreen ? "fixed inset-0 z-[100] bg-background p-6 @md:p-8 overflow-y-auto m-0 rounded-none border-0" : "bg-surface rounded-2xl border border-border-subtle shadow-[0_4px_30px_rgba(0,0,0,0.4)] p-card-padding overflow-hidden relative"}`}>
       <div className="flex justify-between items-start mb-6">
         <div>
           <div className="flex items-center gap-1.5">
@@ -160,7 +160,7 @@ export function SecretInteractiveGraph({ graphData }: SecretInteractiveGraphProp
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-2.5 py-1 bg-surface-container border border-border-subtle rounded-md text-body-xs font-semibold text-text-secondary hidden sm:block">
+          <div className="px-2.5 py-1 bg-surface-container border border-border-subtle rounded-md text-body-xs font-semibold text-text-secondary hidden @sm:block">
             {graphData.nodes.length} nodes / {graphData.edges.length} edges
           </div>
           <button 
