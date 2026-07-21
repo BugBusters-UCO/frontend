@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { ChatMessage as ChatMessageType } from "@/features/chatbot/ChatbotContext";
 
@@ -8,7 +8,78 @@ interface ChatMessageProps {
   message: ChatMessageType;
 }
 
+function stripMarkdown(text: string) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1') // bold
+    .replace(/\*(.*?)\*/g, '$1') // italic
+    .replace(/__(.*?)__/g, '$1') // bold
+    .replace(/_(.*?)_/g, '$1') // italic
+    .replace(/`(.*?)`/g, '$1') // inline code
+    .replace(/```[\s\S]*?```/g, 'code block omitted') // block code
+    .replace(/#(.*?)\n/g, '$1\n') // headings
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1') // links
+    .replace(/[-*]\s/g, '') // list items
+    .replace(/\n/g, ' ') // newlines
+    .trim();
+}
+
 export function ChatMessage({ message }: ChatMessageProps) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (isPlaying) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [isPlaying]);
+
+  const isMutedRef = useRef(false);
+
+  const playChunk = (text: string) => {
+    const textToSpeak = stripMarkdown(text);
+    if (!textToSpeak) return;
+    
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.rate = 1.0; // Normal speed
+    utterance.onstart = () => setIsPlaying(true);
+    utterance.onend = () => {
+      // Small timeout to allow next chunk's onstart to fire if queued
+      setTimeout(() => {
+        setIsPlaying(window.speechSynthesis.speaking);
+      }, 50);
+    };
+    utterance.onerror = () => setIsPlaying(window.speechSynthesis.speaking);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const playTts = () => {
+    isMutedRef.current = false;
+    if (isPlaying) return;
+    playChunk(message.content);
+  };
+
+  const stopTts = () => {
+    isMutedRef.current = true;
+    window.speechSynthesis.cancel();
+    setIsPlaying(false);
+  };
+
+  const toggleTts = () => {
+    if (isPlaying) stopTts();
+    else playTts();
+  };
+
+  useEffect(() => {
+    const handleAutoReadChunk = (e: any) => {
+      if (e.detail.id === message.id && !isMutedRef.current) {
+        playChunk(e.detail.text);
+      }
+    };
+    window.addEventListener('chatbot-auto-read-chunk', handleAutoReadChunk);
+    return () => window.removeEventListener('chatbot-auto-read-chunk', handleAutoReadChunk);
+  }, [message.id]);
   if (message.role === "system") {
     return (
       <div className="flex justify-center my-4">
@@ -51,6 +122,30 @@ export function ChatMessage({ message }: ChatMessageProps) {
               prose-headings:bg-primary/10 prose-headings:px-4 prose-headings:py-2 prose-headings:rounded-2xl prose-headings:rounded-tl-none prose-headings:border prose-headings:border-primary/20 prose-headings:shadow-sm prose-headings:my-0 prose-headings:font-semibold
             ">
               <ReactMarkdown>{message.content}</ReactMarkdown>
+            </div>
+          )}
+          {!isUser && (
+            <div className="flex justify-start gap-1 mt-1 pl-2">
+              <button 
+                onClick={() => navigator.clipboard.writeText(message.content)}
+                className="flex items-center justify-center w-7 h-7 rounded-md text-text-secondary transition-colors hover:bg-surface-container hover:text-text-primary"
+                title="Copy response"
+              >
+                <span className="material-symbols-outlined text-[16px]">content_copy</span>
+              </button>
+              <button 
+                onClick={toggleTts}
+                className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+                  isPlaying 
+                    ? "bg-primary/20 text-primary" 
+                    : "text-text-secondary hover:bg-surface-container hover:text-text-primary"
+                }`}
+                title={isPlaying ? "Stop reading" : "Read aloud"}
+              >
+                <span className="material-symbols-outlined text-[16px]">
+                  {isPlaying ? "stop_circle" : "volume_up"}
+                </span>
+              </button>
             </div>
           )}
         </div>

@@ -15,7 +15,7 @@ interface ChatbotContextProps {
   close: () => void;
   toggle: () => void;
   messages: ChatMessage[];
-  addMessage: (msg: Omit<ChatMessage, "id" | "timestamp">) => void;
+  addMessage: (msg: Omit<ChatMessage, "id" | "timestamp"> & { id?: string }) => void;
   appendToLastMessage: (chunk: string) => void;
   pageContext: any;
   setPageContext: (ctx: any) => void;
@@ -25,6 +25,8 @@ interface ChatbotContextProps {
   setPanelWidth: (width: number) => void;
   selectedTopic: string;
   setSelectedTopic: (topic: string) => void;
+  isTtsAutoEnabled: boolean;
+  setIsTtsAutoEnabled: (enabled: boolean) => void;
 }
 
 const ChatbotContext = createContext<ChatbotContextProps | undefined>(undefined);
@@ -43,6 +45,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [panelWidth, setPanelWidth] = useState(30); // 30vw default width
   const [selectedTopic, setSelectedTopic] = useState("basic");
+  const [isTtsAutoEnabled, setIsTtsAutoEnabled] = useState(false);
 
   useEffect(() => {
     if (pageContext) {
@@ -60,14 +63,14 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
-  const addMessage = useCallback((msg: Omit<ChatMessage, "id" | "timestamp">) => {
+  const addMessage = useCallback((msg: Omit<ChatMessage, "id" | "timestamp"> & { id?: string }) => {
     setMessages((prev) => {
       // Keep only last 20 messages to manage token limits (excluding system role instructions which are separate)
       const newMessages = [
         ...prev,
         {
           ...msg,
-          id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          id: msg.id || `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           timestamp: Date.now(),
         }
       ];
@@ -109,7 +112,9 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
         panelWidth,
         setPanelWidth,
         selectedTopic,
-        setSelectedTopic
+        setSelectedTopic,
+        isTtsAutoEnabled,
+        setIsTtsAutoEnabled,
       }}
     >
       {children}

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useChatbot } from "@/features/chatbot/ChatbotContext";
+import { SpeechOverlay } from "./SpeechOverlay";
 
 function deepTruncateArrays(obj: any, limit = 5): any {
   if (Array.isArray(obj)) {
@@ -21,12 +22,66 @@ function deepTruncateArrays(obj: any, limit = 5): any {
 }
 
 export function ChatInput() {
-  const { addMessage, appendToLastMessage, pageContext, messages, isTyping, setIsTyping, selectedTopic } = useChatbot();
+  const { addMessage, appendToLastMessage, pageContext, messages, isTyping, setIsTyping, selectedTopic, isTtsAutoEnabled } = useChatbot();
   const [input, setInput] = useState("");
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const transcriptRef = useRef("");
+  const submitRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => setIsListening(true);
+        recognition.onresult = (event: any) => {
+          let currentTranscript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            currentTranscript += event.results[i][0].transcript;
+          }
+          setInput(currentTranscript);
+          transcriptRef.current = currentTranscript;
+        };
+        recognition.onerror = (event: any) => {
+          console.error("Speech recognition error", event.error);
+          setIsListening(false);
+        };
+        recognition.onend = () => {
+          setIsListening(false);
+          if (transcriptRef.current.trim()) {
+            setTimeout(() => {
+              submitRef.current?.();
+            }, 50);
+          }
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+  }, []);
+
+  const toggleMic = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    } else {
+      if (!input.trim()) setInput(""); // Clear input when starting fresh
+      recognitionRef.current?.start();
+    }
+  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!input.trim() || isTyping) return;
+    
+    // Clear transcript ref so it doesn't auto-submit stale data next time
+    transcriptRef.current = "";
 
     const userText = input.trim();
     setInput("");
@@ -99,7 +154,9 @@ export function ChatInput() {
       }
 
       // Initialize the model's message
+      const messageId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       addMessage({
+        id: messageId,
         role: "model",
         content: "",
       });
@@ -112,6 +169,8 @@ export function ChatInput() {
       if (reader) {
         let done = false;
         let buffer = "";
+        let fullResponse = "";
+        let ttsBuffer = "";
 
         while (!done) {
           const { value, done: doneReading } = await reader.read();
@@ -134,6 +193,24 @@ export function ChatInput() {
                   const data = JSON.parse(dataStr);
                   if (data.text) {
                     appendToLastMessage(data.text);
+                    fullResponse += data.text;
+                    
+                    if (isTtsAutoEnabled) {
+                      ttsBuffer += data.text;
+                      // Split by sentence boundaries (. ? ! followed by space, or newline)
+                      const match = ttsBuffer.match(/([.?!])(\s+)|\n/);
+                      if (match && match.index !== undefined) {
+                        const splitIndex = match.index + match[0].length;
+                        const chunk = ttsBuffer.slice(0, splitIndex);
+                        ttsBuffer = ttsBuffer.slice(splitIndex);
+                        
+                        if (chunk.trim()) {
+                          window.dispatchEvent(new CustomEvent('chatbot-auto-read-chunk', { 
+                            detail: { id: messageId, text: chunk } 
+                          }));
+                        }
+                      }
+                    }
                   }
                 } catch (e) {
                   console.error("Failed to parse SSE data", e);
@@ -143,6 +220,13 @@ export function ChatInput() {
               boundary = buffer.indexOf("\n\n");
             }
           }
+        }
+
+        // Flush any remaining text for TTS
+        if (isTtsAutoEnabled && ttsBuffer.trim()) {
+          window.dispatchEvent(new CustomEvent('chatbot-auto-read-chunk', { 
+            detail: { id: messageId, text: ttsBuffer } 
+          }));
         }
       }
     } catch (err) {
@@ -162,10 +246,21 @@ export function ChatInput() {
     }
   };
 
+  submitRef.current = handleSubmit;
+
   return (
-    <div className="border-t border-border-divider bg-surface p-4">
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <textarea
+    <>
+      <SpeechOverlay 
+        isListening={isListening} 
+        transcript={input} 
+        onStop={() => {
+          recognitionRef.current?.stop();
+          setIsListening(false);
+        }} 
+      />
+      <div className="border-t border-border-divider bg-surface p-4 z-10 relative">
+        <form onSubmit={handleSubmit} className="flex gap-2 relative">
+          <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -175,6 +270,21 @@ export function ChatInput() {
           rows={1}
         />
         <button
+          type="button"
+          onClick={toggleMic}
+          className={`relative flex h-12 w-12 items-center justify-center rounded-xl transition-all ${
+            isListening 
+              ? "bg-red-500/10 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] border border-red-500/50" 
+              : "bg-surface-container-high text-text-secondary hover:bg-border-subtle"
+          }`}
+          title="Voice Input"
+        >
+          {isListening && (
+            <span className="absolute inset-0 rounded-xl bg-red-500/20 animate-ping"></span>
+          )}
+          <span className={`material-symbols-outlined relative z-10 ${isListening ? 'animate-pulse' : ''}`}>mic</span>
+        </button>
+        <button
           type="submit"
           disabled={!input.trim() || isTyping}
           className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-on-primary transition-colors hover:bg-primary-container disabled:opacity-50"
@@ -183,5 +293,6 @@ export function ChatInput() {
         </button>
       </form>
     </div>
+    </>
   );
 }
