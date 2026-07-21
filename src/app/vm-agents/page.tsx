@@ -197,6 +197,10 @@ export default function VmAgentsPage() {
         agentScanJobIds: [job.id],
         businessContext,
       });
+      
+      queryClient.setQueryData(["agent-reports"], (old: any) => [job, ...(old || [])]);
+      setSelectedReportId(job.id);
+      
       queryClient.invalidateQueries({ queryKey: ["agent-reports"] });
       queryClient.invalidateQueries({ queryKey: ["risk-assessments", "vm-agent"] });
     } catch (err: any) {
