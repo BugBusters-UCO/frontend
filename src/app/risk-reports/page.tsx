@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchRiskAssessments } from "@/shared/api/client";
 import type { RiskAssessment } from "@/shared/api/types";
@@ -16,9 +17,23 @@ export default function RiskReportsPage() {
     },
   });
 
+  const groupedAssessments = useMemo(() => {
+    const groups: Record<string, RiskAssessment[]> = {};
+    for (const a of assessments) {
+      const label = a.sourceLabel || "Unknown Project";
+      if (!groups[label]) groups[label] = [];
+      groups[label].push(a);
+    }
+    return Object.entries(groups).map(([project, items]) => ({
+      project,
+      items: items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    }));
+  }, [assessments]);
+
   usePageContext({
     page: "Risk Reports",
     assessmentsCount: assessments?.length || 0,
+    projectCount: groupedAssessments.length,
   });
 
   return (
@@ -29,26 +44,70 @@ export default function RiskReportsPage() {
             <span className="material-symbols-outlined text-3xl text-primary-container">summarize</span>
           </div>
           <div>
-            <h1 className="font-headline-lg text-headline-lg text-text-primary">Risk Reports</h1>
-            <p className="mt-1 text-sm text-text-secondary">Executive and technical reports generated from completed scanner assessments.</p>
+            <h1 className="font-headline-lg text-headline-lg text-text-primary">Project Risk Reports</h1>
+            <p className="mt-1 text-sm text-text-secondary">Executive and technical reports aggregated by project.</p>
           </div>
         </div>
       </section>
 
       <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 shadow-sm">
         <div className="border-b border-border-divider p-5">
-          <h2 className="text-section-header font-section-header">Assessment History</h2>
+          <h2 className="text-section-header font-section-header">Project Based Risk Reports</h2>
         </div>
-        <div className="divide-y divide-border-divider">
+        <div className="flex flex-col p-5 gap-6">
           {isLoading ? (
-            <div className="p-6 text-sm text-text-muted">Loading risk reports...</div>
-          ) : assessments.length === 0 ? (
-            <div className="p-6 text-sm text-text-muted">No risk assessment reports are available yet.</div>
+            <div className="text-sm text-text-muted">Loading risk reports...</div>
+          ) : groupedAssessments.length === 0 ? (
+            <div className="text-sm text-text-muted">No risk assessment reports are available yet.</div>
           ) : (
-            assessments.map((assessment) => <RiskReportRow key={assessment.id} assessment={assessment} />)
+            groupedAssessments.map((group) => <ProjectReportGroup key={group.project} group={group} />)
           )}
         </div>
       </section>
+    </div>
+  );
+}
+
+function ProjectReportGroup({ group }: { group: { project: string; items: RiskAssessment[] } }) {
+  const [expanded, setExpanded] = useState(false);
+  const latestAssessment = group.items[0];
+  const risk = latestAssessment?.result?.risk;
+  const score = risk?.final_risk_score;
+  const priorityCount = risk?.overall_priorities?.length || 0;
+
+  return (
+    <div className="rounded-xl border border-border-divider overflow-hidden bg-surface-container-lowest">
+      <div 
+        className="flex items-center justify-between gap-4 p-5 cursor-pointer hover:bg-surface-container-low transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-bold text-lg text-text-primary">{group.project}</h3>
+            {risk?.risk_level && <span className={`rounded px-2 py-1 text-xs font-bold uppercase ${riskClass(risk.risk_level)}`}>{risk.risk_level}</span>}
+          </div>
+          <p className="mt-1 text-sm text-text-muted">
+            Latest Scan: {new Date(latestAssessment.createdAt).toLocaleString()} / {priorityCount} priority item(s) / {group.items.length} total scans
+          </p>
+        </div>
+        <div className="flex items-center gap-6">
+          <div className="text-right">
+            <p className="text-xs font-bold uppercase text-text-muted">Latest Final Score</p>
+            <p className="text-2xl font-black text-text-primary">{score ?? "-"}</p>
+          </div>
+          <span className={`material-symbols-outlined text-text-muted transition-transform duration-300 ${expanded ? "rotate-90" : ""}`}>
+            chevron_right
+          </span>
+        </div>
+      </div>
+      
+      {expanded && (
+        <div className="border-t border-border-divider divide-y divide-border-divider bg-surface">
+          {group.items.map(assessment => (
+            <RiskReportRow key={assessment.id} assessment={assessment} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -59,23 +118,21 @@ function RiskReportRow({ assessment }: { assessment: RiskAssessment }) {
   const priorityCount = risk?.overall_priorities?.length || 0;
 
   return (
-    <Link href={`/risk-reports/${assessment.id}`} className="flex items-center justify-between gap-4 p-5 transition-colors hover:bg-surface-container-lowest">
+    <Link href={`/risk-reports/${assessment.id}`} className="flex items-center justify-between gap-4 p-4 pl-8 transition-colors hover:bg-surface-container-lowest">
       <div>
         <div className="flex flex-wrap items-center gap-2">
-          <p className="font-semibold text-text-primary">{assessment.sourceLabel}</p>
-          <span className={`rounded px-2 py-1 text-xs font-bold uppercase ${statusClass(assessment.status)}`}>{assessment.status}</span>
-          {risk?.risk_level && <span className={`rounded px-2 py-1 text-xs font-bold uppercase ${riskClass(risk.risk_level)}`}>{risk.risk_level}</span>}
+          <span className="font-semibold text-text-primary text-sm">Scan ID: {assessment.id.slice(0, 8)}</span>
+          <span className={`rounded px-2 py-1 text-[10px] font-bold uppercase ${statusClass(assessment.status)}`}>{assessment.status}</span>
         </div>
         <p className="mt-1 text-xs text-text-muted">
-          {assessment.sourceType} / {new Date(assessment.createdAt).toLocaleString()} / {priorityCount} priority item(s)
+          {assessment.sourceType} / {new Date(assessment.createdAt).toLocaleString()}
         </p>
       </div>
       <div className="flex items-center gap-4">
         <div className="text-right">
-          <p className="text-xs font-bold uppercase text-text-muted">Final Score</p>
-          <p className="text-2xl font-black text-text-primary">{score ?? "-"}</p>
+          <p className="text-lg font-bold text-text-primary">{score ?? "-"}</p>
         </div>
-        <span className="material-symbols-outlined text-text-muted">chevron_right</span>
+        <span className="material-symbols-outlined text-text-muted text-sm">open_in_new</span>
       </div>
     </Link>
   );

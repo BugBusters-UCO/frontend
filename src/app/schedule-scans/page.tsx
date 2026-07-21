@@ -86,13 +86,13 @@ export default function ScheduleScansPage() {
     page: "Scheduled Scans Management",
     totalSchedules: schedules.length,
     availableAgents: agents.length,
-    activeSchedules: schedules.filter((s) => s.status === "active").length,
+    activeSchedules: schedules.filter((s) => s.enabled).length,
     schedulesList: schedules.slice(0, 5).map((s) => ({
       id: s.id,
       name: s.name,
-      status: s.status,
+      status: s.enabled ? "active" : "inactive",
       frequency: s.frequency,
-      agentCount: (s.target_agents || []).length,
+      agentCount: s.agentId ? 1 : 0,
     })),
   });
 

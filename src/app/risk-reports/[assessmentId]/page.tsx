@@ -46,13 +46,13 @@ export default function RiskReportDetailPage() {
   usePageContext({
     page: "Risk Report Detail",
     assessmentId: assessmentId,
-    target: assessment?.target_name,
+    target: assessment?.sourceLabel,
     status: assessment?.status,
     finalRiskScore: risk?.final_risk_score,
-    riskLevel: risk?.final_risk_level,
+    riskLevel: risk?.risk_level,
     activeScanners: activeScannerNames,
     aiRemediesCount: aiRemedies.length,
-    unifiedPrioritiesCount: (risk?.unified_priorities || []).length,
+    unifiedPrioritiesCount: (risk?.overall_priorities || []).length,
   });
 
   const handleGenerateRemedies = async () => {
@@ -166,6 +166,9 @@ export default function RiskReportDetailPage() {
                         <div className="flex items-center gap-2">
                           {finding && <span className={`rounded px-2 py-1 text-xs font-bold uppercase ${riskBadge(severity)}`}>{severity}</span>}
                           <h3 className="font-bold text-text-primary">{item.title}</h3>
+                          {(item as any).cwe && (
+                            <span className="rounded bg-primary/10 text-primary px-2 py-1 text-[10px] font-bold border border-primary/20">{(item as any).cwe}</span>
+                          )}
                         </div>
                         <span className="rounded bg-surface transition-colors duration-300 px-2 py-1 text-xs font-bold uppercase text-text-muted border border-border-divider">{item.scanner}</span>
                       </div>
@@ -184,6 +187,14 @@ export default function RiskReportDetailPage() {
                         >
                           {item.recommendation}
                         </ReactMarkdown>
+                        {(item as any).auto_fix_patch && (
+                          <div className="mt-4 border-t border-border-divider pt-4">
+                            <p className="text-xs font-bold uppercase text-text-muted mb-2">Developer Action Guidance / Auto-Fix Patch</p>
+                            <pre className="bg-surface-container-low border border-border-subtle p-3 rounded-md overflow-x-auto font-mono text-[12px] text-text-primary">
+                              {(item as any).auto_fix_patch}
+                            </pre>
+                          </div>
+                        )}
                       </div>
                     </article>
                   );
@@ -214,15 +225,44 @@ function ExecutiveView({
 
   return (
     <div className="grid grid-cols-1 gap-element-gap xl:grid-cols-[1.2fr_0.8fr]">
-      <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
-        <h2 className="text-section-header font-section-header">Executive Decision View</h2>
-        <div className="mt-4 space-y-4">
-          <Insight label="Headline" value={brief?.headline || risk.executive_summary} icon="campaign" />
-          <Insight label="Business Impact" value={brief?.business_impact || `Business score ${risk.business_risk_score}`} icon="business_center" />
-          <Insight label="Release Decision" value={brief?.decision || releaseDecision(risk.final_risk_score)} icon="gavel" />
-          <Insight label="Board Message" value={brief?.board_message || risk.executive_summary} icon="groups" />
-        </div>
-      </section>
+      <div className="flex flex-col gap-element-gap">
+        <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
+          <h2 className="text-section-header font-section-header">Executive Decision View</h2>
+          <div className="mt-4 space-y-4">
+            <Insight label="Headline" value={brief?.headline || risk.executive_summary} icon="campaign" />
+            <Insight label="Business Impact" value={brief?.business_impact || `Business score ${risk.business_risk_score}`} icon="business_center" />
+            <Insight label="Release Decision" value={brief?.decision || releaseDecision(risk.final_risk_score)} icon="gavel" />
+            <Insight label="Board Message" value={brief?.board_message || risk.executive_summary} icon="groups" />
+          </div>
+        </section>
+        
+        {risk.formula && (
+          <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
+            <h2 className="text-section-header font-section-header">Risk Scoring Formula</h2>
+            <div className="mt-4 rounded-2xl bg-surface-container-lowest border border-border-divider p-5">
+              <div className="flex flex-col items-center justify-center space-y-3 md:flex-row md:space-y-0 md:space-x-5">
+                <div className="text-center">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted">Technical ({(risk.formula.technical_weight * 100).toFixed(0)}%)</p>
+                  <p className="text-2xl font-black text-text-primary mt-1">{risk.formula.technical_risk_score}</p>
+                </div>
+                <span className="material-symbols-outlined text-text-muted text-xl hidden md:block">add</span>
+                <div className="text-center">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted">Business ({(risk.formula.business_weight * 100).toFixed(0)}%)</p>
+                  <p className="text-2xl font-black text-text-primary mt-1">{risk.formula.business_risk_score}</p>
+                </div>
+                <span className="material-symbols-outlined text-text-muted text-xl hidden md:block">equal</span>
+                <div className="text-center rounded-xl bg-surface-container-low px-4 py-2 border border-border-subtle">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted">Final Score</p>
+                  <p className={`text-3xl font-black mt-1 ${scoreClass(scoreTone(risk.formula.final_risk_score))}`}>{risk.formula.final_risk_score}</p>
+                </div>
+              </div>
+              <div className="mt-5 rounded-lg bg-surface-container py-3 px-4 border border-border-subtle text-center">
+                <p className="font-mono text-sm font-semibold text-text-secondary">{risk.formula.expression}</p>
+              </div>
+            </div>
+          </section>
+        )}
+      </div>
 
       <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
         <h2 className="text-section-header font-section-header">What To Fix First</h2>
@@ -260,6 +300,37 @@ function TechnicalView({ assessment, scannerNames }: { assessment: RiskAssessmen
           ))}
         </div>
       </section>
+
+      {risk.correlation_paths && risk.correlation_paths.length > 0 && (
+        <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
+          <h2 className="text-section-header font-section-header">Attack Paths & Correlations</h2>
+          <p className="mt-1 text-sm text-text-secondary">Identified risk chains that span multiple scanners.</p>
+          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {risk.correlation_paths.map((path) => (
+              <div key={path.id} className={`rounded-2xl border bg-surface-container-lowest p-4 ${severityBorder(path.risk_level)}`}>
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <span className={`rounded px-2 py-1 text-[11px] font-bold uppercase ${riskBadge(path.risk_level)}`}>{path.risk_level}</span>
+                  <p className="font-bold text-text-primary text-sm">{path.title}</p>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {path.scanners.map((s) => (
+                    <span key={s} className="rounded bg-surface-container border border-border-divider px-2 py-1 text-[11px] font-bold uppercase text-text-secondary">{s}</span>
+                  ))}
+                </div>
+                <p className="text-sm text-text-secondary mb-4 leading-relaxed">{path.story}</p>
+                <div className="space-y-2">
+                  {path.remediation.map((step, idx) => (
+                    <div key={idx} className="flex gap-2 items-start">
+                      <span className="material-symbols-outlined text-[16px] text-primary mt-0.5">check_circle</span>
+                      <p className="text-sm text-text-secondary">{step}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="rounded-2xl border border-border-subtle bg-surface transition-colors duration-300 p-5 shadow-sm">
         <h2 className="text-section-header font-section-header">Priorities By Scanner</h2>
@@ -367,17 +438,17 @@ function Insight({ label, value, icon }: { label: string; value: string; icon: s
 }
 
 function releaseDecision(score: number) {
-  if (score >= 81) return "Block release until priority findings are mitigated.";
-  if (score >= 61) return "Require security approval before release.";
-  if (score >= 41) return "Proceed only with tracked remediation.";
+  if (score >= 801) return "Block release until priority findings are mitigated.";
+  if (score >= 601) return "Require security approval before release.";
+  if (score >= 401) return "Proceed only with tracked remediation.";
   return "Proceed with normal monitoring.";
 }
 
 function scoreTone(score: number) {
-  if (score >= 81) return "critical";
-  if (score >= 61) return "high";
-  if (score >= 41) return "elevated";
-  if (score >= 21) return "moderate";
+  if (score >= 801) return "critical";
+  if (score >= 601) return "high";
+  if (score >= 401) return "elevated";
+  if (score >= 201) return "moderate";
   return "low";
 }
 
