@@ -14,11 +14,12 @@ export function SpeechOverlay({ isListening, transcript, onStop }: SpeechOverlay
     <AnimatePresence>
       {isListening && (
         <motion.div
-          initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-          animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
-          exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-surface-container-lowest/80 backdrop-blur-xl"
+          key="speech-overlay"
+          className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-surface-container-lowest/95"
           onClick={onStop}
         >
           <div className="flex flex-col items-center gap-8 w-full px-8 max-w-md">
@@ -54,8 +55,10 @@ export function SpeechOverlay({ isListening, transcript, onStop }: SpeechOverlay
               className="w-full text-center"
             >
               <h3 className="text-xl font-medium text-text-primary mb-4">Listening...</h3>
-              <div className="text-lg text-text-secondary min-h-[60px] italic break-words">
-                {transcript || "Speak now..."}
+              <div className="text-xl text-text-primary min-h-[60px] italic break-words font-medium px-4">
+                {transcript || (
+                  <span className="text-text-secondary">Speak now...</span>
+                )}
               </div>
             </motion.div>
             
