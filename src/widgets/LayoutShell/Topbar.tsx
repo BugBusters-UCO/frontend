@@ -22,7 +22,7 @@ export function Topbar({ toggleSidebar, isSidebarOpen }: TopbarProps) {
       const data = JSON.stringify({ email, password });
       const token = btoa(data);
       const fallback = encodeURIComponent(window.location.origin);
-      window.open(`http://localhost:5173/login?token=${token}&fallback=${fallback}`, "_blank");
+      window.open(`https://post.bugbusters.satishdev.in/login?token=${token}&fallback=${fallback}`, "_blank");
     } else {
       alert("Please login again to use this feature.");
     }
