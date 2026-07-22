@@ -77,7 +77,7 @@ export default function VmAgentJobPage() {
   if (queryError) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <div className="text-red-500 font-bold text-xl mb-4">Error loading VM Agent scan results</div>
+        <div className="text-red-500 font-bold text-xl mb-4">Error loading Server Agent scan results</div>
         <p className="text-text-muted mb-6">{(queryError as Error).message || "Unknown error"}</p>
         <button onClick={() => router.push("/vm-agents/history")} className="px-6 py-2 bg-primary text-white rounded-2xl hover:bg-primary/90 transition-colors">
           Return to History
@@ -111,7 +111,7 @@ export default function VmAgentJobPage() {
         </button>
         <div>
           <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">
-            VM Scan: {job?.sourceLabel || jobId}
+            Server Scan: {job?.sourceLabel || jobId}
           </h1>
           <div className="flex items-center gap-4 text-body-sm text-text-secondary">
             <span>Status: <strong className="uppercase">{job?.status}</strong></span>
@@ -126,7 +126,7 @@ export default function VmAgentJobPage() {
         {!isScanning && reports.length > 0 && (
           <div className="flex flex-col gap-6 mt-4">
             <div className="bg-surface transition-colors duration-300 rounded-2xl border border-border-subtle p-6">
-              <h2 className="text-xl font-bold mb-2">VM Scan Details</h2>
+              <h2 className="text-xl font-bold mb-2">Server Scan Details</h2>
               <p className="text-body-sm text-text-secondary mb-6">Select a scanner module below to view its full report and findings.</p>
               
               <div className="grid grid-cols-1 @md:grid-cols-2 @lg:grid-cols-4 gap-4">

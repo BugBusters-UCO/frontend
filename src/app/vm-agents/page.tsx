@@ -50,7 +50,7 @@ export default function VmAgentsPage() {
   });
 
   usePageContext({
-    page: "VM Agents Management",
+    page: "Server Agents Management",
     totalAgents: agents.length,
     activeAgents: agents.filter((a) => a.status === "online").length,
     offlineAgents: agents.filter((a) => a.status !== "online").length,
@@ -265,8 +265,8 @@ export default function VmAgentsPage() {
             <span className="material-symbols-outlined text-primary-container text-3xl">dns</span>
           </div>
           <div>
-            <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">VM Agent Scanner</h1>
-            <p className="font-body-sm text-body-sm text-text-secondary">Scan deployed services, OS configs, and secrets from private bank VMs with real-time logging.</p>
+            <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">Server Agent Scanner</h1>
+            <p className="font-body-sm text-body-sm text-text-secondary">Scan deployed services, OS configs, and secrets from private bank Servers with real-time logging.</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -327,11 +327,11 @@ export default function VmAgentsPage() {
                   <div className="w-10 h-10 rounded-xl bg-primary-container/10 flex items-center justify-center">
                     <span className="material-symbols-outlined text-primary-container">cable</span>
                   </div>
-                  <h3 className="font-headline-sm text-headline-sm text-text-primary">Connect VM Agent</h3>
+                  <h3 className="font-headline-sm text-headline-sm text-text-primary">Connect Server Agent</h3>
                 </div>
                 
                 <p className="text-sm text-text-secondary mb-6 leading-relaxed">
-                  Enter your 6-digit Authenticator Code to establish a secure tunnel and start the VM Agent process.
+                  Enter your 6-digit Authenticator Code to establish a secure tunnel and start the Server Agent process.
                 </p>
 
                 <div className="space-y-2 mb-8">
@@ -383,13 +383,13 @@ export default function VmAgentsPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-section-header font-section-header flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary-container">sensors</span>
-                Connected VM Agents
+                Connected Server Agents
               </h2>
             </div>
 
             {/* <div className="mb-4 p-3 rounded-2xl bg-blue-50 border border-blue-100 text-xs text-blue-800">
               <p className="font-bold mb-1">How to connect / disconnect:</p>
-              <p className="mb-2">Run the agent script on your VM using the commands below. To disconnect, simply stop the script (Ctrl+C) on your server.</p>
+              <p className="mb-2">Run the agent script on your Server using the commands below. To disconnect, simply stop the script (Ctrl+C) on your server.</p>
               <div className="space-y-2 mt-2">
                 <div className="rounded bg-surface transition-colors duration-300 p-2 border border-blue-100">
                   <CommandHeader title="Windows Server" copied={copiedCommand === "windows"} onCopy={() => copyCommand("windows", windowsCommand)} />
@@ -410,7 +410,7 @@ export default function VmAgentsPage() {
                 </div>
               ) : agents.length === 0 ? (
                 <div className="rounded-2xl border-2 border-dashed border-border-divider p-5 text-sm text-text-secondary bg-surface-container-lowest flex items-center justify-center min-h-[100px]">
-                  <p className="font-medium text-text-primary text-center">No VM agents connected. Use the commands above to register one.</p>
+                  <p className="font-medium text-text-primary text-center">No Server agents connected. Use the commands above to register one.</p>
                 </div>
               ) : agents.map((agent) => (
                 <button
@@ -490,7 +490,7 @@ export default function VmAgentsPage() {
                 <span className="material-symbols-outlined text-primary-container">play_circle</span>
                 Launch Scan
               </h2>
-              <p className="text-sm text-text-secondary mt-1">Configure and deploy a scan operation to your registered VM agent.</p>
+              <p className="text-sm text-text-secondary mt-1">Configure and deploy a scan operation to your registered Server agent.</p>
             </div>
             {selectedAgent && (
               <div className="px-3 py-1.5 rounded-full bg-green-50 border border-green-200 flex items-center gap-2">
@@ -553,7 +553,7 @@ export default function VmAgentsPage() {
               <BusinessSlider
                 label="Asset Criticality"
                 value={businessContext.assetCriticality}
-                tooltip="How important this VM service is to the bank. Internet banking and payment services should be higher than internal tools."
+                tooltip="How important this Server service is to the bank. Internet banking and payment services should be higher than internal tools."
                 onChange={(value) => setBusinessContext((current) => ({ ...current, assetCriticality: value }))}
               />
               <BusinessSlider
@@ -565,7 +565,7 @@ export default function VmAgentsPage() {
               <BusinessSlider
                 label="Business Impact"
                 value={businessContext.businessImpact}
-                tooltip="Operational or revenue impact if this VM or service is compromised."
+                tooltip="Operational or revenue impact if this Server or service is compromised."
                 onChange={(value) => setBusinessContext((current) => ({ ...current, businessImpact: value }))}
               />
               <BusinessSlider
@@ -980,13 +980,13 @@ function getStatusExplanation(report: AgentScanJob) {
   if (report.status === "queued") {
     return {
       title: "Queued for Dispatch",
-      description: "Awaiting pickup by the VM agent. Keep the agent script running; it will automatically poll and execute this command."
+      description: "Awaiting pickup by the Server agent. Keep the agent script running; it will automatically poll and execute this command."
     };
   }
   if (report.status === "running") {
     return {
       title: "Analysis in Progress",
-      description: "The secure VM agent is actively scanning the local environment. Logs are streaming in real-time below."
+      description: "The secure Server agent is actively scanning the local environment. Logs are streaming in real-time below."
     };
   }
   if (report.status === "completed") {
@@ -998,7 +998,7 @@ function getStatusExplanation(report: AgentScanJob) {
   if (report.status === "failed") {
     return {
       title: "Scan Failed",
-      description: report.error || "The VM agent encountered a critical error. Please review the execution logs for details."
+      description: report.error || "The Server agent encountered a critical error. Please review the execution logs for details."
     };
   }
   if (report.status === "stopping") {

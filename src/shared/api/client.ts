@@ -462,14 +462,14 @@ export async function notifyCipherScan(jobId: string): Promise<any> {
 }
 
 // ------------------------------------------------------------------
-// VM Agent / OS-level Scanning
+// Server Agent / OS-level Scanning
 // ------------------------------------------------------------------
 
 export async function fetchAgents(): Promise<VmAgent[]> {
   const response = await apiFetch(`${API_BASE_URL}/api/agents`, {
     headers: getAuthHeaders(),
   });
-  if (!response.ok) throw new Error("Failed to fetch VM agents");
+  if (!response.ok) throw new Error("Failed to fetch Server agents");
   return response.json();
 }
 
@@ -506,7 +506,7 @@ export async function startAgentScan(
   });
   if (!response.ok) {
     const errData = await response.json().catch(() => ({}));
-    throw new Error(errData.message || "Failed to start VM agent scan");
+    throw new Error(errData.message || "Failed to start Server agent scan");
   }
   return response.json();
 }
@@ -515,7 +515,7 @@ export async function fetchAgentScan(scanId: string): Promise<AgentScanJob> {
   const response = await apiFetch(`${API_BASE_URL}/api/agents/scans/${scanId}`, {
     headers: getAuthHeaders(),
   });
-  if (!response.ok) throw new Error("Failed to fetch VM scan");
+  if (!response.ok) throw new Error("Failed to fetch Server scan");
   return response.json();
 }
 
@@ -524,7 +524,7 @@ export async function stopAgentScan(scanId: string): Promise<AgentScanJob> {
     method: "POST",
     headers: getAuthHeaders(),
   });
-  if (!response.ok) throw new Error("Failed to stop VM scan");
+  if (!response.ok) throw new Error("Failed to stop Server scan");
   return response.json();
 }
 
@@ -673,7 +673,7 @@ export async function connectVmAgent(mfaCode: string): Promise<any> {
   });
   if (!response.ok) {
     const errData = await response.json().catch(() => ({}));
-    throw new Error(errData.error || errData.message || "Failed to connect VM agent");
+    throw new Error(errData.error || errData.message || "Failed to connect Server agent");
   }
   return response.json();
 }
@@ -685,7 +685,7 @@ export async function disconnectVmAgent(): Promise<any> {
   });
   if (!response.ok) {
     const errData = await response.json().catch(() => ({}));
-    throw new Error(errData.error || errData.message || "Failed to disconnect VM agent");
+    throw new Error(errData.error || errData.message || "Failed to disconnect Server agent");
   }
   return response.json();
 }

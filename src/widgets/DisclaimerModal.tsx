@@ -87,7 +87,7 @@ export function DisclaimerModal() {
                   </div>
                   <div>
                     <strong className="text-text-primary block mb-1 text-[15px]">Secure Storage & Telemetry</strong>
-                    <span className="leading-relaxed block">Extracted risk reports and metadata are securely stored in MongoDB Atlas (encrypted at rest). Volatile session data uses Redis Cloud. Real-time scanning telemetry from local VM Agents is transmitted exclusively over encrypted WebSockets (WSS).</span>
+                    <span className="leading-relaxed block">Extracted risk reports and metadata are securely stored in MongoDB Atlas (encrypted at rest). Volatile session data uses Redis Cloud. Real-time scanning telemetry from local Server Agents is transmitted exclusively over encrypted WebSockets (WSS).</span>
                   </div>
                 </li>
               </ul>
@@ -99,7 +99,7 @@ export function DisclaimerModal() {
                 Access & Revocation
               </h3>
               <p className="leading-relaxed">
-                Authentication relies on TTL-based OTPs and strictly scoped JWTs routed through our Security Proxy (WAF). You retain absolute control—any connected VM agents or repository access tokens can be instantly revoked from your dashboard, immediately severing all access.
+                Authentication relies on TTL-based OTPs and strictly scoped JWTs routed through our Security Proxy (WAF). You retain absolute control—any connected Server agents or repository access tokens can be instantly revoked from your dashboard, immediately severing all access.
               </p>
             </div>
           </div>

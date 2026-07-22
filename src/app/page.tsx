@@ -119,7 +119,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between ml-1">
             <p className="font-body-sm text-body-sm text-text-muted font-medium flex items-center gap-1.5">
               Active Agents
-              <InfoTooltip text="Number of currently connected VM agents" />
+              <InfoTooltip text="Number of currently connected Server agents" />
             </p>
             <span className="material-symbols-outlined text-[20px] text-text-secondary group-hover:text-emerald-500 transition-colors">memory</span>
           </div>
@@ -181,7 +181,7 @@ export default function DashboardPage() {
         <div className="bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 flex flex-col group hover:shadow-md transition-all duration-300">
           <div className="flex items-center gap-2 mb-8">
             <h2 className="text-sm font-bold font-sans uppercase tracking-wider text-text-secondary">Execution Reliability</h2>
-            <InfoTooltip text="Ratio of scans that completed successfully vs failed." />
+            <InfoTooltip text="Ratio of scans that completed successfully vs failed vs pending." />
           </div>
 
           <div className="flex-1 flex flex-col justify-center gap-8">
@@ -191,8 +191,8 @@ export default function DashboardPage() {
                 <p className="text-sm font-medium text-text-muted mt-1">Successful</p>
               </div>
               <div className="text-center group-hover:-translate-y-1 transition-transform">
-                <p className="text-3xl font-bold text-text-primary">{stats?.totalScans || 0}</p>
-                <p className="text-sm font-medium text-text-muted mt-1">Total</p>
+                <p className="text-3xl font-bold text-text-primary">{(stats?.totalScans || 0) - (stats?.successfulScans || 0) - (stats?.failedScans || 0)}</p>
+                <p className="text-sm font-medium text-text-muted mt-1">Pending</p>
               </div>
               <div className="text-center group-hover:-translate-y-1 transition-transform">
                 <p className="text-3xl font-bold text-red-500">{stats?.failedScans || 0}</p>
@@ -204,16 +204,21 @@ export default function DashboardPage() {
               <div className="w-full h-3 bg-surface-dim rounded-full overflow-hidden flex shadow-inner">
                 <div
                   className="h-full bg-emerald-500 transition-all duration-1000"
-                  style={{ width: `${successRate}%` }}
+                  style={{ width: `${stats?.totalScans ? ((stats.successfulScans / stats.totalScans) * 100).toFixed(1) : 0}%` }}
+                ></div>
+                <div
+                  className="h-full bg-amber-500 transition-all duration-1000"
+                  style={{ width: `${stats?.totalScans ? ((((stats.totalScans || 0) - (stats.successfulScans || 0) - (stats.failedScans || 0)) / stats.totalScans) * 100).toFixed(1) : 0}%` }}
                 ></div>
                 <div
                   className="h-full bg-red-500 transition-all duration-1000"
-                  style={{ width: `${stats?.totalScans ? 100 - successRate : 0}%` }}
+                  style={{ width: `${stats?.totalScans ? ((stats.failedScans / stats.totalScans) * 100).toFixed(1) : 0}%` }}
                 ></div>
               </div>
               <div className="flex justify-between text-xs font-medium text-text-muted mt-3">
-                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> {successRate}% Success</span>
-                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500"></span> {stats?.totalScans ? 100 - successRate : 0}% Failure</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> {stats?.totalScans ? Math.round((stats.successfulScans / stats.totalScans) * 100) : 0}% Success</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500"></span> {stats?.totalScans ? Math.round((((stats.totalScans || 0) - (stats.successfulScans || 0) - (stats.failedScans || 0)) / stats.totalScans) * 100) : 0}% Pending</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500"></span> {stats?.totalScans ? Math.round((stats.failedScans / stats.totalScans) * 100) : 0}% Failure</span>
               </div>
             </div>
           </div>
@@ -287,7 +292,7 @@ export default function DashboardPage() {
 
           <div className="bg-surface p-5 rounded-2xl border border-border-subtle shadow-sm flex items-center justify-between group hover:border-border-divider transition-colors">
             <div className="flex flex-col gap-1">
-              <p className="font-body-sm text-sm text-text-muted font-medium">VM Agents</p>
+              <p className="font-body-sm text-sm text-text-muted font-medium">Server Agents</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-bold text-text-primary">{stats?.agents?.total || 0}</span>
                 <span className="text-xs font-medium text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">{stats?.agents?.connected || 0} Online</span>

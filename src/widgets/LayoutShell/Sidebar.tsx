@@ -115,13 +115,13 @@ export function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
           <Link
             href="/vm-agents"
             className={getLinkClass(isAgents)}
-            title="VM Dashboard"
+            title="Server Dashboard"
           >
             {renderActiveIndicator(isAgents)}
             <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 shrink-0 ${isAgents ? "text-primary" : ""}`}>
               dns
             </span>
-            {isOpen && <span className="whitespace-nowrap overflow-hidden">VM Dashboard</span>}
+            {isOpen && <span className="whitespace-nowrap overflow-hidden">Server Dashboard</span>}
           </Link>
           <Link
             href="/monitoring"
@@ -144,13 +144,13 @@ export function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
           <Link
             href="/vm-agents/history"
             className={getLinkClass(isAgentsHistory)}
-            title="VM Agents"
+            title="Server Agents"
           >
             {renderActiveIndicator(isAgentsHistory)}
             <span className={`material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:scale-110 shrink-0 ${isAgentsHistory ? "text-primary" : ""}`}>
               history
             </span>
-            {isOpen && <span className="whitespace-nowrap overflow-hidden">VM Agents</span>}
+            {isOpen && <span className="whitespace-nowrap overflow-hidden">Server Agents</span>}
           </Link>
         </div>
 

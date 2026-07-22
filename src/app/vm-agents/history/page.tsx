@@ -29,7 +29,7 @@ export default function VmAgentHistoryPage() {
   }, {} as Record<string, AgentScanJob[]>);
 
   usePageContext({
-    page: "VM Agents History",
+    page: "Server Agents History",
     historyCount: jobs?.length || 0,
   });
 
@@ -43,8 +43,8 @@ export default function VmAgentHistoryPage() {
              <span className="material-symbols-outlined text-primary-container text-3xl">dns</span>
            </div>
            <div>
-             <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">VM Agent History</h1>
-             <p className="font-body-sm text-body-sm text-text-secondary">Track OS-level scans, configurations, and vulnerabilities found by your VM agents.</p>
+             <h1 className="font-headline-lg text-headline-lg text-text-primary mb-1">Server Agent History</h1>
+             <p className="font-body-sm text-body-sm text-text-secondary">Track OS-level scans, configurations, and vulnerabilities found by your Server agents.</p>
            </div>
         </div>
       </div>
@@ -69,7 +69,7 @@ export default function VmAgentHistoryPage() {
             </div>
           ) : Object.keys(groupedJobs).length === 0 ? (
             <div className="text-body-sm text-text-muted text-center py-8">
-              No recent VM agent scans found
+              No recent Server agent scans found
             </div>
           ) : (
             Object.entries(groupedJobs).map(([project, projectJobs]) => (
@@ -113,7 +113,7 @@ export default function VmAgentHistoryPage() {
                         </div>
                         <div>
                           <Link href={`/vm-agents/${job.id}`} className="text-body-sm font-medium text-text-primary hover:text-primary transition-colors flex items-center gap-2">
-                            VM Agent Scan
+                            Server Agent Scan
                             <span className="text-xs text-text-muted font-normal border rounded px-1.5 py-0.5">
                               {job.modules?.length || 0} modules
                             </span>

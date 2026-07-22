@@ -105,11 +105,11 @@ export default function ScheduleScansPage() {
 
   async function submitSchedule() {
     if (!selectedAgentId) {
-      setError("Connect a VM Agent before creating a schedule.");
+      setError("Connect a Server Agent before creating a schedule.");
       return;
     }
     if (selectedPaths.length === 0) {
-      setError("Select at least one path to scan on the VM.");
+      setError("Select at least one path to scan on the Server.");
       return;
     }
     if (!selectedScanners.length) {
@@ -183,7 +183,7 @@ export default function ScheduleScansPage() {
       <motion.div variants={itemVariants} className="flex flex-col @md:flex-row @md:items-center justify-between gap-4">
         <div>
           <h1 className="font-sans font-bold text-headline-lg text-text-primary mb-1 uppercase tracking-wider">Schedule Scans</h1>
-          <p className="font-body-sm text-body-sm text-text-secondary">Automate security assessments for your VM infrastructure.</p>
+          <p className="font-body-sm text-body-sm text-text-secondary">Automate security assessments for your Server infrastructure.</p>
         </div>
         <div className="flex items-center gap-3">
           <button 
@@ -227,7 +227,7 @@ export default function ScheduleScansPage() {
                 </label>
 
                 <label className="space-y-1.5">
-                  <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Target VM Agent</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Target Server Agent</span>
                   <select 
                     value={selectedAgentId} 
                     onChange={(e) => setSelectedAgentId(e.target.value)} 
@@ -245,7 +245,7 @@ export default function ScheduleScansPage() {
               <div className="flex flex-col gap-1.5 pt-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">Paths to scan</span>
-                  <InfoTooltip text="Select specific directories on the VM to isolate scanning scope." />
+                  <InfoTooltip text="Select specific directories on the Server to isolate scanning scope." />
                 </div>
                 <div className="rounded-xl border border-border-subtle bg-surface-container overflow-hidden min-h-[200px]">
                   <RemoteFileExplorer
@@ -424,7 +424,7 @@ export default function ScheduleScansPage() {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-text-primary mb-1">No Active Schedules</p>
-                  <p className="text-xs text-text-secondary">Configure a new automated VM scan to see it here.</p>
+                  <p className="text-xs text-text-secondary">Configure a new automated Server scan to see it here.</p>
                 </div>
               </div>
             )}
