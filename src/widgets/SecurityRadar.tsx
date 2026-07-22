@@ -38,7 +38,8 @@ export function SecurityRadar() {
 
   useEffect(() => {
     // Connect directly to the Security Proxy's real-time stream
-    const eventSource = new EventSource(`${process.env.NEXT_PUBLIC_PROXY_API_URL}/api/stream`);
+    const proxyUrl = process.env.NEXT_PUBLIC_PROXY_URL || "http://127.0.0.1:4000";
+    const eventSource = new EventSource(`${proxyUrl}/api/stream`);
     
     eventSource.onmessage = (event) => {
       try {
