@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 export async function POST(req: NextRequest) {
@@ -27,6 +29,7 @@ export async function POST(req: NextRequest) {
       status: backendRes.status,
       headers: {
         "Content-Type": backendRes.headers.get("Content-Type") || "text/event-stream",
+        "X-Accel-Buffering": "no",
         "Cache-Control": "no-cache",
         "Connection": "keep-alive",
       },
