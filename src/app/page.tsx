@@ -118,12 +118,14 @@ export default function DashboardPage() {
         <div className="bg-surface p-6 rounded-2xl border border-border-subtle shadow-sm flex flex-col gap-3 group hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 relative overflow-hidden">
           <div className="flex items-center justify-between ml-1">
             <p className="font-body-sm text-body-sm text-text-muted font-medium flex items-center gap-1.5">
-              Health Score
-              <InfoTooltip text="Aggregate platform risk score based on all assets" />
+              Active Agents
+              <InfoTooltip text="Number of currently connected VM agents" />
             </p>
-            <span className="material-symbols-outlined text-[20px] text-text-secondary group-hover:text-emerald-500 transition-colors">health_metrics</span>
+            <span className="material-symbols-outlined text-[20px] text-text-secondary group-hover:text-emerald-500 transition-colors">memory</span>
           </div>
-          <p className="font-metric-value text-metric-value text-text-primary ml-1">{latestRiskScore || "N/A"}</p>
+          <p className="font-metric-value text-metric-value text-text-primary ml-1">
+            {stats ? `${stats.agents.connected} / ${stats.agents.total}` : "0"}
+          </p>
         </div>
 
         <div className="bg-surface p-6 rounded-2xl border border-border-subtle shadow-sm flex flex-col gap-3 group hover:border-orange-500/50 hover:shadow-md transition-all duration-300 relative overflow-hidden">
