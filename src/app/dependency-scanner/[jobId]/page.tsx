@@ -15,7 +15,7 @@ import { ArrowLeftCircle } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePageContext } from "@/features/chatbot/usePageContext";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:5000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 export default function ScannerJobPage() {
   const { jobId } = useParams() as { jobId: string };

@@ -37,7 +37,7 @@ export default function EdrMonitoringPage() {
     try {
       // In a real app we might watch multiple, but we just watch the first selected one for the demo
       const folderPath = selectedPaths[0];
-      await axios.post('http://127.0.0.1:5000/api/edr/start-watch', { folderPath }, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/edr/start-watch`, { folderPath }, {
         headers: {
           'Content-Type': 'application/json'
         }

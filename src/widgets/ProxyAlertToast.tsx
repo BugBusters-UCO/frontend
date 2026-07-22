@@ -7,7 +7,7 @@ export function ProxyAlertToast() {
 
   useEffect(() => {
     // Connect to the SSE stream on the main backend
-    const eventSource = new EventSource("http://127.0.0.1:5000/api/proxy/events");
+    const eventSource = new EventSource(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/proxy/events`);
 
     eventSource.onmessage = (event) => {
       try {
