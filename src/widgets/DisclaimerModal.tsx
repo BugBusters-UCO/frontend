@@ -41,38 +41,65 @@ export function DisclaimerModal() {
           </div>
 
           <div className="space-y-6 text-sm text-text-secondary">
-            <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl">
-              <h3 className="text-base font-bold text-blue-900 mb-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[20px]">policy</span>
-                Our Commitment to Integrity
+            <div className="p-4 bg-surface-container border border-border-subtle rounded-2xl">
+              <h3 className="text-base font-bold text-text-primary mb-2 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[20px] text-primary">policy</span>
+                Our Commitment to Absolute Transparency
               </h3>
-              <p className="text-blue-800 leading-relaxed">
-                At BugBusters, your project's integrity is our absolute priority. This dashboard provides deep security analysis across your dependencies, configurations, secrets, and architecture. To do this, we need temporary read access to your repositories.
+              <p className="text-text-secondary leading-relaxed">
+                BugBusters operates a highly distributed microservices architecture (Node.js & Python FastAPI) to provide enterprise-grade vulnerability management, cryptographic analysis (TLS/PQC), and asset discovery. We believe in complete transparency regarding how your code and data are handled.
               </p>
             </div>
 
             <div>
-              <h3 className="text-base font-bold text-text-primary mb-3">How we use your data:</h3>
-              <ul className="space-y-3 list-none pl-1">
-                <li className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-green-600 text-[18px] shrink-0 mt-0.5">check_circle</span>
-                  <span><strong>Scanning Only:</strong> Your source code and configurations are pulled exclusively into our isolated, ephemeral scanning containers.</span>
+              <h3 className="text-base font-bold text-text-primary mb-4">Exactly how we process your data:</h3>
+              <ul className="space-y-5 list-none pl-1">
+                <li className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-severity-low/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="material-symbols-outlined text-severity-low text-[18px]">memory</span>
+                  </div>
+                  <div>
+                    <strong className="text-text-primary block mb-1 text-[15px]">Ephemeral Source Code Scanning</strong>
+                    <span className="leading-relaxed block">Your source code is cloned strictly into memory within our isolated, purpose-built FastAPI micro-scanners (Dependency, Secret, and Config Scanners). <strong>We never write your raw source code to disk</strong>, and the memory instance is instantly wiped the millisecond the scan completes.</span>
+                  </div>
                 </li>
-                <li className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-green-600 text-[18px] shrink-0 mt-0.5">check_circle</span>
-                  <span><strong>No Permanent Storage:</strong> We do not permanently store your source code. Once a scan is completed and facts are extracted (like dependency versions or redacted config keys), the cloned repository is immediately destroyed.</span>
+                <li className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-severity-low/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="material-symbols-outlined text-severity-low text-[18px]">smart_toy</span>
+                  </div>
+                  <div>
+                    <strong className="text-text-primary block mb-1 text-[15px]">Strict LLM & AI Privacy (Groq Cloud)</strong>
+                    <span className="leading-relaxed block">We utilize external LLMs (Groq Cloud) to generate actionable remediation steps. <strong>Your source code is never sent to the AI.</strong> Only anonymized metadata (like CVE IDs, package names, and redacted stack traces) are transmitted. Any discovered secrets are entirely stripped before AI processing.</span>
+                  </div>
                 </li>
-                <li className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-green-600 text-[18px] shrink-0 mt-0.5">check_circle</span>
-                  <span><strong>Secret Redaction:</strong> Any discovered hardcoded secrets are redacted or hashed before being logged or stored in the database. We will never display raw active secrets in plain text.</span>
+                <li className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-severity-low/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="material-symbols-outlined text-severity-low text-[18px]">lock</span>
+                  </div>
+                  <div>
+                    <strong className="text-text-primary block mb-1 text-[15px]">Secret Hashing & Redaction</strong>
+                    <span className="leading-relaxed block">If our Secret Scanner detects hardcoded API keys or credentials, they are immediately hashed (SHA-256) or masked (e.g., <code>ak_***9xq</code>). Raw active secrets are <strong>never stored</strong> in our MongoDB Atlas database or logged to our consoles.</span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-severity-low/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="material-symbols-outlined text-severity-low text-[18px]">database</span>
+                  </div>
+                  <div>
+                    <strong className="text-text-primary block mb-1 text-[15px]">Secure Storage & Telemetry</strong>
+                    <span className="leading-relaxed block">Extracted risk reports and metadata are securely stored in MongoDB Atlas (encrypted at rest). Volatile session data uses Redis Cloud. Real-time scanning telemetry from local VM Agents is transmitted exclusively over encrypted WebSockets (WSS).</span>
+                  </div>
                 </li>
               </ul>
             </div>
 
-            <div>
-              <h3 className="text-base font-bold text-text-primary mb-2">How safe is it?</h3>
+            <div className="p-4 bg-surface-container-lowest border border-border-divider rounded-2xl">
+              <h3 className="text-base font-bold text-text-primary mb-2 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px] text-severity-medium">gpp_maybe</span>
+                Access & Revocation
+              </h3>
               <p className="leading-relaxed">
-                Our infrastructure operates inside a secure sandbox. The token you provide via GitHub OAuth is strictly scoped and encrypted at rest. You can revoke this token from your GitHub settings at any time, instantly severing our access.
+                Authentication relies on TTL-based OTPs and strictly scoped JWTs routed through our Security Proxy (WAF). You retain absolute control—any connected VM agents or repository access tokens can be instantly revoked from your dashboard, immediately severing all access.
               </p>
             </div>
           </div>
