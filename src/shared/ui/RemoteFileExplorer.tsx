@@ -4,16 +4,19 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export function RemoteFileExplorer({ 
   agentId, 
+  agentOs,
   selectedPaths, 
   togglePath, 
   hasAgents 
 }: { 
   agentId: string; 
+  agentOs?: string;
   selectedPaths: string[]; 
   togglePath: (path: string) => void; 
   hasAgents: boolean; 
 }) {
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(["C:\\"]));
+  const defaultRoot = agentOs?.toLowerCase().includes("windows") ? "C:\\" : "/";
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set([defaultRoot]));
   const [treeData, setTreeData] = useState<Record<string, Array<{name: string, path: string}>>>({});
   const [loadingNodes, setLoadingNodes] = useState<Set<string>>(new Set());
 
@@ -51,9 +54,9 @@ export function RemoteFileExplorer({
 
   useEffect(() => {
     if (hasAgents && agentId) {
-      fetchNode("C:\\");
+      fetchNode(defaultRoot);
     }
-  }, [hasAgents, agentId]);
+  }, [hasAgents, agentId, defaultRoot]);
 
   const toggleExpand = (path: string) => {
     setExpandedNodes(prev => {

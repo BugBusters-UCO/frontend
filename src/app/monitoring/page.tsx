@@ -144,6 +144,7 @@ export default function EdrMonitoringPage() {
               <div className="flex-1 rounded-2xl border border-border-subtle bg-surface-base overflow-hidden flex flex-col shadow-sm">
                 <RemoteFileExplorer
                   agentId={activeAgent.id}
+                  agentOs={activeAgent.os || undefined}
                   selectedPaths={selectedPaths}
                   togglePath={(path) => {
                     if (!isWatching) {

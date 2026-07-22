@@ -612,6 +612,7 @@ export default function VmAgentsPage() {
 
                 <RemoteFileExplorer
                   agentId={selectedAgentId}
+                  agentOs={selectedAgent?.os || undefined}
                   selectedPaths={selectedPaths}
                   togglePath={togglePath}
                   hasAgents={hasAgents}

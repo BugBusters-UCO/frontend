@@ -250,6 +250,7 @@ export default function ScheduleScansPage() {
                 <div className="rounded-xl border border-border-subtle bg-surface-container overflow-hidden min-h-[200px]">
                   <RemoteFileExplorer
                     agentId={selectedAgentId}
+                    agentOs={agents.find(a => a.id === selectedAgentId)?.os || undefined}
                     hasAgents={agents.length > 0}
                     selectedPaths={selectedPaths}
                     togglePath={(path) => setSelectedPaths((current) => current.includes(path) ? current.filter((item) => item !== path) : [...current, path])}
