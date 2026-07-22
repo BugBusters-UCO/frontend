@@ -352,7 +352,7 @@ export default function DashboardPage() {
                     </span>
                   </div>
                 </div>
-                <Link href={`/${scan.scannerType}-scanner/${scan.id}`} className="text-text-muted hover:text-primary transition-colors p-1">
+                <Link href={`/vm-agents/${scan.id}`} className="text-text-muted hover:text-primary transition-colors p-1">
                   <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                 </Link>
               </div>
