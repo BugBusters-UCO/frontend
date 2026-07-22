@@ -78,8 +78,8 @@ export function RemoteFileExplorer({
     const isLoading = loadingNodes.has(path);
     const children = treeData[path];
     const isSelected = selectedPaths.includes(path);
-    const isRoot = path === "C:\\" || path === "C:/";
-    const label = isRoot ? "Local Disk (C:)" : path.split('\\').pop() || path;
+    const isRoot = path === defaultRoot || path === "C:\\" || path === "C:/";
+    const label = isRoot ? (defaultRoot === "/" ? "Root (/)" : "Local Disk (C:)") : (defaultRoot === "/" ? path.split('/').pop() || path : path.split('\\').pop() || path);
 
     return (
       <div key={path} className="flex flex-col relative">
@@ -171,8 +171,8 @@ export function RemoteFileExplorer({
           <button 
             type="button" 
             onClick={() => {
-              setExpandedNodes(new Set(["C:\\"]));
-              fetchNode("C:\\");
+              setExpandedNodes(new Set([defaultRoot]));
+              fetchNode(defaultRoot);
             }} 
             className="p-1.5 bg-primary rounded text-white hover:brightness-110 active:scale-95 transition-all flex items-center justify-center"
             disabled={!hasAgents}
@@ -202,7 +202,7 @@ export function RemoteFileExplorer({
           </div>
         ) : (
           <div className="pb-4">
-            {renderNode("C:\\")}
+            {renderNode(defaultRoot)}
           </div>
         )}
       </div>
